@@ -861,114 +861,123 @@
       {
         wave: 1,
         name: 'Recon Patrol',
-        subtitle: 'WAVE 1: SMALL RECONNAISSANCE BOATS',
-        desc: 'Small reconnaissance motorboats motor into the shallows delivering light riflemen. Aim for headshots (or upgrade your caliber first!) to score instant One-Shot Kills and earn bonus Grenades.',
-        timeLimit: 75,
+        subtitle: 'WAVE 1: EXTENDED RECONNAISSANCE LANDINGS',
+        desc: 'Reconnaissance motorboats motor into the shallows delivering multiple assault squads. Aim for headshots to score instant One-Shot Kills and earn bonus Grenades before the extended timer runs out.',
+        timeLimit: 110,
         grenades: 3,
         timeBoosters: 2,
-        parachuteDrops: 2,
+        parachuteDrops: 3,
         boats: [
           { delay: 0.5, type: 'small', cargo: ['rifle', 'rifle'] },
-          { delay: 5.5, type: 'small', cargo: ['rifle', 'rifle'] },
-          { delay: 11.5, type: 'small', cargo: ['rifle', 'rifle', 'rifle'] },
-          { delay: 18.0, type: 'small', cargo: ['rifle', 'rifle', 'rifle'] }
+          { delay: 7.0, type: 'small', cargo: ['rifle', 'rifle', 'rifle'] },
+          { delay: 15.5, type: 'small', cargo: ['rifle', 'rifle', 'rifle'] },
+          { delay: 25.0, type: 'small', cargo: ['rifle', 'rifle', 'rifle', 'storm'] },
+          { delay: 35.0, type: 'small', cargo: ['rifle', 'rifle', 'storm'] }
         ],
         unitSummary: [
-          { label: '4x Small Recon Boats', badge: 'Unarmored Hull', color: 'text-stone-300' },
-          { label: '10x Rifle Infantry', badge: 'No Armor • 45 HP', color: 'text-emerald-300' }
+          { label: '5x Recon Motorboats', badge: 'Unarmored Hull • 680 HP', color: 'text-stone-300' },
+          { label: '13x Riflemen & 2x Stormtroopers', badge: 'Reinforced • 58–102 HP', color: 'text-emerald-300' }
         ]
       },
       {
         wave: 2,
         name: 'Beachhead Surge',
-        subtitle: 'WAVE 2: MASS INFANTRY & SCOUT VANGUARD',
-        desc: 'Enemy landing craft arrive in greater numbers alongside medium LCVP Higgins barges and the first Light Armored Scout Car. Use your score to upgrade Belt Capacity and AP Caliber!',
-        timeLimit: 80,
+        subtitle: 'WAVE 2: REINFORCED INFANTRY & DUAL SCOUTS',
+        desc: 'Enemy landing craft arrive in continuous waves alongside medium LCVP Higgins barges and dual Armored Scout Cars. Upgrade your Belt Capacity and AP Caliber to hold the wider perimeter!',
+        timeLimit: 125,
         grenades: 3,
         timeBoosters: 2,
-        parachuteDrops: 2,
+        parachuteDrops: 3,
         boats: [
           { delay: 0.5, type: 'small', cargo: ['rifle', 'rifle', 'storm'] },
-          { delay: 4.5, type: 'lcvp', cargo: ['rifle', 'storm', 'storm', 'rifle'] },
-          { delay: 10.5, type: 'small', cargo: ['storm', 'storm', 'rifle'] },
-          { delay: 16.0, type: 'lcm', cargo: ['scout_car'] },
-          { delay: 21.0, type: 'lcvp', cargo: ['storm', 'storm', 'rifle', 'rifle'] }
+          { delay: 6.0, type: 'lcvp', cargo: ['rifle', 'storm', 'storm', 'rifle'] },
+          { delay: 14.0, type: 'small', cargo: ['storm', 'storm', 'rifle'] },
+          { delay: 22.5, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 31.0, type: 'lcvp', cargo: ['storm', 'storm', 'rifle', 'rifle'] },
+          { delay: 40.0, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 48.5, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'rifle'] }
         ],
         unitSummary: [
-          { label: '8x Riflemen & 7x Stormtroopers', badge: 'Light Helmet • 55–95 HP', color: 'text-amber-300' },
-          { label: '1x Recon Scout Car (Vehicle)', badge: 'Light Armor (25% Red.) • 220 HP', color: 'text-orange-300' }
+          { label: '10x Riflemen & 11x Stormtroopers', badge: 'Veteran • 72–125 HP', color: 'text-amber-300' },
+          { label: '2x Recon Scout Cars (Vehicles)', badge: 'Light Armor (28% Red.) • 335 HP', color: 'text-orange-300' }
         ]
       },
       {
         wave: 3,
         name: 'Mechanized Push',
-        subtitle: 'WAVE 3: LIGHT & MEDIUM ARMOR COLUMNS',
-        desc: 'Heavy LCM barges join the flotilla, deploying Light Scout Cars and a Medium-Armored Sd.Kfz Half-Track. Save Grenades for armored vehicles or upgrade your Armor-Piercing rounds!',
-        timeLimit: 85,
+        subtitle: 'WAVE 3: HEAVY MECHANIZED COLUMNS',
+        desc: 'Heavy LCM barges deploy multiple Scout Cars and armored Half-Tracks across the tidal flats. Conserve Grenades for armored vehicle clusters and prioritize diesel engine weak spots!',
+        timeLimit: 140,
         grenades: 4,
         timeBoosters: 2,
-        parachuteDrops: 2,
+        parachuteDrops: 4,
         boats: [
           { delay: 0.5, type: 'lcvp', cargo: ['storm', 'storm', 'rifle', 'rifle'] },
-          { delay: 5.0, type: 'lcm', cargo: ['scout_car'] },
-          { delay: 10.0, type: 'small', cargo: ['storm', 'storm', 'storm'] },
-          { delay: 15.0, type: 'lcm', cargo: ['halftrack'] },
-          { delay: 20.5, type: 'lcm', cargo: ['scout_car'] },
-          { delay: 25.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'rifle'] }
+          { delay: 7.0, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 14.5, type: 'small', cargo: ['storm', 'storm', 'storm', 'rifle'] },
+          { delay: 22.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 30.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
+          { delay: 38.5, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 47.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 56.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] }
         ],
         unitSummary: [
-          { label: '11x Stormtroopers & Riflemen', badge: 'Infantry • 65–115 HP', color: 'text-amber-300' },
-          { label: '2x Recon Scout Cars', badge: 'Light Armor (25% Red.) • 250 HP', color: 'text-orange-300' },
-          { label: '1x Armored Half-Track', badge: 'Medium Armor (50% Red.) • 420 HP', color: 'text-red-300' }
+          { label: '16x Stormtroopers & 4x Riflemen', badge: 'Veteran • 85–150 HP', color: 'text-amber-300' },
+          { label: '2x Scout Cars & 2x Half-Tracks', badge: 'Light/Med Armor • 400–740 HP', color: 'text-orange-300' }
         ]
       },
       {
         wave: 4,
         name: 'Armored Spearhead',
-        subtitle: 'WAVE 4: HALF-TRACKS & FIRST COASTAL TANK',
-        desc: 'Multiple armored landing barges hit the surf carrying Medium Half-Tracks and the first Heavy-Armored Coastal Tank. Aim for weak spots (golden engine/vision ports) or lob grenades!',
-        timeLimit: 90,
+        subtitle: 'WAVE 4: DUAL TANK ASSAULT & MOTORIZED INFANTRY',
+        desc: 'Multiple heavy LCM barges breach the shallows delivering dual Coastal Sherman Tanks and mechanized Half-Tracks. Target golden vision ports and engine grates for critical hits!',
+        timeLimit: 155,
         grenades: 4,
-        timeBoosters: 2,
-        parachuteDrops: 3,
+        timeBoosters: 3,
+        parachuteDrops: 4,
         boats: [
           { delay: 0.5, type: 'lcm', cargo: ['scout_car'] },
-          { delay: 4.5, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
-          { delay: 9.5, type: 'lcm', cargo: ['halftrack'] },
-          { delay: 14.5, type: 'small', cargo: ['storm', 'storm', 'rifle'] },
-          { delay: 19.5, type: 'lcm', cargo: ['tank'] },
-          { delay: 24.5, type: 'lcm', cargo: ['halftrack'] },
-          { delay: 29.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] }
+          { delay: 6.5, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
+          { delay: 14.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 22.0, type: 'small', cargo: ['storm', 'storm', 'rifle'] },
+          { delay: 30.0, type: 'lcm', cargo: ['tank'] },
+          { delay: 39.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 48.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
+          { delay: 57.5, type: 'lcm', cargo: ['tank'] },
+          { delay: 67.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] }
         ],
         unitSummary: [
-          { label: '11x Elite Assault Infantry', badge: 'Infantry • 80–135 HP', color: 'text-amber-300' },
-          { label: '1x Scout Car & 2x Half-Tracks', badge: 'Light/Med Armor • 280–460 HP', color: 'text-orange-300' },
-          { label: '1x Heavy Assault Tank', badge: 'Heavy Armor (70% Red.) • 760 HP', color: 'text-red-400' }
+          { label: '18x Elite Assault Infantry', badge: 'Elite • 105–175 HP', color: 'text-amber-300' },
+          { label: '1x Scout Car & 2x Half-Tracks', badge: 'Light/Med Armor • 460–850 HP', color: 'text-orange-300' },
+          { label: '2x Coastal Assault Tanks', badge: 'Heavy Armor (72% Red.) • 1,560 HP', color: 'text-red-400' }
         ]
       },
       {
         wave: 5,
         name: 'D-Day Final Armada',
-        subtitle: 'WAVE 5: FULL AMPHIBIOUS ARMORED INVASION',
-        desc: 'The main invasion fleet is here! Waves of Recon Boats, LCVPs, Scout Cars, Half-Tracks, and Heavy Assault Tanks storm the beach simultaneously. Hold the line before time runs out!',
-        timeLimit: 95,
+        subtitle: 'WAVE 5: MAXIMUM AMPHIBIOUS INVASION FLOTILLA',
+        desc: 'The entire Allied armada converges on your coastal sector! Non-stop landing craft deliver Scout Cars, Half-Tracks, and a triple Sherman DD Tank spearhead. Defend the bunker to the last breath!',
+        timeLimit: 175,
         grenades: 5,
         timeBoosters: 3,
-        parachuteDrops: 3,
+        parachuteDrops: 5,
         boats: [
           { delay: 0.5, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
-          { delay: 4.0, type: 'lcm', cargo: ['halftrack'] },
-          { delay: 8.5, type: 'lcm', cargo: ['tank'] },
-          { delay: 13.0, type: 'small', cargo: ['storm', 'storm', 'storm'] },
-          { delay: 17.5, type: 'lcm', cargo: ['scout_car'] },
-          { delay: 22.0, type: 'lcm', cargo: ['halftrack'] },
-          { delay: 26.5, type: 'lcm', cargo: ['tank'] },
-          { delay: 31.0, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] }
+          { delay: 6.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 13.0, type: 'lcm', cargo: ['tank'] },
+          { delay: 20.0, type: 'small', cargo: ['storm', 'storm', 'storm', 'storm'] },
+          { delay: 28.0, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 36.0, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 45.0, type: 'lcm', cargo: ['tank'] },
+          { delay: 54.5, type: 'lcvp', cargo: ['storm', 'storm', 'storm', 'storm'] },
+          { delay: 64.0, type: 'lcm', cargo: ['scout_car'] },
+          { delay: 73.5, type: 'lcm', cargo: ['halftrack'] },
+          { delay: 83.0, type: 'lcm', cargo: ['tank'] }
         ],
         unitSummary: [
-          { label: '11x Elite Stormtroopers', badge: 'Veteran • 95–150 HP', color: 'text-amber-300' },
-          { label: '1x Scout Car & 2x Half-Tracks', badge: 'Light/Med Armor • 320–500 HP', color: 'text-orange-300' },
-          { label: '2x Heavy Assault Tanks', badge: 'Heavy Armor (70% Red.) • 820 HP', color: 'text-red-400' }
+          { label: '16x Veteran Stormtroopers', badge: 'Elite • 125–195 HP', color: 'text-amber-300' },
+          { label: '2x Scout Cars & 3x Half-Tracks', badge: 'Light/Med Armor • 520–960 HP', color: 'text-orange-300' },
+          { label: '3x Heavy Coastal Tanks', badge: 'Heavy Armor (72% Red.) • 1,780 HP', color: 'text-red-400' }
         ]
       }
     ];
@@ -2276,7 +2285,7 @@
       const laneX = (index % 5 - 2) * 15 + (Math.random() * 6 - 3);
       const startZ = -145 - Math.random() * 25;
 
-      let speed = 11.5;
+      let speed = 12.8;
       let hullW = 4.4, hullH = 1.85, hullL = 9.8;
       const boatSteelMat = new THREE.MeshStandardMaterial({
         color: 0x4a565d,
@@ -2292,7 +2301,7 @@
         roughness: 0.85
       });
 
-      const maxHp = Math.round(520 * (1 + state.waveIndex * 0.18));
+      const maxHp = Math.round(680 * (1 + state.waveIndex * 0.22));
       const hitboxes = [];
 
       const boatObj = {
@@ -2437,9 +2446,9 @@
         const isStorm = unitType === 'storm';
         name = isStorm ? 'Assault Stormtrooper' : 'Rifleman';
         armorLabel = isStorm ? 'Infantry Helmet' : 'Unarmored';
-        armorReduction = isStorm ? 0.08 : 0.0;
-        maxHp = Math.round((isStorm ? 78 : 44) * waveScale);
-        speed = (isStorm ? 3.8 : 3.2) + Math.random() * 0.45;
+        armorReduction = isStorm ? 0.12 : 0.0;
+        maxHp = Math.round((isStorm ? 102 : 58) * waveScale);
+        speed = (isStorm ? 4.3 : 3.6) + Math.random() * 0.5;
         points = isStorm ? 150 : 100;
         hpBarY = 2.85;
 
@@ -2628,10 +2637,10 @@
 
       } else if (unitType === 'scout_car') {
         name = 'Recon Scout Car';
-        armorLabel = 'Light Armor (25%)';
-        armorReduction = 0.25;
-        maxHp = Math.round(210 * waveScale);
-        speed = 4.3;
+        armorLabel = 'Light Armor (28%)';
+        armorReduction = 0.28;
+        maxHp = Math.round(275 * waveScale);
+        speed = 4.8;
         points = 280;
         hpBarY = 3.2;
 
@@ -2660,10 +2669,10 @@
 
       } else if (unitType === 'halftrack') {
         name = 'Sd.Kfz Armored Half-Track';
-        armorLabel = 'Medium Armor (50%)';
-        armorReduction = 0.50;
-        maxHp = Math.round(390 * waveScale);
-        speed = 3.0;
+        armorLabel = 'Medium Armor (52%)';
+        armorReduction = 0.52;
+        maxHp = Math.round(510 * waveScale);
+        speed = 3.4;
         points = 450;
         hpBarY = 3.6;
 
@@ -2691,10 +2700,10 @@
 
       } else if (unitType === 'tank') {
         name = 'M4 Sherman DD Amphibious Tank';
-        armorLabel = 'Heavy Armor (70%)';
-        armorReduction = 0.70;
-        maxHp = Math.round(720 * waveScale);
-        speed = 2.15;
+        armorLabel = 'Heavy Armor (72%)';
+        armorReduction = 0.72;
+        maxHp = Math.round(940 * waveScale);
+        speed = 2.4;
         points = 750;
         hpBarY = 4.8;
 
@@ -3373,11 +3382,12 @@
       state.totalEnemiesInWave = totalCount;
       waveElapsed = 0;
 
-      // Schedule parachute time booster drops
+      // Schedule parachute time booster drops distributed across extended wave duration
       state.dropTimers = [];
+      const dropStep = (cfg.timeLimit - 25) / Math.max(1, cfg.parachuteDrops);
       for (let i = 0; i < cfg.parachuteDrops; i++) {
         state.dropTimers.push({
-          time: 12 + i * 18,
+          time: 14 + i * dropStep,
           triggered: false
         });
       }
@@ -4138,9 +4148,9 @@
 
           // If an enemy reaches the bunker perimeter (z >= 35), they penalize time or breach!
           if (enemy.group.position.z >= 35) {
-            state.timeRemaining = Math.max(0, state.timeRemaining - 8);
-            flashScreen('rgba(239, 68, 68, 0.38)');
-            spawnFloatingCallout(enemy.group.position, '⚠️ PERIMETER BREACH! -8.0s TIME', 'text-red-200 border-red-500 bg-red-950/95');
+            state.timeRemaining = Math.max(0, state.timeRemaining - 11);
+            flashScreen('rgba(239, 68, 68, 0.45)');
+            spawnFloatingCallout(enemy.group.position, '⚠️ PERIMETER BREACH! -11.0s TIME', 'text-red-200 border-red-500 bg-red-950/95');
             // Push enemy back slightly so player must still eliminate them
             enemy.group.position.z = 16;
           }
