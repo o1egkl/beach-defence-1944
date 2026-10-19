@@ -265,6 +265,130 @@
     </div>
   </div>
 
+  <!-- ================= POST-ROUND VICTORY DEBRIEFING MODAL ================= -->
+  <div id="victory-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md pointer-events-auto">
+    <div class="relative w-full max-w-2xl bg-[#141812] border-2 border-amber-500/80 rounded-2xl shadow-[0_0_50px_rgba(245,158,11,0.35)] overflow-hidden flex flex-col">
+      
+      <!-- Header Banner with Military Badge -->
+      <div class="p-5 sm:p-6 bg-gradient-to-b from-stone-900 to-[#141812] border-b border-stone-700/80 text-center relative">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-mono-tac font-bold uppercase tracking-wider mb-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          ★ SECTOR DEFENSE SUCCESSFUL ★
+        </div>
+        <h2 id="victory-title" class="font-military text-3xl sm:text-4xl text-stone-100 tracking-wide">
+          WAVE 1 CLEARED!
+        </h2>
+        <p id="victory-subtitle" class="text-xs sm:text-sm text-stone-400 font-sans mt-1">
+          Amphibious invasion assault repelled. Coastal pillbox intact.
+        </p>
+        <div class="text-4xl sm:text-5xl my-2">🎖️</div>
+      </div>
+
+      <!-- Statistics Grid -->
+      <div class="p-5 sm:p-6 space-y-4 overflow-y-auto custom-scroll max-h-[55vh]">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES ELIMINATED</div>
+            <div id="vic-kills" class="text-xl sm:text-2xl font-mono-tac font-bold text-stone-100 mt-1">10 / 10</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">BOATS SUNK</div>
+            <div id="vic-boats" class="text-xl sm:text-2xl font-mono-tac font-bold text-amber-400 mt-1">0</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">SHOT ACCURACY</div>
+            <div id="vic-accuracy" class="text-xl sm:text-2xl font-mono-tac font-bold text-emerald-400 mt-1">100%</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">ONE-SHOT / CRITS</div>
+            <div id="vic-headshots" class="text-xl sm:text-2xl font-mono-tac font-bold text-red-400 mt-1">0</div>
+          </div>
+        </div>
+
+        <!-- Detailed Requisition & Score Calculation Breakdown -->
+        <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-4 space-y-2 text-xs font-mono-tac">
+          <div class="flex justify-between items-center text-stone-300">
+            <span>Time Remaining Bonus (<span id="vic-time-left">0.0</span>s):</span>
+            <span id="vic-time-pts" class="text-amber-400 font-bold">+0 PTS</span>
+          </div>
+          <div class="flex justify-between items-center text-stone-300">
+            <span>Marksmanship Accuracy Bonus:</span>
+            <span id="vic-acc-pts" class="text-emerald-400 font-bold">+0 PTS</span>
+          </div>
+          <div class="flex justify-between items-center text-stone-300">
+            <span>Tactical Synergy Bonus (Time × Acc):</span>
+            <span id="vic-synergy-pts" class="text-sky-400 font-bold">+0 PTS</span>
+          </div>
+          <div class="flex justify-between items-center text-stone-300">
+            <span>Landing Craft Destruction Bonus:</span>
+            <span id="vic-boat-pts" class="text-amber-300 font-bold">+0 PTS</span>
+          </div>
+          <div class="pt-2 border-t border-stone-800 flex justify-between items-center text-sm">
+            <span class="text-stone-200 font-bold">TOTAL ROUND REQUISITION:</span>
+            <span id="vic-total-pts" class="text-amber-400 font-extrabold text-lg sm:text-xl font-military">+0 PTS</span>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-stone-400">
+            <span>TOTAL COMMAND REQUISITION BANK:</span>
+            <span id="vic-bank-pts" class="text-stone-200 font-bold">400 PTS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button: OK -> Go to Armory / Upgrades -->
+      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 text-center shrink-0">
+        <button id="btn-victory-ok" type="button" class="w-full py-3.5 px-6 rounded-xl font-military text-lg sm:text-xl text-stone-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2">
+          <span>OK — PROCEED TO ARMORY & UPGRADES</span>
+          <span class="text-xl">➔</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= POST-ROUND DEFEAT / BREACH MODAL ================= -->
+  <div id="defeat-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md pointer-events-auto">
+    <div class="relative w-full max-w-xl bg-[#181111] border-2 border-red-500/80 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.35)] overflow-hidden flex flex-col">
+      <div class="p-5 sm:p-6 bg-gradient-to-b from-stone-900 to-[#181111] border-b border-stone-800 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-300 text-xs font-mono-tac font-bold uppercase tracking-wider mb-2">
+          ✕ DEFENSE BREACHED ✕
+        </div>
+        <h2 id="defeat-title" class="font-military text-3xl sm:text-4xl text-stone-100 tracking-wide">
+          MISSION FAILED
+        </h2>
+        <p id="defeat-reason" class="text-xs sm:text-sm text-red-400/90 font-sans mt-1">
+          Time expired before invasion force was repelled.
+        </p>
+        <div class="text-4xl sm:text-5xl my-2">💥</div>
+      </div>
+
+      <div class="p-5 sm:p-6 space-y-4">
+        <div class="grid grid-cols-3 gap-2.5 text-center">
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES ELIMINATED</div>
+            <div id="def-kills" class="text-lg font-mono-tac font-bold text-stone-100 mt-1">0 / 10</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">SHOT ACCURACY</div>
+            <div id="def-accuracy" class="text-lg font-mono-tac font-bold text-emerald-400 mt-1">0%</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">CREDIT EARNED</div>
+            <div id="def-pts" class="text-lg font-mono-tac font-bold text-amber-400 mt-1">+0 PTS</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex gap-3 shrink-0">
+        <button id="btn-defeat-retry" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-950 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-400 hover:to-amber-400 shadow-lg transition active:scale-95">
+          ↺ RETRY WAVE
+        </button>
+        <button id="btn-defeat-armory" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-200 bg-stone-800 hover:bg-stone-700 border border-stone-600 transition active:scale-95">
+          🔧 ARMORY UPGRADES
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= PRE-LEVEL ARMORY / TITLE / BRIEFING MODAL ================= -->
   <div id="armory-modal" class="fixed inset-0 z-40 flex items-center justify-center p-2.5 sm:p-5 bg-black/80 backdrop-blur-md">
     <div class="relative w-full max-w-5xl max-h-[94vh] bg-[#141811] border-2 border-stone-700/90 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
@@ -917,6 +1041,10 @@
       shotsFired: 0,
       shotsHit: 0,
       oneShotKills: 0,
+      headshotsInWave: 0,
+      boatsDestroyedInWave: 0,
+      totalBoatsDestroyed: 0,
+      tanksDestroyedInWave: 0,
       waveCombatPoints: 0,
       totalEnemiesInWave: 0,
       enemiesKilledInWave: 0,
@@ -974,8 +1102,8 @@
     // --- 4. THREE.JS 3D SCENE SETUP ---
     const container = document.getElementById('game-canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x5d6970);
-    scene.fog = new THREE.FogExp2(0x636f75, 0.0042);
+    scene.background = new THREE.Color(0x4a5860);
+    scene.fog = new THREE.FogExp2(0x6a7b85, 0.0035);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 450);
     // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.5, 42) looking out toward -Z (the ocean)
@@ -987,20 +1115,27 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xdbe4eb, 0.68);
+    // Cinematic Lighting: Sky hemisphere + directional sun + warm sand bounce
+    const hemiLight = new THREE.HemisphereLight(0xcfe2ee, 0x6e634e, 0.55);
+    scene.add(hemiLight);
+
+    const ambientLight = new THREE.AmbientLight(0xd5e2ea, 0.45);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfff0d6, 0.95);
-    dirLight.position.set(45, 85, 35);
+    const dirLight = new THREE.DirectionalLight(0xfff3db, 1.15);
+    dirLight.position.set(50, 90, 40);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 10;
-    dirLight.shadow.camera.far = 260;
-    const d = 95;
+    dirLight.shadow.camera.far = 280;
+    dirLight.shadow.bias = -0.0004;
+    const d = 110;
     dirLight.shadow.camera.left = -d;
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;
@@ -1019,7 +1154,13 @@
       rust: null,
       camoGreen: null,
       camoArmor: null,
-      concrete: null
+      concrete: null,
+      infantryUniform: null,
+      helmetNet: null,
+      wood: null,
+      tankHull: null,
+      boatHull: null,
+      sandbag: null
     };
 
     function initProceduralTextures() {
@@ -1141,6 +1282,171 @@
       textures.concrete = new THREE.CanvasTexture(cConc);
       textures.concrete.wrapS = textures.concrete.wrapT = THREE.RepeatWrapping;
       textures.concrete.repeat.set(4, 2);
+
+      // 7. US Army M1941 Olive Drab Uniform Fabric with 29th Div Patch (512x512)
+      const cUni = document.createElement('canvas');
+      cUni.width = cUni.height = 512;
+      const ctxU = cUni.getContext('2d');
+      ctxU.fillStyle = '#46503c';
+      ctxU.fillRect(0, 0, 512, 512);
+      ctxU.strokeStyle = 'rgba(38, 45, 30, 0.45)';
+      ctxU.lineWidth = 1;
+      for (let i = -512; i < 1024; i += 4) {
+        ctxU.beginPath(); ctxU.moveTo(i, 0); ctxU.lineTo(i + 512, 512); ctxU.stroke();
+      }
+      ctxU.fillStyle = 'rgba(28, 34, 22, 0.35)';
+      for (let i = 0; i < 1500; i++) {
+        ctxU.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+      }
+      // Pockets & pocket flap seams
+      ctxU.strokeStyle = 'rgba(26, 32, 20, 0.75)';
+      ctxU.lineWidth = 3;
+      ctxU.strokeRect(60, 180, 150, 160);
+      ctxU.strokeRect(300, 180, 150, 160);
+      ctxU.fillStyle = '#3c4532';
+      ctxU.fillRect(55, 170, 160, 40);
+      ctxU.fillRect(295, 170, 160, 40);
+      ctxU.fillStyle = '#1c2215';
+      ctxU.beginPath(); ctxU.arc(135, 192, 6, 0, Math.PI * 2); ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(375, 192, 6, 0, Math.PI * 2); ctxU.fill();
+      // 29th Infantry Division Blue & Gray Shoulder Patch
+      ctxU.save();
+      ctxU.translate(110, 80);
+      ctxU.beginPath(); ctxU.arc(0, 0, 34, 0, Math.PI * 2); ctxU.fillStyle = '#1c2218'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 0, 30, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 0, 30, Math.PI * 0.5, Math.PI * 1.5); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, -15, 15, 0, Math.PI * 2); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 15, 15, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, -15, 5, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 15, 5, 0, Math.PI * 2); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
+      ctxU.restore();
+      textures.infantryUniform = new THREE.CanvasTexture(cUni);
+
+      // 8. WW2 M1 Steel Helmet Diamond Netting (256x256)
+      const cNet = document.createElement('canvas');
+      cNet.width = cNet.height = 256;
+      const ctxN = cNet.getContext('2d');
+      ctxN.fillStyle = '#343e2e';
+      ctxN.fillRect(0, 0, 256, 256);
+      ctxN.strokeStyle = 'rgba(20, 26, 16, 0.72)';
+      ctxN.lineWidth = 2.2;
+      for (let i = -256; i < 512; i += 22) {
+        ctxN.beginPath(); ctxN.moveTo(i, 0); ctxN.lineTo(i + 256, 256); ctxN.stroke();
+        ctxN.beginPath(); ctxN.moveTo(i + 256, 0); ctxN.lineTo(i, 256); ctxN.stroke();
+      }
+      ctxN.fillStyle = '#12170e';
+      for (let y = 0; y < 256; y += 22) {
+        for (let x = 0; x < 256; x += 22) {
+          ctxN.beginPath(); ctxN.arc(x, y, 3, 0, Math.PI * 2); ctxN.fill();
+        }
+      }
+      textures.helmetNet = new THREE.CanvasTexture(cNet);
+
+      // 9. American Walnut Rifle Stock Wood (256x256)
+      const cWood = document.createElement('canvas');
+      cWood.width = cWood.height = 256;
+      const ctxWd = cWood.getContext('2d');
+      ctxWd.fillStyle = '#452a16';
+      ctxWd.fillRect(0, 0, 256, 256);
+      for (let y = 0; y < 256; y++) {
+        const grain = Math.sin(y * 0.12) * 8 + Math.sin(y * 0.04) * 16;
+        for (let x = 0; x < 256; x += 2) {
+          const v = Math.sin((x + grain) * 0.15) * 22;
+          const r = Math.max(0, Math.min(255, 68 + v));
+          const g = Math.max(0, Math.min(255, 42 + v * 0.65));
+          const b = Math.max(0, Math.min(255, 22 + v * 0.4));
+          ctxWd.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+          ctxWd.fillRect(x, y, 2, 1);
+        }
+      }
+      textures.wood = new THREE.CanvasTexture(cWood);
+
+      // 10. WW2 Cast Tank Armor with Welds & Allied Star (512x512)
+      const cTank = document.createElement('canvas');
+      cTank.width = cTank.height = 512;
+      const ctxT = cTank.getContext('2d');
+      ctxT.fillStyle = '#384230';
+      ctxT.fillRect(0, 0, 512, 512);
+      ctxT.fillStyle = 'rgba(22, 28, 18, 0.4)';
+      for (let i = 0; i < 3500; i++) {
+        ctxT.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 2, 2);
+      }
+      // Weld seams
+      ctxT.fillStyle = '#262f20';
+      for (let y = 8; y < 512; y += 12) {
+        ctxT.beginPath(); ctxT.arc(12, y, 4.5, 0, Math.PI * 2); ctxT.fill();
+        ctxT.beginPath(); ctxT.arc(500, y, 4.5, 0, Math.PI * 2); ctxT.fill();
+      }
+      // Allied White Invasion Star in stencil ring
+      ctxT.strokeStyle = 'rgba(242, 242, 238, 0.78)';
+      ctxT.lineWidth = 6;
+      ctxT.beginPath(); ctxT.arc(256, 256, 80, 0, Math.PI * 2); ctxT.stroke();
+      ctxT.fillStyle = 'rgba(242, 242, 238, 0.85)';
+      ctxT.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const ox = 256 + Math.cos(a) * 62;
+        const oy = 256 + Math.sin(a) * 62;
+        if (i === 0) ctxT.moveTo(ox, oy);
+        else ctxT.lineTo(ox, oy);
+      }
+      ctxT.closePath();
+      ctxT.fill();
+      // Stencil text
+      ctxT.font = 'bold 24px monospace';
+      ctxT.fillStyle = 'rgba(242, 242, 238, 0.75)';
+      ctxT.fillText('USA 30104822', 170, 410);
+      textures.tankHull = new THREE.CanvasTexture(cTank);
+
+      // 11. LCVP Higgins Boat Weathered Plank & Armor Hull (512x512)
+      const cBoat = document.createElement('canvas');
+      cBoat.width = cBoat.height = 512;
+      const ctxB = cBoat.getContext('2d');
+      ctxB.fillStyle = '#48545c';
+      ctxB.fillRect(0, 0, 512, 512);
+      // Horizontal wood planks
+      for (let y = 0; y < 512; y += 38) {
+        ctxB.fillStyle = 'rgba(25, 32, 38, 0.6)';
+        ctxB.fillRect(0, y, 512, 3);
+        ctxB.fillStyle = 'rgba(100, 115, 125, 0.25)';
+        ctxB.fillRect(0, y + 3, 512, 1);
+      }
+      // Vertical steel armor straps
+      for (let x = 60; x < 512; x += 110) {
+        ctxB.fillStyle = '#343e46';
+        ctxB.fillRect(x, 0, 16, 512);
+        ctxB.fillStyle = '#1e242a';
+        for (let y = 18; y < 512; y += 40) {
+          ctxB.beginPath(); ctxB.arc(x + 8, y, 3.5, 0, Math.PI * 2); ctxB.fill();
+        }
+      }
+      // Waterline salt crust
+      ctxB.fillStyle = 'rgba(215, 225, 230, 0.4)';
+      ctxB.fillRect(0, 440, 512, 72);
+      // Stencil "PA 26-1"
+      ctxB.font = 'bold 46px monospace';
+      ctxB.fillStyle = 'rgba(240, 245, 250, 0.85)';
+      ctxB.fillText('PA 26-1', 140, 220);
+      textures.boatHull = new THREE.CanvasTexture(cBoat);
+
+      // 12. Burlap Sandbag Coarse Jute Fabric (256x256)
+      const cBag = document.createElement('canvas');
+      cBag.width = cBag.height = 256;
+      const ctxBg = cBag.getContext('2d');
+      ctxBg.fillStyle = '#837458';
+      ctxBg.fillRect(0, 0, 256, 256);
+      ctxBg.strokeStyle = 'rgba(65, 55, 38, 0.45)';
+      ctxBg.lineWidth = 1.2;
+      for (let y = 0; y < 256; y += 5) {
+        ctxBg.beginPath(); ctxBg.moveTo(0, y); ctxBg.lineTo(256, y); ctxBg.stroke();
+      }
+      for (let x = 0; x < 256; x += 5) {
+        ctxBg.beginPath(); ctxBg.moveTo(x, 0); ctxBg.lineTo(x, 256); ctxBg.stroke();
+      }
+      // Crease fold shadow
+      ctxBg.fillStyle = 'rgba(45, 38, 26, 0.45)';
+      ctxBg.fillRect(0, 120, 256, 16);
+      textures.sandbag = new THREE.CanvasTexture(cBag);
     }
 
     // --- 5. BUILD 3D WW2 BEACH, OCEAN, OBSTACLES & BUNKER EMBRASURE ---
@@ -1289,13 +1595,13 @@
       });
 
       // 5. Fortified Sandbag Emplacements near Bunker Perimeter (Z ~ 27..35)
-      const sandbagMat = new THREE.MeshStandardMaterial({ color: 0x7a6f52, roughness: 0.95 });
+      const perimeterSandbagMat = new THREE.MeshStandardMaterial({ map: textures.sandbag, roughness: 0.95 });
       const bagGeo = new THREE.BoxGeometry(1.5, 0.55, 0.85);
       for (let sx = -30; sx <= 30; sx += 6.5) {
         const wall = new THREE.Group();
         for (let row = 0; row < 2; row++) {
           for (let col = 0; col < 2; col++) {
-            const bag = new THREE.Mesh(bagGeo, sandbagMat);
+            const bag = new THREE.Mesh(bagGeo, perimeterSandbagMat);
             bag.position.set(col * 1.4 - 0.7 + (row % 2) * 0.35, row * 0.5, 0);
             bag.castShadow = true;
             wall.add(bag);
@@ -1340,15 +1646,88 @@
         createSmokeColumn(wx, 1.5, wz);
       });
 
-      // 8. Concrete Pillbox Embrasure Sill with Aggregate Finish
+      // 8. Reinforced Concrete Bunker Casemate Embrasure & Sandbag Parapet
       const sillMat = new THREE.MeshStandardMaterial({
         map: textures.concrete,
         roughness: 0.92,
         metalness: 0.1
       });
-      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(20, 1.5, 4.2), sillMat);
-      sillMesh.position.set(0, 6.65, 39.8);
-      scene.add(sillMesh);
+      const armorPlateMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        color: 0x24282b,
+        roughness: 0.52,
+        metalness: 0.82
+      });
+      const sandbagMat = new THREE.MeshStandardMaterial({
+        map: textures.sandbag,
+        roughness: 0.94
+      });
+      const ammoCanMat = new THREE.MeshStandardMaterial({
+        color: 0x364032,
+        roughness: 0.62,
+        metalness: 0.55
+      });
+
+      const bunkerEmbrasureGroup = new THREE.Group();
+
+      // Lower sill bench (thick reinforced concrete)
+      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 1.6, 5.5), sillMat);
+      sillMesh.position.set(0, 6.6, 39.8);
+      sillMesh.receiveShadow = true;
+      bunkerEmbrasureGroup.add(sillMesh);
+
+      // Massive overhead concrete lintel / bunker roof overhang
+      const lintelMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 2.2, 5.0), sillMat);
+      lintelMesh.position.set(0, 10.4, 40.2);
+      lintelMesh.castShadow = true;
+      bunkerEmbrasureGroup.add(lintelMesh);
+
+      // Regelbau Stepped Blast Cheeks (Schartentrichter) flanking Left & Right
+      for (let side = -1; side <= 1; side += 2) {
+        const step1 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.4, 3.2), sillMat);
+        step1.position.set(side * 6.5, 8.4, 40.5);
+        const step2 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.5), sillMat);
+        step2.position.set(side * 4.6, 8.4, 39.6);
+        const step3 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.4, 2.0), sillMat);
+        step3.position.set(side * 3.2, 8.4, 38.8);
+        bunkerEmbrasureGroup.add(step1, step2, step3);
+      }
+
+      // Armored Steel Schartenplatte (Faceplate with MG port & observation slot)
+      const armorPlate = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.8, 0.28), armorPlateMat);
+      armorPlate.position.set(0, 8.2, 39.2);
+      bunkerEmbrasureGroup.add(armorPlate);
+
+      // Stacked Burlap Sandbags along the lower sill shelf
+      const sandbagGeo = new THREE.BoxGeometry(1.2, 0.42, 0.65);
+      const bagPositions = [
+        [-2.4, 7.6, 39.2, -0.05], [-1.2, 7.6, 39.1, 0.04], [1.6, 7.6, 39.2, 0.06], [2.8, 7.6, 39.3, -0.04],
+        [-1.8, 7.95, 39.15, 0.03], [2.2, 7.95, 39.25, -0.05],
+        [-3.6, 7.6, 39.4, 0.08], [3.8, 7.6, 39.4, -0.07],
+        [-3.2, 7.95, 39.35, -0.04], [3.4, 7.95, 39.35, 0.05]
+      ];
+      bagPositions.forEach(([bx, by, bz, rotY]) => {
+        const bag = new THREE.Mesh(sandbagGeo, sandbagMat);
+        bag.position.set(bx, by, bz);
+        bag.rotation.y = rotY;
+        bag.castShadow = true;
+        bunkerEmbrasureGroup.add(bag);
+      });
+
+      // German Patronenkasten 41 Ammo Boxes on side sill
+      const ammoBoxGeo = new THREE.BoxGeometry(0.55, 0.45, 0.95);
+      const box1 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box1.position.set(-2.8, 7.6, 40.2);
+      box1.rotation.y = 0.25;
+      const box2 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box2.position.set(-2.7, 8.02, 40.2);
+      box2.rotation.y = 0.15;
+      const box3 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box3.position.set(2.9, 7.6, 40.1);
+      box3.rotation.y = -0.3;
+      bunkerEmbrasureGroup.add(box1, box2, box3);
+
+      scene.add(bunkerEmbrasureGroup);
 
       // 9. First-Person 3D Mounted WW2 MG42 Machine Gun
       buildFirstPersonMachineGun();
@@ -1362,135 +1741,194 @@
     function buildFirstPersonMachineGun() {
       const gunMetal = new THREE.MeshStandardMaterial({
         map: textures.metal,
-        color: 0x222627,
-        roughness: 0.38,
-        metalness: 0.85
+        color: 0x1f2224,
+        roughness: 0.35,
+        metalness: 0.88
       });
       barrelHeatMat = new THREE.MeshStandardMaterial({
-        color: 0x1f2324,
-        roughness: 0.42,
-        metalness: 0.8,
+        map: textures.metal,
+        color: 0x1c1f20,
+        roughness: 0.4,
+        metalness: 0.82,
         emissive: new THREE.Color(0x000000),
         emissiveIntensity: 0
       });
       const brassMat = new THREE.MeshStandardMaterial({
-        color: 0xd4a034,
-        roughness: 0.28,
-        metalness: 0.88
+        color: 0xd4a238,
+        roughness: 0.24,
+        metalness: 0.92
       });
       const bakeliteMat = new THREE.MeshStandardMaterial({
-        color: 0x3d2314,
-        roughness: 0.65
+        map: textures.wood,
+        color: 0x3d2215,
+        roughness: 0.58
       });
       const mountMat = new THREE.MeshStandardMaterial({
-        color: 0x2e352b,
-        roughness: 0.65,
-        metalness: 0.5
+        color: 0x2b3327,
+        roughness: 0.62,
+        metalness: 0.58
       });
 
       gunBarrelGroup = new THREE.Group();
 
-      // 1. Receiver Body
+      // 1. MG42 Stamped Sheet Metal Receiver Body with Longitudinal Ribs
       const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 1.25), gunMetal);
       receiver.position.set(0, 0, -0.22);
+      receiver.castShadow = true;
 
-      // Top cover hinge rib & rear cocking slide
-      const topCover = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.85), gunMetal);
+      // Side reinforcement ribs
+      for (let s = -1; s <= 1; s += 2) {
+        const sideRib = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.06, 1.15), gunMetal);
+        sideRib.position.set(s * 0.145, 0.02, -0.22);
+        gunBarrelGroup.add(sideRib);
+      }
+
+      // Top cover hinge rib & rear cover catch latch
+      const topCover = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.88), gunMetal);
       topCover.position.set(0, 0.19, -0.28);
-      const cockingHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.22, 8), gunMetal);
+      const coverLatch = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.08), gunMetal);
+      coverLatch.position.set(0, 0.22, 0.18);
+
+      // Cocking Handle Slider on Right Track with knurled finger handle
+      const cockingTrack = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.08, 0.85), gunMetal);
+      cockingTrack.position.set(0.15, 0.02, -0.25);
+      const cockingHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.24, 10), gunMetal);
       cockingHandle.rotation.z = Math.PI / 2;
-      cockingHandle.position.set(0.18, 0.02, -0.05);
+      cockingHandle.position.set(0.24, 0.02, -0.05);
 
       // 2. Inner Hot Barrel
-      const innerBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.85, 12), barrelHeatMat);
+      const innerBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.88, 12), barrelHeatMat);
       innerBarrel.rotateX(Math.PI / 2);
       innerBarrel.position.set(0, 0.04, -1.55);
 
-      // 3. Ventilated Shroud Jacket (Outer MG42 Cooling Shroud)
+      // 3. MG42 Ventilated Cooling Shroud (Kühllaufmantel) with Quick-Change Barrel Hatch
       const shroudGroup = new THREE.Group();
-      const shroudPlateTop = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.035, 1.45), barrelHeatMat);
+      const shroudPlateTop = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.035, 1.48), barrelHeatMat);
       shroudPlateTop.position.set(0, 0.14, -1.45);
-      const shroudPlateBtm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.035, 1.45), barrelHeatMat);
+      const shroudPlateBtm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.035, 1.48), barrelHeatMat);
       shroudPlateBtm.position.set(0, -0.06, -1.45);
       shroudGroup.add(shroudPlateTop, shroudPlateBtm);
 
-      for (let side = -1; side <= 1; side += 2) {
-        for (let slot = 0; slot < 5; slot++) {
-          const ventPlate = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.17, 0.18), barrelHeatMat);
-          ventPlate.position.set(side * 0.11, 0.04, -0.95 - slot * 0.26);
-          shroudGroup.add(ventPlate);
-        }
+      // Left Side: 6 authentic rectangular cooling vent slots
+      for (let slot = 0; slot < 6; slot++) {
+        const ventPlate = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.17, 0.15), barrelHeatMat);
+        ventPlate.position.set(-0.11, 0.04, -0.85 - slot * 0.23);
+        shroudGroup.add(ventPlate);
       }
 
-      // 4. Muzzle Assembly & Conical Flash Hider
-      const boosterGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.25, 12);
+      // Right Side: Quick-change barrel hatch door with hinge & latch
+      const barrelHatchDoor = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.18, 0.95), barrelHeatMat);
+      barrelHatchDoor.position.set(0.11, 0.04, -1.35);
+      const hatchHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.95, 8), gunMetal);
+      hatchHinge.rotateX(Math.PI / 2);
+      hatchHinge.position.set(0.12, 0.13, -1.35);
+      const hatchLever = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.06), gunMetal);
+      hatchLever.position.set(0.13, 0.04, -0.85);
+      shroudGroup.add(barrelHatchDoor, hatchHinge, hatchLever);
+
+      // 4. Muzzle Assembly: Booster Cylinder, Gas Relief Ports & Conical Flash Hider
+      const boosterGeo = new THREE.CylinderGeometry(0.065, 0.082, 0.28, 14);
       boosterGeo.rotateX(Math.PI / 2);
       const booster = new THREE.Mesh(boosterGeo, gunMetal);
-      booster.position.set(0, 0.04, -2.25);
+      booster.position.set(0, 0.04, -2.28);
 
-      const hiderGeo = new THREE.ConeGeometry(0.11, 0.28, 12, 1, true);
+      const hiderGeo = new THREE.ConeGeometry(0.12, 0.32, 14, 1, true);
       hiderGeo.rotateX(-Math.PI / 2);
       const hider = new THREE.Mesh(hiderGeo, gunMetal);
-      hider.position.set(0, 0.04, -2.45);
+      hider.position.set(0, 0.04, -2.52);
 
-      // 5. Hooded Front Sight (Ring + Blade)
+      // 5. Authentic WW2 MG42 Sights (Aligned along Aim Sightline)
+      // Front hooded ring & vertical blade sight post
       const hoodGeo = new THREE.TorusGeometry(0.065, 0.014, 8, 16);
       const hood = new THREE.Mesh(hoodGeo, gunMetal);
-      hood.position.set(0, 0.20, -2.18);
+      hood.position.set(0, 0.20, -2.22);
       const blade = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.075, 0.02), gunMetal);
-      blade.position.set(0, 0.19, -2.18);
+      blade.position.set(0, 0.19, -2.22);
 
-      // Rear Tangent Notch Sight
-      const rearSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.22), gunMetal);
+      // Rear tangent notch ladder sight on receiver bridge
+      const rearSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.24), gunMetal);
       rearSightBase.position.set(0, 0.21, -0.65);
       const rearNotch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), gunMetal);
       rearNotch.position.set(0, 0.27, -0.72);
+      const leafRamp = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.22), gunMetal);
+      leafRamp.position.set(0, 0.25, -0.64);
+      leafRamp.rotation.x = -0.15;
 
-      // 6. Gurttrommel (Ammo Drum) & Linked Brass Bullet Belt
-      const drumGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.18, 16);
-      const drumMat = new THREE.MeshStandardMaterial({ color: 0x364230, roughness: 0.65 });
+      // 6. Gurttrommel 34 (50-Round Drum Magazine) & Linked 7.92mm Brass Cartridge Belt
+      const drumGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.20, 18);
+      const drumMat = new THREE.MeshStandardMaterial({
+        map: textures.camoArmor,
+        color: 0x3e4a38,
+        roughness: 0.62,
+        metalness: 0.45
+      });
       const ammoDrum = new THREE.Mesh(drumGeo, drumMat);
       ammoDrum.rotation.z = Math.PI / 2;
-      ammoDrum.position.set(-0.28, -0.06, -0.38);
+      ammoDrum.position.set(-0.30, -0.06, -0.38);
 
-      // Linked 7.92mm Brass Cartridges entering feed tray
+      const drumHandle = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.014, 6, 12), gunMetal);
+      drumHandle.position.set(-0.41, -0.06, -0.38);
+
+      // 6 Detailed Linked 7.92x57mm Mauser Cartridges entering the feedway
       const beltGroup = new THREE.Group();
-      for (let b = 0; b < 5; b++) {
+      for (let b = 0; b < 6; b++) {
         const roundGeo = new THREE.CylinderGeometry(0.022, 0.024, 0.16, 8);
         roundGeo.rotateZ(Math.PI / 2);
         const round = new THREE.Mesh(roundGeo, brassMat);
-        round.position.set(-0.24 + b * 0.045, 0.06, -0.36 + (b % 2) * 0.01);
-        const bulletTipGeo = new THREE.ConeGeometry(0.022, 0.05, 8);
+        round.position.set(-0.25 + b * 0.042, 0.06, -0.36 + (b % 2) * 0.01);
+
+        const bulletTipGeo = new THREE.ConeGeometry(0.022, 0.052, 8);
         bulletTipGeo.rotateZ(-Math.PI / 2);
-        const bulletTip = new THREE.Mesh(bulletTipGeo, new THREE.MeshStandardMaterial({ color: 0xb86c3b, metalness: 0.8 }));
-        bulletTip.position.set(-0.14 + b * 0.045, 0.06, -0.36);
-        beltGroup.add(round, bulletTip);
+        const bulletTip = new THREE.Mesh(bulletTipGeo, new THREE.MeshStandardMaterial({ color: 0xb86c3b, metalness: 0.85, roughness: 0.25 }));
+        bulletTip.position.set(-0.15 + b * 0.042, 0.06, -0.36);
+
+        // Steel disintegrating belt link clip
+        const linkClip = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.08, 8), gunMetal);
+        linkClip.rotateZ(Math.PI / 2);
+        linkClip.position.set(-0.25 + b * 0.042, 0.06, -0.36);
+
+        beltGroup.add(round, bulletTip, linkClip);
       }
 
-      // 7. Pistol Grip & Bakelite Buttstock
+      // 7. Bakelite Pistol Grip & Contoured Fish-Tail Buttstock
       const grip = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.38, 0.18), bakeliteMat);
       grip.position.set(0, -0.22, 0.22);
       grip.rotation.x = -0.35;
-      const stock = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.62), bakeliteMat);
-      stock.position.set(0, -0.09, 0.65);
+      const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 6, 12), gunMetal);
+      triggerGuard.position.set(0, -0.15, 0.12);
 
-      // 8. Lafette 42 Bunker Fortress Mount
-      const mountPivot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.45, 12), mountMat);
+      const stock = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.65), bakeliteMat);
+      stock.position.set(0, -0.09, 0.68);
+      const stockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.28, 0.04), gunMetal);
+      stockPlate.position.set(0, -0.09, 1.01);
+
+      // 8. Lafette 42 Fortress Bunker Ball Mount & Counter-Recoil Buffer Cylinders
+      const mountPivot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.45, 14), mountMat);
       mountPivot.position.set(0, -0.36, -0.22);
+
+      // Twin hydraulic buffer recoil cylinders
+      for (let side = -1; side <= 1; side += 2) {
+        const bufferCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.65, 8), mountMat);
+        bufferCyl.rotateX(Math.PI / 2);
+        bufferCyl.position.set(side * 0.14, -0.18, -0.25);
+        gunBarrelGroup.add(bufferCyl);
+      }
+
       const elevWheel = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 8, 16), brassMat);
       elevWheel.position.set(-0.18, -0.28, -0.22);
 
       // 9. Muzzle Flash Star
-      const flashGeo = new THREE.ConeGeometry(0.35, 1.15, 6);
+      const flashGeo = new THREE.ConeGeometry(0.35, 1.25, 6);
       flashGeo.rotateX(-Math.PI / 2);
       const flashMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0 });
       muzzleFlashMesh = new THREE.Mesh(flashGeo, flashMat);
-      muzzleFlashMesh.position.set(0, 0.04, -2.78);
+      muzzleFlashMesh.position.set(0, 0.04, -2.85);
 
       gunBarrelGroup.add(
-        receiver, topCover, cockingHandle, innerBarrel, shroudGroup,
-        booster, hider, hood, blade, rearSightBase, rearNotch,
-        ammoDrum, beltGroup, grip, stock, muzzleFlashMesh
+        receiver, topCover, coverLatch, cockingTrack, cockingHandle,
+        innerBarrel, shroudGroup, booster, hider, hood, blade,
+        rearSightBase, rearNotch, leafRamp, ammoDrum, drumHandle,
+        beltGroup, grip, triggerGuard, stock, stockPlate, muzzleFlashMesh
       );
       gunGroup.add(gunBarrelGroup, mountPivot, elevWheel);
 
@@ -1500,15 +1938,17 @@
 
     // --- 6. ENEMY BOATS, INFANTRY & ARMORED VEHICLES ---
     const unitMaterials = {
-      boatWood: new THREE.MeshStandardMaterial({ color: 0x4b4237, roughness: 0.85 }),
-      boatSteel: new THREE.MeshStandardMaterial({ color: 0x475254, roughness: 0.65, metalness: 0.35 }),
-      infantryCoat: new THREE.MeshStandardMaterial({ color: 0x4d5845, roughness: 0.88 }),
-      stormCoat: new THREE.MeshStandardMaterial({ color: 0x363e3b, roughness: 0.82 }),
+      boatWood: new THREE.MeshStandardMaterial({ map: textures.boatHull, roughness: 0.85 }),
+      boatSteel: new THREE.MeshStandardMaterial({ map: textures.metal, color: 0x5a6870, roughness: 0.52, metalness: 0.65 }),
+      infantryCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, roughness: 0.86 }),
+      stormCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, color: 0x8a9088, roughness: 0.82 }),
       skin: new THREE.MeshStandardMaterial({ color: 0xdca882, roughness: 0.68 }),
-      helmet: new THREE.MeshStandardMaterial({ color: 0x2e352c, roughness: 0.45, metalness: 0.65 }),
-      lightArmor: new THREE.MeshStandardMaterial({ color: 0x585542, roughness: 0.55, metalness: 0.5 }),
-      medArmor: new THREE.MeshStandardMaterial({ color: 0x454d40, roughness: 0.5, metalness: 0.6 }),
-      heavyArmor: new THREE.MeshStandardMaterial({ color: 0x343936, roughness: 0.42, metalness: 0.78 }),
+      helmet: new THREE.MeshStandardMaterial({ map: textures.helmetNet, roughness: 0.52, metalness: 0.4 }),
+      lightArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, roughness: 0.52, metalness: 0.55 }),
+      medArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, color: 0x828c7c, roughness: 0.5, metalness: 0.62 }),
+      heavyArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, roughness: 0.45, metalness: 0.72 }),
+      woodRifle: new THREE.MeshStandardMaterial({ map: textures.wood, roughness: 0.55 }),
+      sandbag: new THREE.MeshStandardMaterial({ map: textures.sandbag, roughness: 0.92 }),
       weakSpot: new THREE.MeshBasicMaterial({ color: 0xf59e0b }),
       hpBg: new THREE.MeshBasicMaterial({ color: 0x1c1917 }),
       hpFill: new THREE.MeshBasicMaterial({ color: 0xef4444 })
@@ -1614,90 +2054,188 @@
       state.aircraft.push({ group: plane, propeller: propDisc, vel: new THREE.Vector3(vx, 0, 0) });
     }
 
+    function destroyLandingBoat(boat, hitPoint) {
+      if (boat.dead) return;
+      boat.dead = true;
+      boat.state = 'SINKING';
+      boat.sinkTime = 0;
+      if (boat.hpBar) boat.hpBar.visible = false;
+
+      sfx.playExplosion();
+      spawnBurstParticles(boat.group.position, 0xff5500, 38, 20);
+      spawnBurstParticles(boat.group.position, 0x38bdf8, 30, 16); // water geyser
+      createSmokeColumn(boat.group.position.x, 1.2, boat.group.position.z);
+
+      // Eliminate all passenger troops still inside who haven't disembarked!
+      const troopsLost = (boat.cargo && boat.cargo.length) || 0;
+      if (troopsLost > 0) {
+        state.enemiesKilledInWave += troopsLost;
+        boat.cargo = [];
+        // Remove passenger visuals inside the boat
+        if (boat.troopMeshes) {
+          boat.troopMeshes.forEach(m => boat.group.remove(m));
+          boat.troopMeshes = [];
+        }
+      }
+
+      const pts = 500 + troopsLost * 100;
+      state.score += pts;
+      state.waveCombatPoints += pts;
+      state.boatsDestroyedInWave++;
+      state.totalBoatsDestroyed++;
+
+      spawnFloatingCallout(
+        boat.group.position,
+        `🚢 LANDING CRAFT SUNK! +${pts} PTS${troopsLost > 0 ? ` (${troopsLost} TROOPS LOST)` : ''}`,
+        'text-amber-300 border-amber-400 bg-red-950/95 font-bold'
+      );
+
+      updateHUD();
+      checkWaveVictory();
+    }
+
     function spawnBoat(boatSpec, index) {
       const group = new THREE.Group();
       const laneX = (index % 5 - 2) * 15 + (Math.random() * 6 - 3);
       const startZ = -145 - Math.random() * 25;
 
       let speed = 11.5;
-      let hullW = 4.2, hullH = 1.7, hullL = 9.2;
+      let hullW = 4.4, hullH = 1.85, hullL = 9.8;
       const boatSteelMat = new THREE.MeshStandardMaterial({
-        color: 0x4e5b60,
-        roughness: 0.65,
-        metalness: 0.35
+        color: 0x4a565d,
+        roughness: 0.58,
+        metalness: 0.45
       });
       const deckMat = new THREE.MeshStandardMaterial({
-        color: 0x3d382e,
+        color: 0x3b352b,
+        roughness: 0.88
+      });
+      const woodTrimMat = new THREE.MeshStandardMaterial({
+        color: 0x544738,
         roughness: 0.85
       });
 
-      // LCVP Ribbed Hull
-      const hull = new THREE.Mesh(new THREE.BoxGeometry(hullW, hullH, hullL), boatSteelMat);
-      hull.position.y = hullH * 0.45;
-      hull.castShadow = true;
-      group.add(hull);
+      const maxHp = Math.round(520 * (1 + state.waveIndex * 0.18));
+      const hitboxes = [];
 
-      // Cargo well deck
-      const well = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.7, 0.1, hullL - 1.2), deckMat);
-      well.position.y = hullH * 0.48;
-      group.add(well);
-
-      // Side bulkheads with ribbed coamings
-      for (let s = -1; s <= 1; s += 2) {
-        const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, hullL), boatSteelMat);
-        sideWall.position.set(s * (hullW * 0.46), hullH + 0.35, 0);
-        group.add(sideWall);
-      }
-
-      // Stern armor deck & twin machine gun tubs
-      const sternDeck = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.2, 0.9, 2.2), boatSteelMat);
-      sternDeck.position.set(0, hullH + 0.25, -hullL * 0.38);
-      group.add(sternDeck);
-
-      for (let mg = -1; mg <= 1; mg += 2) {
-        const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.65, 10), boatSteelMat);
-        tub.position.set(mg * 1.3, hullH + 0.9, -hullL * 0.38);
-        const mgGun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.8), unitMaterials.heavyArmor);
-        mgGun.position.set(mg * 1.3, hullH + 1.25, -hullL * 0.35);
-        const gunner = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), unitMaterials.helmet);
-        gunner.position.set(mg * 1.3, hullH + 1.4, -hullL * 0.42);
-        group.add(tub, mgGun, gunner);
-      }
-
-      // Bow drop ramp (hinged at bottom)
-      const rampGroup = new THREE.Group();
-      rampGroup.position.set(0, 0.3, hullL * 0.5);
-      const ramp = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.45, 1.8, 0.22), unitMaterials.heavyArmor);
-      ramp.position.set(0, 0.9, 0);
-      rampGroup.add(ramp);
-      group.add(rampGroup);
-
-      // Twin white water foam wake trails
-      const wakeGeo = new THREE.PlaneGeometry(1.6, 7.5);
-      wakeGeo.rotateX(-Math.PI / 2);
-      const wakeMat = new THREE.MeshBasicMaterial({ color: 0xdff0f5, transparent: true, opacity: 0.55 });
-      const wakeLeft = new THREE.Mesh(wakeGeo, wakeMat);
-      wakeLeft.position.set(-1.4, 0.05, -hullL * 0.5 - 3.8);
-      const wakeRight = new THREE.Mesh(wakeGeo, wakeMat);
-      wakeRight.position.set(1.4, 0.05, -hullL * 0.5 - 3.8);
-      group.add(wakeLeft, wakeRight);
-
-      group.position.set(laneX, 0, startZ);
-      scene.add(group);
-
-      state.boats.push({
+      const boatObj = {
         group,
-        rampGroup,
-        ramp,
-        wakeLeft,
-        wakeRight,
+        rampGroup: null,
+        ramp: null,
+        wakeLeft: null,
+        wakeRight: null,
         type: boatSpec.type,
-        cargo: boatSpec.cargo,
+        cargo: [...boatSpec.cargo],
         speed,
         beachZ: -11 + (Math.random() * 3 - 1.5),
         state: 'SAILING',
-        timer: 0
+        timer: 0,
+        hp: maxHp,
+        maxHp: maxHp,
+        hitboxes,
+        hpBar: null,
+        dead: false,
+        sinkTime: 0,
+        troopMeshes: []
+      };
+
+      // 1. LCVP Main Hull (Flat bottom with angled bow)
+      const hull = new THREE.Mesh(new THREE.BoxGeometry(hullW, hullH, hullL), boatSteelMat);
+      hull.position.y = hullH * 0.45;
+      hull.castShadow = true;
+      hull.userData = { boatRef: boatObj, isWeakSpot: false };
+      group.add(hull);
+      hitboxes.push(hull);
+
+      // Cargo well deck
+      const well = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.7, 0.12, hullL - 1.4), deckMat);
+      well.position.y = hullH * 0.48;
+      group.add(well);
+
+      // Armored Side Bulkheads & Rubbing Strakes
+      for (let s = -1; s <= 1; s += 2) {
+        const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.25, hullL), boatSteelMat);
+        sideWall.position.set(s * (hullW * 0.46), hullH + 0.42, 0);
+        sideWall.userData = { boatRef: boatObj, isWeakSpot: false };
+        const strake = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, hullL), woodTrimMat);
+        strake.position.set(s * (hullW * 0.51), hullH + 0.4, 0);
+        group.add(sideWall, strake);
+        hitboxes.push(sideWall);
+      }
+
+      // Stern Armor Deck & Critical Diesel Engine Compartment (Weak spot!)
+      const sternDeck = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.2, 1.0, 2.5), boatSteelMat);
+      sternDeck.position.set(0, hullH + 0.32, -hullL * 0.36);
+      sternDeck.userData = { boatRef: boatObj, isWeakSpot: true }; // Stern engine strike deals x2 critical damage!
+      group.add(sternDeck);
+      hitboxes.push(sternDeck);
+
+      // Coxswain Armored Pilot Cockpit (Port side)
+      const pilotBox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 1.2), boatSteelMat);
+      pilotBox.position.set(-hullW * 0.28, hullH + 0.85, -hullL * 0.32);
+      const pilotVisor = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.1), unitMaterials.heavyArmor);
+      pilotVisor.position.set(-hullW * 0.28, hullH + 1.15, -hullL * 0.26);
+      group.add(pilotBox, pilotVisor);
+
+      // Twin Stern .30 Cal Machine Gun Tubs & Gunners
+      for (let mg = -1; mg <= 1; mg += 2) {
+        const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.72, 10), boatSteelMat);
+        tub.position.set(mg * 1.35, hullH + 0.95, -hullL * 0.38);
+        const mgGun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.85), unitMaterials.heavyArmor);
+        mgGun.position.set(mg * 1.35, hullH + 1.32, -hullL * 0.35);
+        const gunner = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), unitMaterials.helmet);
+        gunner.position.set(mg * 1.35, hullH + 1.48, -hullL * 0.42);
+        group.add(tub, mgGun, gunner);
+      }
+
+      // Hinged Bow Drop Ramp (with pulley cables)
+      const rampGroup = new THREE.Group();
+      rampGroup.position.set(0, 0.35, hullL * 0.5);
+      const ramp = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.45, 1.95, 0.24), unitMaterials.heavyArmor);
+      ramp.position.set(0, 0.95, 0);
+      ramp.userData = { boatRef: boatObj, isWeakSpot: false };
+      rampGroup.add(ramp);
+      group.add(rampGroup);
+      hitboxes.push(ramp);
+      boatObj.rampGroup = rampGroup;
+      boatObj.ramp = ramp;
+
+      // Visible passenger troops inside the cargo hold waiting to beach!
+      boatSpec.cargo.forEach((cType, cIdx) => {
+        const tGrp = new THREE.Group();
+        const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
+        tTorso.position.y = 0.55;
+        const tHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), unitMaterials.helmet);
+        tHelmet.position.y = 1.05;
+        tGrp.add(tTorso, tHelmet);
+        const row = Math.floor(cIdx / 2);
+        const col = (cIdx % 2 === 0 ? -1 : 1);
+        tGrp.position.set(col * 0.85, hullH * 0.5, -hullL * 0.15 + row * 1.4);
+        group.add(tGrp);
+        boatObj.troopMeshes.push(tGrp);
       });
+
+      // Twin White Sea Foam Propeller Wake Trails
+      const wakeGeo = new THREE.PlaneGeometry(1.8, 8.5);
+      wakeGeo.rotateX(-Math.PI / 2);
+      const wakeMat = new THREE.MeshBasicMaterial({ color: 0xdff0f5, transparent: true, opacity: 0.58 });
+      const wakeLeft = new THREE.Mesh(wakeGeo, wakeMat);
+      wakeLeft.position.set(-1.45, 0.05, -hullL * 0.5 - 4.2);
+      const wakeRight = new THREE.Mesh(wakeGeo, wakeMat);
+      wakeRight.position.set(1.45, 0.05, -hullL * 0.5 - 4.2);
+      group.add(wakeLeft, wakeRight);
+      boatObj.wakeLeft = wakeLeft;
+      boatObj.wakeRight = wakeRight;
+
+      // Floating HP Bar over Boat
+      const hpBar = createFloatingHPBar(4.2);
+      hpBar.position.set(0, hullH + 3.1, 0);
+      group.add(hpBar);
+      boatObj.hpBar = hpBar;
+
+      group.position.set(laneX, 0, startZ);
+      scene.add(group);
+      state.boats.push(boatObj);
     }
 
     function spawnEnemyUnit(unitType, x, z) {
@@ -1712,6 +2250,7 @@
       let points = 100;
       let hpBarY = 2.65;
       let legs = [];
+      let arms = [];
       let tankTurret = null;
       let helmetMesh = null;
 
@@ -1723,66 +2262,177 @@
         maxHp = Math.round((isStorm ? 78 : 44) * waveScale);
         speed = (isStorm ? 3.8 : 3.2) + Math.random() * 0.45;
         points = isStorm ? 150 : 100;
-        hpBarY = 2.8;
+        hpBarY = 2.85;
 
         const uniformMat = isStorm ? unitMaterials.stormCoat : unitMaterials.infantryCoat;
+        const leggingsMat = unitMaterials.sandbag;
+        const bootMat = new THREE.MeshStandardMaterial({ color: 0x2b2116, roughness: 0.85 });
 
-        // Torso in M1941 Field Jacket & Webbing
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.15, 0.55), uniformMat);
-        torso.position.y = 1.35;
-        torso.castShadow = true;
-        torso.userData = { isWeakSpot: false };
-        group.add(torso);
-        hitboxes.push(torso);
+        // 1. Torso: M1941 Field Jacket with authentic collar, waist cinch, chest pockets
+        const torsoGroup = new THREE.Group();
+        const chest = new THREE.Mesh(new THREE.BoxGeometry(0.88, 1.15, 0.52), uniformMat);
+        chest.position.y = 1.35;
+        chest.castShadow = true;
+        chest.userData = { isWeakSpot: false };
+        torsoGroup.add(chest);
+        hitboxes.push(chest);
 
-        // Cartridge pouches & webbing straps
-        const belt = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.16, 0.58), new THREE.MeshStandardMaterial({ color: 0x5a4d36, roughness: 0.9 }));
-        belt.position.y = 0.9;
-        const pouch1 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.14), new THREE.MeshStandardMaterial({ color: 0x483d29 }));
-        pouch1.position.set(-0.25, 0.9, 0.32);
-        const pouch2 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.14), new THREE.MeshStandardMaterial({ color: 0x483d29 }));
-        pouch2.position.set(0.25, 0.9, 0.32);
-        group.add(belt, pouch1, pouch2);
+        // Collar lapels
+        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.18), uniformMat);
+        collar.position.set(0, 1.95, 0.18);
+        torsoGroup.add(collar);
 
-        // Head with Skin Tone
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 10), unitMaterials.skin);
-        head.position.y = 2.05;
-        head.userData = { isWeakSpot: true };
-        group.add(head);
+        // 10-Pocket M1 Cartridge Webbing Belt around waist
+        const belt = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.18, 0.56), new THREE.MeshStandardMaterial({ color: 0x5a4e37, roughness: 0.9 }));
+        belt.position.y = 0.88;
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), new THREE.MeshStandardMaterial({ color: 0xd4a238, metalness: 0.8 }));
+        buckle.position.set(0, 0.88, 0.29);
+        torsoGroup.add(belt, buckle);
+
+        for (let p = -2; p <= 2; p++) {
+          if (p === 0) continue;
+          const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.12), new THREE.MeshStandardMaterial({ color: 0x483e2a }));
+          pouch.position.set(p * 0.18, 0.88, 0.30);
+          torsoGroup.add(pouch);
+        }
+
+        // Canteen on right hip
+        const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 8), new THREE.MeshStandardMaterial({ color: 0x544933 }));
+        canteen.position.set(0.48, 0.88, 0);
+        torsoGroup.add(canteen);
+
+        // M1928 Haversack Backpack on shoulders with entrenching shovel
+        const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.75, 0.28), new THREE.MeshStandardMaterial({ color: 0x584c35, roughness: 0.92 }));
+        backpack.position.set(0, 1.45, -0.36);
+        const shovelHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.52, 6), unitMaterials.woodRifle);
+        shovelHandle.position.set(0.12, 1.62, -0.48);
+        shovelHandle.rotation.z = -0.25;
+        torsoGroup.add(backpack, shovelHandle);
+
+        group.add(torsoGroup);
+
+        // 2. Neck and Head with Skin Tone
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.22, 8), unitMaterials.skin);
+        neck.position.y = 1.95;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 10), unitMaterials.skin);
+        head.position.y = 2.12;
+        head.userData = { isWeakSpot: true }; // Headshot bonus
+        group.add(neck, head);
         hitboxes.push(head);
 
-        // Authentic Curved M1 Steel Helmet with Netting (Weak Spot for One-Shot Kill!)
-        helmetMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.39, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.58),
+        // 3. Authentic WW2 M1 Steel Helmet with curved brim & netting
+        const helmetGroup = new THREE.Group();
+        helmetGroup.position.set(0, 2.18, 0);
+        const helmetDome = new THREE.Mesh(
+          new THREE.SphereGeometry(0.40, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
           unitMaterials.helmet
         );
-        helmetMesh.position.y = 2.12;
-        helmetMesh.userData = { isWeakSpot: true };
-        group.add(helmetMesh);
-        hitboxes.push(helmetMesh);
+        helmetDome.castShadow = true;
+        const helmetRim = new THREE.Mesh(
+          new THREE.TorusGeometry(0.40, 0.026, 6, 18),
+          unitMaterials.helmet
+        );
+        helmetRim.rotation.x = Math.PI / 2;
+        helmetRim.position.y = 0.02;
+        const chinstrap = new THREE.Mesh(
+          new THREE.TorusGeometry(0.32, 0.016, 4, 12, Math.PI),
+          new THREE.MeshStandardMaterial({ color: 0x3d3020 })
+        );
+        chinstrap.rotation.z = Math.PI;
+        chinstrap.position.set(0, -0.12, 0.08);
 
-        // Articulated Left & Right Legs for Running Stride
+        helmetMesh = helmetDome;
+        helmetDome.userData = { isWeakSpot: true };
+        helmetGroup.add(helmetDome, helmetRim, chinstrap);
+        group.add(helmetGroup);
+        hitboxes.push(helmetDome);
+
+        // 4. Articulated Legs: Wool trousers, canvas M1938 leggings, leather service boots
         for (let l = -1; l <= 1; l += 2) {
           const legGroup = new THREE.Group();
-          legGroup.position.set(l * 0.22, 0.8, 0);
-          const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.8, 0.32), uniformMat);
-          upperLeg.position.y = -0.4;
+          legGroup.position.set(l * 0.24, 0.82, 0);
+
+          const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.72, 0.32), uniformMat);
+          upperLeg.position.y = -0.32;
           upperLeg.castShadow = true;
-          const boot = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.24, 0.44), new THREE.MeshStandardMaterial({ color: 0x362b1d, roughness: 0.8 }));
-          boot.position.set(0, -0.72, 0.06);
-          legGroup.add(upperLeg, boot);
+
+          // Canvas gaiters/leggings laced around shins
+          const leggings = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.42, 0.30), leggingsMat);
+          leggings.position.y = -0.65;
+
+          // Leather combat service boot
+          const boot = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.22, 0.46), bootMat);
+          boot.position.set(0, -0.84, 0.08);
+          boot.castShadow = true;
+
+          legGroup.add(upperLeg, leggings, boot);
           group.add(legGroup);
           legs.push(legGroup);
         }
 
-        // M1 Garand / Thompson Prop
-        const rifleStock = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.16, 1.2), unitMaterials.boatWood);
-        rifleStock.position.set(0.36, 1.38, 0.42);
-        rifleStock.rotation.x = 0.25;
-        const rifleBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.6, 8), unitMaterials.heavyArmor);
-        rifleBarrel.rotateX(Math.PI / 2);
-        rifleBarrel.position.set(0.36, 1.45, 1.15);
-        group.add(rifleStock, rifleBarrel);
+        // 5. Articulated Arms holding weapon in two-handed assault ready position
+        const armLeftGroup = new THREE.Group();
+        armLeftGroup.position.set(-0.48, 1.72, 0);
+        const lUpperArm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.52, 0.22), uniformMat);
+        lUpperArm.position.set(0, -0.22, 0.12);
+        lUpperArm.rotation.x = -0.45;
+        const lForearm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.48, 0.18), uniformMat);
+        lForearm.position.set(0.18, -0.42, 0.42);
+        lForearm.rotation.set(-0.85, 0.35, -0.3);
+        const lHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), unitMaterials.skin);
+        lHand.position.set(0.25, -0.48, 0.58);
+        armLeftGroup.add(lUpperArm, lForearm, lHand);
+        group.add(armLeftGroup);
+        arms.push(armLeftGroup);
+
+        const armRightGroup = new THREE.Group();
+        armRightGroup.position.set(0.48, 1.72, 0);
+        const rUpperArm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.52, 0.22), uniformMat);
+        rUpperArm.position.set(0, -0.22, 0.08);
+        rUpperArm.rotation.x = -0.35;
+        const rForearm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.48, 0.18), uniformMat);
+        rForearm.position.set(-0.14, -0.42, 0.35);
+        rForearm.rotation.set(-0.75, -0.25, 0.2);
+        const rHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), unitMaterials.skin);
+        rHand.position.set(-0.16, -0.46, 0.48);
+        armRightGroup.add(rUpperArm, rForearm, rHand);
+        group.add(armRightGroup);
+        arms.push(armRightGroup);
+
+        // 6. Authentic WW2 Weapon: M1 Garand or Thompson SMG
+        const weaponGroup = new THREE.Group();
+        weaponGroup.position.set(0.16, 1.25, 0.35);
+        weaponGroup.rotation.set(0.25, -0.15, 0);
+
+        if (!isStorm) {
+          // M1 Garand Rifle with Walnut Stock & Steel Receiver
+          const stock = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.16, 1.35), unitMaterials.woodRifle);
+          stock.position.z = 0.22;
+          const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.10, 0.45), unitMaterials.heavyArmor);
+          receiver.position.set(0, 0.06, 0.15);
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.75, 8), unitMaterials.heavyArmor);
+          barrel.rotateX(Math.PI / 2);
+          barrel.position.set(0, 0.06, 0.95);
+          const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.02), unitMaterials.heavyArmor);
+          frontSight.position.set(0, 0.10, 1.28);
+          weaponGroup.add(stock, receiver, barrel, frontSight);
+        } else {
+          // Thompson M1A1 Submachine Gun
+          const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.18, 0.45), unitMaterials.woodRifle);
+          tStock.position.z = -0.22;
+          const tReceiver = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.16, 0.65), unitMaterials.heavyArmor);
+          tReceiver.position.set(0, 0.04, 0.22);
+          const tForegrip = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.30), unitMaterials.woodRifle);
+          tForegrip.position.set(0, -0.06, 0.45);
+          const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.45, 8), unitMaterials.heavyArmor);
+          tBarrel.rotateX(Math.PI / 2);
+          tBarrel.position.set(0, 0.04, 0.75);
+          const tMag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.14), unitMaterials.heavyArmor);
+          tMag.position.set(0, -0.18, 0.25);
+          tMag.rotation.x = -0.15;
+          weaponGroup.add(tStock, tReceiver, tForegrip, tBarrel, tMag);
+        }
+        group.add(weaponGroup);
 
       } else if (unitType === 'scout_car') {
         name = 'Recon Scout Car';
@@ -1854,53 +2504,148 @@
         maxHp = Math.round(720 * waveScale);
         speed = 2.15;
         points = 750;
-        hpBarY = 4.6;
+        hpBarY = 4.8;
 
-        const hull = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.75, 6.6), unitMaterials.heavyArmor);
-        hull.position.y = 1.25;
-        hull.castShadow = true;
-        hull.userData = { isWeakSpot: false };
-        group.add(hull);
-        hitboxes.push(hull);
+        // 1. Lower Hull & Sloped Glacis Plate (47° angle)
+        const lowerHull = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.45, 6.8), unitMaterials.heavyArmor);
+        lowerHull.position.y = 1.15;
+        lowerHull.castShadow = true;
+        lowerHull.userData = { isWeakSpot: false };
+        group.add(lowerHull);
+        hitboxes.push(lowerHull);
 
+        const glacis = new THREE.Mesh(new THREE.BoxGeometry(3.9, 0.28, 2.4), unitMaterials.heavyArmor);
+        glacis.position.set(0, 1.95, 2.2);
+        glacis.rotation.x = 0.78; // 45-degree sloped front armor
+        group.add(glacis);
+
+        // Driver & Co-Driver Periscope hoods
+        for (let d = -1; d <= 1; d += 2) {
+          const hood = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.32, 0.45), unitMaterials.heavyArmor);
+          hood.position.set(d * 1.15, 2.18, 1.7);
+          group.add(hood);
+        }
+        // Bow .30 cal machine gun ball mount
+        const bowMG = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), unitMaterials.heavyArmor);
+        bowMG.position.set(0.95, 1.85, 3.1);
+        const bowMGBbl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 6), unitMaterials.heavyArmor);
+        bowMGBbl.rotateX(Math.PI / 2);
+        bowMGBbl.position.set(0.95, 1.85, 3.35);
+        group.add(bowMG, bowMGBbl);
+
+        // 2. Collapsible Waterproof Canvas Flotation Screen Skirt (Iconic Sherman DD)
+        const skirtMat = new THREE.MeshStandardMaterial({
+          map: textures.sandbag,
+          color: 0x545c48,
+          roughness: 0.95
+        });
+        const skirtBorder = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.55, 7.2), skirtMat);
+        skirtBorder.position.y = 2.25;
+        group.add(skirtBorder);
+        // Vertical rubber buoyancy pillars and metal scissor struts around skirt
         for (let s = -1; s <= 1; s += 2) {
-          const track = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.95, 6.8), new THREE.MeshStandardMaterial({ color: 0x1f2324, roughness: 0.7 }));
-          track.position.set(s * 2.1, 0.52, 0);
-          track.castShadow = true;
-          group.add(track);
+          for (let p = 0; p < 5; p++) {
+            const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.52, 8), skirtMat);
+            pillar.position.set(s * 2.22, 2.25, -2.8 + p * 1.4);
+            group.add(pillar);
+          }
         }
 
-        const skirtMat = new THREE.MeshStandardMaterial({ color: 0x424637, roughness: 0.9 });
-        const skirt = new THREE.Mesh(new THREE.BoxGeometry(4.3, 0.45, 6.9), skirtMat);
-        skirt.position.y = 2.15;
-        group.add(skirt);
+        // 3. VVSS Suspension: 3 Bogies per side with dual rubber-rimmed road wheels (12 road wheels total!)
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2220, roughness: 0.85 });
+        const rimMat = new THREE.MeshStandardMaterial({ map: textures.tankHull, roughness: 0.5, metalness: 0.6 });
+        for (let s = -1; s <= 1; s += 2) {
+          // Track loop
+          const track = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.98, 7.2), new THREE.MeshStandardMaterial({ map: textures.camoArmor, roughness: 0.72, metalness: 0.65 }));
+          track.position.set(s * 2.15, 0.52, 0);
+          track.castShadow = true;
+          group.add(track);
 
+          // 6 Road Wheels per side (3 pairs)
+          for (let w = 0; w < 6; w++) {
+            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.35, 12), wheelMat);
+            wheel.rotateZ(Math.PI / 2);
+            wheel.position.set(s * 2.15, 0.44, -2.5 + w * 1.0);
+            const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.38, 8), rimMat);
+            hub.rotateZ(Math.PI / 2);
+            hub.position.copy(wheel.position);
+            group.add(wheel, hub);
+          }
+
+          // Front drive sprocket with teeth
+          const sprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.50, 0.50, 0.35, 14), rimMat);
+          sprocket.rotateZ(Math.PI / 2);
+          sprocket.position.set(s * 2.15, 0.65, 3.35);
+          // Rear idler wheel
+          const idler = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.35, 12), rimMat);
+          idler.rotateZ(Math.PI / 2);
+          idler.position.set(s * 2.15, 0.65, -3.35);
+          group.add(sprocket, idler);
+        }
+
+        // 4. Twin Marine Propulsion Brass Propellers (Screws) & Rudders for swimming!
+        const propMat = new THREE.MeshStandardMaterial({ color: 0xd4a238, metalness: 0.9, roughness: 0.28 });
+        for (let p = -1; p <= 1; p += 2) {
+          const propShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.65, 8), unitMaterials.heavyArmor);
+          propShaft.rotateX(Math.PI / 2);
+          propShaft.position.set(p * 1.25, 0.45, -3.65);
+          const screw = new THREE.Mesh(new THREE.SphereGeometry(0.24, 6, 6), propMat);
+          screw.scale.set(1.4, 1.4, 0.35);
+          screw.position.set(p * 1.25, 0.45, -3.95);
+          const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.45), unitMaterials.heavyArmor);
+          rudder.position.set(p * 1.25, 0.45, -4.25);
+          group.add(propShaft, screw, rudder);
+        }
+
+        // 5. Rounded Cast Turret (D50878) with Dynamic LookAt tracking Bunker
         tankTurret = new THREE.Group();
-        tankTurret.position.set(0, 2.45, -0.3);
+        tankTurret.position.set(0, 2.55, -0.2);
 
-        const turretMesh = new THREE.Mesh(new THREE.BoxGeometry(2.7, 1.25, 3.2), unitMaterials.heavyArmor);
-        turretMesh.castShadow = true;
-        turretMesh.userData = { isWeakSpot: false };
-        tankTurret.add(turretMesh);
-        hitboxes.push(turretMesh);
+        // Rounded cast turret body
+        const turretBody = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.65, 1.25, 16), unitMaterials.heavyArmor);
+        turretBody.castShadow = true;
+        turretBody.userData = { isWeakSpot: false };
+        tankTurret.add(turretBody);
+        hitboxes.push(turretBody);
 
-        const mantlet = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.85, 0.8), unitMaterials.heavyArmor);
+        // Rear radio bustle box with antenna
+        const bustle = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.95, 1.2), unitMaterials.heavyArmor);
+        bustle.position.set(0, 0.12, -1.55);
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.4, 6), unitMaterials.heavyArmor);
+        antenna.position.set(0.65, 1.45, -1.8);
+        antenna.rotation.x = -0.15;
+        tankTurret.add(bustle, antenna);
+
+        // Curved 75mm Gun Rotor Shield Mantlet
+        const mantlet = new THREE.Mesh(new THREE.SphereGeometry(0.85, 12, 10, 0, Math.PI, 0, Math.PI), unitMaterials.heavyArmor);
+        mantlet.rotation.x = Math.PI / 2;
         mantlet.position.set(0, 0, 1.6);
-        const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 4.4, 12), unitMaterials.heavyArmor);
+        const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 4.6, 14), unitMaterials.heavyArmor);
         cannon.rotateX(Math.PI / 2);
-        cannon.position.set(0, 0, 3.8);
+        cannon.position.set(0, 0, 3.9);
+        cannon.castShadow = true;
         tankTurret.add(mantlet, cannon);
 
-        const cupola = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.35, 10), unitMaterials.heavyArmor);
-        cupola.position.set(0.65, 0.75, -0.5);
-        const cal50 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.9), unitMaterials.heavyArmor);
-        cal50.position.set(0.65, 1.05, -0.4);
-        tankTurret.add(cupola, cal50);
+        // Commander's Cupola with Vision Blocks & Hatch
+        const cupola = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.38, 12), unitMaterials.heavyArmor);
+        cupola.position.set(0.65, 0.82, -0.45);
+        const hatchLid = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.08, 12), unitMaterials.heavyArmor);
+        hatchLid.position.set(0.65, 1.02, -0.45);
+        // Pintle-mounted .50 cal Browning M2HB Heavy Machine Gun
+        const cal50Bbl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), unitMaterials.heavyArmor);
+        cal50Bbl.rotateX(Math.PI / 2);
+        cal50Bbl.position.set(0.65, 1.25, -0.2);
+        const cal50Receiver = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.55), unitMaterials.heavyArmor);
+        cal50Receiver.position.set(0.65, 1.25, -0.6);
+        const ammoCan = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.28), unitMaterials.medArmor);
+        ammoCan.position.set(0.82, 1.25, -0.55);
+        tankTurret.add(cupola, hatchLid, cal50Bbl, cal50Receiver, ammoCan);
 
         group.add(tankTurret);
 
-        const weakMesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 0.6), unitMaterials.weakSpot);
-        weakMesh.position.set(0, 2.1, 1.3);
+        // Weak Spot: Turret Ring / Shot Trap under Mantlet (x2 Damage)
+        const weakMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 0.65), unitMaterials.weakSpot);
+        weakMesh.position.set(0, 2.15, 1.35);
         weakMesh.userData = { isWeakSpot: true };
         group.add(weakMesh);
         hitboxes.push(weakMesh);
@@ -1929,6 +2674,7 @@
         hitboxes,
         hpBar,
         legs,
+        arms,
         tankTurret,
         helmetMesh,
         isDying: false,
@@ -2085,7 +2831,7 @@
       // Raycast from camera through crosshair NDC
       raycaster.setFromCamera(state.mouseNDC, camera);
 
-      // Collect all active enemy hitboxes & supply drops
+      // Collect all active enemy hitboxes, supply drops & destructible landing craft boats
       const targetMeshes = [];
       state.enemies.forEach(e => {
         if (!e.dead) targetMeshes.push(...e.hitboxes);
@@ -2093,12 +2839,50 @@
       state.supplyDrops.forEach(d => {
         if (d.active) targetMeshes.push(d.crateMesh, d.canopy);
       });
+      state.boats.forEach(b => {
+        if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) {
+          targetMeshes.push(...b.hitboxes);
+        }
+      });
 
       const hits = raycaster.intersectObjects(targetMeshes, false);
 
       if (hits.length > 0) {
         const hit = hits[0];
         const hitPoint = hit.point;
+
+        // Check if player hit an amphibious Landing Craft Boat!
+        if (hit.object.userData.boatRef) {
+          const boat = hit.object.userData.boatRef;
+          if (boat && !boat.dead) {
+            state.shotsHit++;
+            const isWeakSpot = !!hit.object.userData.isWeakSpot;
+            let dmg = state.weapon.damage;
+            if (isWeakSpot) {
+              dmg *= state.weapon.critMult * 1.5; // Stern diesel engine critical hit!
+            }
+            dmg = Math.max(10, Math.round(dmg));
+            boat.hp -= dmg;
+            createTracerBeam(muzzleWorld, hitPoint, isWeakSpot);
+            sfx.playArmorPing();
+            spawnBurstParticles(hitPoint, isWeakSpot ? 0xf59e0b : 0x94a3b8, 12, 10);
+            spawnBurstParticles(hitPoint, 0x38bdf8, 6, 6); // water spray
+
+            if (boat.hp <= 0) {
+              destroyLandingBoat(boat, hitPoint);
+            } else {
+              if (boat.hpBar) updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
+              spawnFloatingCallout(
+                hitPoint,
+                isWeakSpot ? `💥 ENGINE CRIT -${dmg}` : `-${dmg}`,
+                isWeakSpot ? 'text-amber-300 border-amber-400 bg-stone-950/90' : 'text-stone-300 border-stone-600 bg-stone-950/80'
+              );
+            }
+          }
+          if (state.weapon.curAmmo <= 0) startGunCooldown();
+          updateHUD();
+          return;
+        }
 
         // Check if player hit a Parachute Time Booster Crate!
         if (hit.object.userData.supplyDropRef) {
@@ -2198,6 +2982,13 @@
       state.enemiesKilledInWave++;
       state.waveCombatPoints += enemy.points;
       state.score += enemy.points;
+
+      if (isCrit || isOneShotKill) {
+        state.headshotsInWave++;
+      }
+      if (enemy.unitType === 'tank') {
+        state.tanksDestroyedInWave++;
+      }
 
       spawnBurstParticles(hitPoint, 0xf97316, enemy.unitType === 'tank' ? 28 : 14, 12);
 
@@ -2303,6 +3094,23 @@
           }
         }
       });
+
+      // Deal heavy AoE blast damage to nearby Landing Craft Boats
+      state.boats.forEach(boat => {
+        if (!boat.dead && (boat.state === 'SAILING' || boat.state === 'DEPLOYED')) {
+          const dist = boat.group.position.distanceTo(pos);
+          if (dist <= 18.5) {
+            const bDmg = Math.round(520 * (1 - dist / 18.5));
+            boat.hp -= bDmg;
+            if (boat.hp <= 0) {
+              destroyLandingBoat(boat, boat.group.position);
+            } else if (boat.hpBar) {
+              updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
+              spawnFloatingCallout(boat.group.position, `💣 BOAT BLAST -${bDmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90');
+            }
+          }
+        }
+      });
     }
 
     // Use Limited Level Time Booster
@@ -2353,6 +3161,9 @@
       state.shotsFired = 0;
       state.shotsHit = 0;
       state.oneShotKills = 0;
+      state.headshotsInWave = 0;
+      state.boatsDestroyedInWave = 0;
+      state.tanksDestroyedInWave = 0;
       state.waveCombatPoints = 0;
       state.enemiesKilledInWave = 0;
 
@@ -2375,7 +3186,12 @@
       }
 
       state.mode = 'PLAYING';
+      document.getElementById('victory-modal').classList.add('hidden');
+      document.getElementById('victory-modal').classList.remove('flex');
+      document.getElementById('defeat-modal').classList.add('hidden');
+      document.getElementById('defeat-modal').classList.remove('flex');
       document.getElementById('armory-modal').classList.add('hidden');
+      document.getElementById('armory-modal').classList.remove('flex');
       document.getElementById('hud-overlay').classList.remove('hidden');
       document.getElementById('crosshair-ui').classList.remove('hidden');
       updateHUD();
@@ -2394,63 +3210,67 @@
     }
 
     function completeWave(isVictory, defeatReason = '') {
-      state.mode = 'ARMORY';
       state.isFiring = false;
       document.getElementById('hud-overlay').classList.add('hidden');
       document.getElementById('crosshair-ui').classList.add('hidden');
-      document.getElementById('armory-modal').classList.remove('hidden');
-
-      const reportCard = document.getElementById('wave-report-card');
-      reportCard.classList.remove('hidden');
 
       const accPct = getAccuracyPercent();
       const timeLeft = Math.max(0, +state.timeRemaining.toFixed(1));
 
       if (isVictory) {
-        // Score combines Time Remaining + Accuracy % + Combined Synergy!
+        state.mode = 'VICTORY_SCREEN';
+        // Score combines Time Remaining + Accuracy % + Combined Synergy + Boats Sunk Bonus!
         const timePts = Math.round(timeLeft * 25);
         const accPts = Math.round(accPct * 15);
         const synergyPts = Math.round(timeLeft * accPct * 0.85);
-        const waveBonusTotal = timePts + accPts + synergyPts;
+        const boatPts = state.boatsDestroyedInWave * 500;
+        const waveBonusTotal = timePts + accPts + synergyPts + boatPts;
 
         state.score += waveBonusTotal;
         state.totalCampaignScore += waveBonusTotal + state.waveCombatPoints;
 
-        reportCard.className = 'rounded-xl border border-emerald-500/50 bg-emerald-950/25 p-4';
-        document.getElementById('report-badge').className = 'text-[10px] font-mono-tac uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-        document.getElementById('report-badge').textContent = state.waveIndex >= WAVE_CONFIGS.length - 1 ? '🏆 CAMPAIGN VICTORY!' : '✓ WAVE CLEARED';
-        document.getElementById('report-heading').textContent = `WAVE ${state.waveIndex + 1} AFTER-ACTION SCORE REPORT`;
-        document.getElementById('report-total-earned').textContent = `+${(waveBonusTotal + state.waveCombatPoints).toLocaleString()} PTS`;
-        document.getElementById('report-time-left').textContent = `${timeLeft}s`;
-        document.getElementById('report-time-pts').textContent = `+${timePts} Time Pts`;
-        document.getElementById('report-accuracy').textContent = `${accPct}%`;
-        document.getElementById('report-acc-pts').textContent = `+${accPts} Acc Pts`;
-        document.getElementById('report-synergy-pts').textContent = `+${synergyPts} PTS`;
-        document.getElementById('report-oneshots').textContent = `${state.oneShotKills} Kills (+${state.oneShotKills} Gren)`;
+        // Populate Victory Statistics Modal
+        const vicTitle = state.waveIndex >= WAVE_CONFIGS.length - 1 ? 'CAMPAIGN VICTORY!' : `WAVE ${state.waveIndex + 1} CLEARED!`;
+        document.getElementById('victory-title').textContent = vicTitle;
+        document.getElementById('vic-kills').textContent = `${state.enemiesKilledInWave} / ${state.totalEnemiesInWave}`;
+        document.getElementById('vic-boats').textContent = `${state.boatsDestroyedInWave}`;
+        document.getElementById('vic-accuracy').textContent = `${accPct}%`;
+        document.getElementById('vic-headshots').textContent = `${state.headshotsInWave + state.oneShotKills}`;
+        document.getElementById('vic-time-left').textContent = `${timeLeft}s`;
+        document.getElementById('vic-time-pts').textContent = `+${timePts.toLocaleString()} PTS`;
+        document.getElementById('vic-acc-pts').textContent = `+${accPts.toLocaleString()} PTS`;
+        document.getElementById('vic-synergy-pts').textContent = `+${synergyPts.toLocaleString()} PTS`;
+        document.getElementById('vic-boat-pts').textContent = `+${boatPts.toLocaleString()} PTS`;
+        document.getElementById('vic-total-pts').textContent = `+${(waveBonusTotal + state.waveCombatPoints).toLocaleString()} PTS`;
+        document.getElementById('vic-bank-pts').textContent = `${state.score.toLocaleString()} PTS`;
 
-        // Advance to next wave (up to Wave 5, or loop Wave 5 with higher difficulty)
-        if (state.waveIndex < WAVE_CONFIGS.length - 1) {
-          state.waveIndex++;
-        }
+        document.getElementById('victory-modal').classList.remove('hidden');
+        document.getElementById('victory-modal').classList.add('flex');
+        document.getElementById('armory-modal').classList.add('hidden');
+        document.getElementById('armory-modal').classList.remove('flex');
+        document.getElementById('defeat-modal').classList.add('hidden');
+        document.getElementById('defeat-modal').classList.remove('flex');
+
+        sfx.playOneShotBonus();
       } else {
-        // Defeat: Time ran out or beachhead overrun
+        state.mode = 'DEFEAT_SCREEN';
         const consolationPts = Math.round(accPct * 5);
         state.score += consolationPts;
 
-        reportCard.className = 'rounded-xl border border-red-500/60 bg-red-950/30 p-4';
-        document.getElementById('report-badge').className = 'text-[10px] font-mono-tac uppercase font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/40';
-        document.getElementById('report-badge').textContent = '✕ MISSION FAILED';
-        document.getElementById('report-heading').textContent = defeatReason || `WAVE ${state.waveIndex + 1} FAILED — TIME EXPIRED BEFORE ALL HOSTILES ELIMINATED`;
-        document.getElementById('report-total-earned').textContent = `+${consolationPts} PTS (Accuracy Credit)`;
-        document.getElementById('report-time-left').textContent = `0.0s`;
-        document.getElementById('report-time-pts').textContent = `+0 Time Pts`;
-        document.getElementById('report-accuracy').textContent = `${accPct}%`;
-        document.getElementById('report-acc-pts').textContent = `+${consolationPts} Acc Pts`;
-        document.getElementById('report-synergy-pts').textContent = `+0 PTS`;
-        document.getElementById('report-oneshots').textContent = `${state.oneShotKills} Kills`;
-      }
+        // Populate Defeat Modal
+        document.getElementById('defeat-title').textContent = `WAVE ${state.waveIndex + 1} OVERRUN`;
+        document.getElementById('defeat-reason').textContent = defeatReason || `WAVE ${state.waveIndex + 1} FAILED — TIME EXPIRED BEFORE ALL HOSTILES WERE ELIMINATED!`;
+        document.getElementById('def-kills').textContent = `${state.enemiesKilledInWave} / ${state.totalEnemiesInWave}`;
+        document.getElementById('def-accuracy').textContent = `${accPct}%`;
+        document.getElementById('def-pts').textContent = `+${consolationPts} PTS`;
 
-      renderArmory();
+        document.getElementById('defeat-modal').classList.remove('hidden');
+        document.getElementById('defeat-modal').classList.add('flex');
+        document.getElementById('armory-modal').classList.add('hidden');
+        document.getElementById('armory-modal').classList.remove('flex');
+        document.getElementById('victory-modal').classList.add('hidden');
+        document.getElementById('victory-modal').classList.remove('flex');
+      }
     }
 
     function renderArmory() {
@@ -2724,6 +3544,39 @@
     });
 
     // UI Button Listeners
+    document.getElementById('btn-victory-ok').addEventListener('click', () => {
+      sfx.init();
+      sfx.playReadyClank();
+      document.getElementById('victory-modal').classList.add('hidden');
+      document.getElementById('victory-modal').classList.remove('flex');
+      if (state.waveIndex < WAVE_CONFIGS.length - 1) {
+        state.waveIndex++;
+      }
+      state.mode = 'ARMORY';
+      document.getElementById('armory-modal').classList.remove('hidden');
+      document.getElementById('armory-modal').classList.add('flex');
+      renderArmory();
+    });
+
+    document.getElementById('btn-defeat-retry').addEventListener('click', () => {
+      sfx.init();
+      sfx.playReadyClank();
+      document.getElementById('defeat-modal').classList.add('hidden');
+      document.getElementById('defeat-modal').classList.remove('flex');
+      startWave(state.waveIndex);
+    });
+
+    document.getElementById('btn-defeat-armory').addEventListener('click', () => {
+      sfx.init();
+      sfx.playReadyClank();
+      document.getElementById('defeat-modal').classList.add('hidden');
+      document.getElementById('defeat-modal').classList.remove('flex');
+      state.mode = 'ARMORY';
+      document.getElementById('armory-modal').classList.remove('hidden');
+      document.getElementById('armory-modal').classList.add('flex');
+      renderArmory();
+    });
+
     document.getElementById('btn-deploy-wave').addEventListener('click', () => {
       sfx.init();
       sfx.playReadyClank();
@@ -2818,6 +3671,11 @@
       camera.rotation.x += (targetRotX - camera.rotation.x) * 0.14;
 
       if (gunGroup) {
+        // Natural idle breathing sway
+        const gunSwayY = Math.sin(nowSec * 1.8) * 0.003;
+        const gunSwayX = Math.cos(nowSec * 1.2) * 0.002;
+        gunGroup.position.y = 7.62 + gunSwayY;
+        gunGroup.position.x = 0.42 + gunSwayX;
         gunGroup.lookAt(state.aimWorldPoint);
         // Decay recoil & muzzle flash
         gunBarrelGroup.position.z += (0 - gunBarrelGroup.position.z) * 0.25;
@@ -2948,10 +3806,35 @@
         });
 
         // Update Landing Craft Boats
-        state.boats.forEach(boat => {
-          // Gentle wave bobbing
+        for (let bIdx = state.boats.length - 1; bIdx >= 0; bIdx--) {
+          const boat = state.boats[bIdx];
+
+          // 1. Sinking Physics: Roll, pitch, submerge underwater with bubbles & smoke
+          if (boat.state === 'SINKING') {
+            boat.sinkTimer = (boat.sinkTimer || 0) + dt;
+            boat.group.position.y -= dt * 1.65;
+            boat.group.rotation.z += (boat.sinkRoll || 0.45) * dt * 0.85;
+            boat.group.rotation.x += dt * 0.22;
+            if (boat.hpBar) boat.hpBar.visible = false;
+            if (boat.wakeLeft) boat.wakeLeft.visible = false;
+            if (boat.wakeRight) boat.wakeRight.visible = false;
+
+            // Occasional secondary bubbling & oil slick sparks while sinking
+            if (Math.random() < 0.25) {
+              spawnBurstParticles(boat.group.position, 0x38bdf8, 3, 2);
+            }
+
+            if (boat.sinkTimer > 4.5 || boat.group.position.y < -12) {
+              scene.remove(boat.group);
+              state.boats.splice(bIdx, 1);
+            }
+            continue;
+          }
+
+          // 2. Gentle wave bobbing for afloat landing craft
           boat.group.position.y = Math.sin(nowSec * 2.5 + boat.group.position.x) * 0.22;
           boat.group.rotation.z = Math.cos(nowSec * 2.0 + boat.group.position.x) * 0.04;
+          if (boat.hpBar) updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
 
           if (boat.state === 'SAILING') {
             boat.group.position.z += boat.speed * dt;
@@ -2966,6 +3849,11 @@
                   boat.group.position.z + 3.5 + idx * 0.8
                 );
               });
+              // Remove passenger troop visuals inside well deck once disembarked
+              if (boat.troopMeshes) {
+                boat.troopMeshes.forEach(m => boat.group.remove(m));
+                boat.troopMeshes = [];
+              }
             }
           } else if (boat.state === 'DEPLOYED') {
             if (boat.rampGroup && boat.rampGroup.rotation.x < Math.PI * 0.44) {
@@ -2980,8 +3868,12 @@
               boat.rampGroup.rotation.x = Math.max(0, boat.rampGroup.rotation.x - dt * 2.5);
             }
             boat.group.position.z -= boat.speed * 0.65 * dt;
+            if (boat.group.position.z < -200) {
+              scene.remove(boat.group);
+              state.boats.splice(bIdx, 1);
+            }
           }
-        });
+        }
 
         // Update Advancing Enemy Units
         for (const enemy of state.enemies) {
@@ -2999,12 +3891,16 @@
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
           enemy.group.position.y = groundY;
 
-          // Infantry running stride on legs
+          // Infantry running stride on legs and arms
           if (enemy.legs && enemy.legs.length === 2) {
             const stride = Math.sin(nowSec * 13 + enemy.wobbleSeed) * 0.52;
             enemy.legs[0].rotation.x = stride;
             enemy.legs[1].rotation.x = -stride;
             enemy.group.position.y += Math.abs(stride) * 0.14;
+            if (enemy.arms && enemy.arms.length === 2) {
+              enemy.arms[0].rotation.x = -stride * 0.35;
+              enemy.arms[1].rotation.x = stride * 0.35;
+            }
           }
 
           // Sherman DD tank turret tracking player's bunker
