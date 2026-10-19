@@ -1177,6 +1177,7 @@
       woodNormal: null,
       tankHull: null,
       boatHull: null,
+      boatNormal: null,
       sandbag: null
     };
 
@@ -1494,36 +1495,67 @@
       ctxT.fillText('USA 30104822', 170, 410);
       textures.tankHull = new THREE.CanvasTexture(cTank);
 
-      // 11. LCVP Higgins Boat Weathered Plank & Armor Hull (512x512)
+      // 11. LCVP Higgins Boat Weathered Philippine Mahogany Wood & Steel Banding (512x512)
       const cBoat = document.createElement('canvas');
       cBoat.width = cBoat.height = 512;
       const ctxB = cBoat.getContext('2d');
-      ctxB.fillStyle = '#48545c';
+      // Rich weathered Philippine mahogany timber base
+      ctxB.fillStyle = '#5c3e26';
       ctxB.fillRect(0, 0, 512, 512);
-      // Horizontal wood planks
-      for (let y = 0; y < 512; y += 38) {
-        ctxB.fillStyle = 'rgba(25, 32, 38, 0.6)';
-        ctxB.fillRect(0, y, 512, 3);
-        ctxB.fillStyle = 'rgba(100, 115, 125, 0.25)';
-        ctxB.fillRect(0, y + 3, 512, 1);
+
+      // Organic longitudinal mahogany wood grain streaks & fiber knots
+      for (let i = 0; i < 700; i++) {
+        const y = Math.random() * 512;
+        ctxB.fillStyle = Math.random() > 0.5 ? 'rgba(68, 42, 24, 0.48)' : 'rgba(115, 78, 50, 0.38)';
+        ctxB.fillRect(0, y, 512, 1 + Math.random() * 2);
       }
-      // Vertical steel armor straps
-      for (let x = 60; x < 512; x += 110) {
-        ctxB.fillStyle = '#343e46';
-        ctxB.fillRect(x, 0, 16, 512);
-        ctxB.fillStyle = '#1e242a';
-        for (let y = 18; y < 512; y += 40) {
-          ctxB.beginPath(); ctxB.arc(x + 8, y, 3.5, 0, Math.PI * 2); ctxB.fill();
+      // Horizontal lapstrake mahogany plank seams with deep shadow & bevel highlight
+      for (let y = 0; y < 512; y += 32) {
+        // Deep plank seam shadow
+        ctxB.fillStyle = '#22140a';
+        ctxB.fillRect(0, y, 512, 3);
+        // Beveled plank highlight edge
+        ctxB.fillStyle = '#8e5e3a';
+        ctxB.fillRect(0, y + 3, 512, 1.5);
+      }
+
+      // Vertical structural oak ribs & steel reinforcement straps
+      for (let x = 48; x < 512; x += 96) {
+        // Dark iron strap
+        ctxB.fillStyle = '#322c26';
+        ctxB.fillRect(x, 0, 18, 512);
+        // Metallic edge highlight on strap
+        ctxB.fillStyle = 'rgba(150, 140, 130, 0.4)';
+        ctxB.fillRect(x + 1, 0, 1.5, 512);
+        // Heavy steel dome rivets
+        for (let y = 16; y < 512; y += 32) {
+          ctxB.fillStyle = '#161412';
+          ctxB.beginPath(); ctxB.arc(x + 9, y, 4, 0, Math.PI * 2); ctxB.fill();
+          ctxB.fillStyle = 'rgba(190, 180, 170, 0.75)';
+          ctxB.beginPath(); ctxB.arc(x + 8, y - 1, 1.8, 0, Math.PI * 2); ctxB.fill();
         }
       }
-      // Waterline salt crust
-      ctxB.fillStyle = 'rgba(215, 225, 230, 0.4)';
-      ctxB.fillRect(0, 440, 512, 72);
-      // Stencil "PA 26-1"
-      ctxB.font = 'bold 46px monospace';
-      ctxB.fillStyle = 'rgba(240, 245, 250, 0.85)';
-      ctxB.fillText('PA 26-1', 140, 220);
+
+      // Waterline dark grime, tide brine & marine salt crust
+      const waterGrad = ctxB.createLinearGradient(0, 410, 0, 512);
+      waterGrad.addColorStop(0, 'rgba(40, 30, 20, 0)');
+      waterGrad.addColorStop(0.5, 'rgba(25, 20, 14, 0.7)');
+      waterGrad.addColorStop(1, 'rgba(175, 185, 180, 0.6)');
+      ctxB.fillStyle = waterGrad;
+      ctxB.fillRect(0, 410, 512, 102);
+
+      // Authentic Invasion Flotilla Tactical Markings (Yellow/White Stencils)
+      ctxB.font = 'bold 36px monospace';
+      ctxB.fillStyle = 'rgba(235, 205, 120, 0.9)'; // Wartime yellow tactical ID
+      ctxB.fillText('PA 26-1', 115, 180);
+      ctxB.font = 'bold 24px monospace';
+      ctxB.fillStyle = 'rgba(235, 240, 245, 0.85)';
+      ctxB.fillText('LCVP-44', 120, 225);
+
       textures.boatHull = new THREE.CanvasTexture(cBoat);
+      textures.boatHull.wrapS = textures.boatHull.wrapT = THREE.RepeatWrapping;
+      textures.boatNormal = generateNormalMap(cBoat, 2.2);
+      textures.boatNormal.wrapS = textures.boatNormal.wrapT = THREE.RepeatWrapping;
 
       // 12. Burlap Sandbag Coarse Jute Fabric (256x256)
       const cBag = document.createElement('canvas');
@@ -2124,8 +2156,8 @@
 
     // --- 6. ENEMY BOATS, INFANTRY & ARMORED VEHICLES ---
     const unitMaterials = {
-      boatWood: new THREE.MeshStandardMaterial({ map: textures.boatHull, normalMap: textures.woodNormal, roughness: 0.85 }),
-      boatSteel: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x5a6870, roughness: 0.52, metalness: 0.65 }),
+      boatWood: new THREE.MeshStandardMaterial({ map: textures.boatHull, normalMap: textures.boatNormal, color: 0x6e482b, roughness: 0.74, metalness: 0.12 }),
+      boatSteel: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x48423c, roughness: 0.48, metalness: 0.68 }),
       infantryCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, roughness: 0.86 }),
       stormCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, color: 0x8a9088, roughness: 0.82 }),
       skin: new THREE.MeshStandardMaterial({ color: 0xdca882, roughness: 0.68 }),
@@ -2287,18 +2319,60 @@
 
       let speed = 12.8;
       let hullW = 4.4, hullH = 1.85, hullL = 9.8;
-      const boatSteelMat = new THREE.MeshStandardMaterial({
-        color: 0x4a565d,
-        roughness: 0.58,
-        metalness: 0.45
+
+      // Authentic WW2 Higgins Boat Materials
+      // 1. Weathered Philippine Mahogany Plywood with dark oak framing
+      const boatWoodMat = new THREE.MeshStandardMaterial({
+        map: textures.boatHull,
+        normalMap: textures.boatNormal,
+        color: 0x6e482b, // Warm rich weathered mahogany brown
+        roughness: 0.74,
+        metalness: 0.12
       });
+
+      // 2. Dark saturated timber for framing, keel & interior bulkheads
+      const boatDarkWoodMat = new THREE.MeshStandardMaterial({
+        map: textures.wood,
+        normalMap: textures.woodNormal,
+        color: 0x3d2716,
+        roughness: 0.85
+      });
+
+      // 3. Teak / pine non-skid deck planking for the cargo well
       const deckMat = new THREE.MeshStandardMaterial({
-        color: 0x3b352b,
+        map: textures.wood,
+        normalMap: textures.woodNormal,
+        color: 0x483424,
         roughness: 0.88
       });
-      const woodTrimMat = new THREE.MeshStandardMaterial({
-        color: 0x544738,
+
+      // 4. Heavy vulcanized dark brown rubber rubbing strakes & bumper fenders
+      const bumperMat = new THREE.MeshStandardMaterial({
+        color: 0x201a14,
         roughness: 0.85
+      });
+
+      // 5. Heavy ordnance steel drop ramp with welded horizontal ribs
+      const boatSteelMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x46423c,
+        roughness: 0.44,
+        metalness: 0.72
+      });
+
+      // 6. Marine bronze hardware for propellers, cleats & rudders
+      const bronzeMat = new THREE.MeshStandardMaterial({
+        color: 0xc89838,
+        roughness: 0.25,
+        metalness: 0.92
+      });
+
+      // 7. Steel wire hoist cable
+      const cableMat = new THREE.MeshStandardMaterial({
+        color: 0x90989e,
+        metalness: 0.85,
+        roughness: 0.3
       });
 
       const maxHp = Math.round(680 * (1 + state.waveIndex * 0.22));
@@ -2310,6 +2384,7 @@
         ramp: null,
         wakeLeft: null,
         wakeRight: null,
+        props: [],
         type: boatSpec.type,
         cargo: [...boatSpec.cargo],
         speed,
@@ -2325,68 +2400,177 @@
         troopMeshes: []
       };
 
-      // 1. LCVP Main Hull (Flat bottom with angled bow)
-      const hull = new THREE.Mesh(new THREE.BoxGeometry(hullW, hullH, hullL), boatSteelMat);
-      hull.position.y = hullH * 0.45;
-      hull.castShadow = true;
-      hull.userData = { boatRef: boatObj, isWeakSpot: false };
-      group.add(hull);
-      hitboxes.push(hull);
+      // 1. LCVP Main Hull: Weathered Philippine Mahogany Plywood with angled bow
+      const hullMain = new THREE.Mesh(new THREE.BoxGeometry(hullW, hullH, hullL * 0.78), boatWoodMat);
+      hullMain.position.set(0, hullH * 0.46, -hullL * 0.08);
+      hullMain.castShadow = true;
+      hullMain.userData = { boatRef: boatObj, isWeakSpot: false };
+      group.add(hullMain);
+      hitboxes.push(hullMain);
 
-      // Cargo well deck
-      const well = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.7, 0.12, hullL - 1.4), deckMat);
+      // Angled Forward Bow Chine (slants up toward drop ramp so boat slides onto beach)
+      const bowWedge = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.08, hullH * 0.76, hullL * 0.26), boatWoodMat);
+      bowWedge.position.set(0, hullH * 0.38, hullL * 0.38);
+      bowWedge.rotation.x = -0.22;
+      bowWedge.castShadow = true;
+      bowWedge.userData = { boatRef: boatObj, isWeakSpot: false };
+      group.add(bowWedge);
+      hitboxes.push(bowWedge);
+
+      // Keel Skeg Runner (longitudinal center timber beam)
+      const keel = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.38, hullL * 0.92), boatDarkWoodMat);
+      keel.position.set(0, 0.16, -hullL * 0.02);
+      group.add(keel);
+
+      // Cargo well deck (planked timber floor)
+      const well = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.75, 0.14, hullL - 1.5), deckMat);
       well.position.y = hullH * 0.48;
       group.add(well);
 
-      // Armored Side Bulkheads & Rubbing Strakes
+      // Armored Side Bulkheads, Mahogany Coaming & Rubber Rubbing Strakes
       for (let s = -1; s <= 1; s += 2) {
-        const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.25, hullL), boatSteelMat);
+        // Mahogany inner bulkhead
+        const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.25, hullL), boatWoodMat);
         sideWall.position.set(s * (hullW * 0.46), hullH + 0.42, 0);
         sideWall.userData = { boatRef: boatObj, isWeakSpot: false };
-        const strake = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, hullL), woodTrimMat);
-        strake.position.set(s * (hullW * 0.51), hullH + 0.4, 0);
-        group.add(sideWall, strake);
+        group.add(sideWall);
         hitboxes.push(sideWall);
+
+        // Top gunwale mahogany coaming rail
+        const gunwale = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, hullL), boatDarkWoodMat);
+        gunwale.position.set(s * (hullW * 0.46), hullH + 1.05, 0);
+        group.add(gunwale);
+
+        // Heavy dark vulcanized rubber rubbing strake (bumper fender)
+        const strake = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.24, hullL), bumperMat);
+        strake.position.set(s * (hullW * 0.52), hullH + 0.38, 0);
+        group.add(strake);
+
+        // Bronze mooring cleats at bow and quarter
+        for (let cz = -1; cz <= 1; cz += 2) {
+          const cleat = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.10, 0.42), bronzeMat);
+          cleat.position.set(s * (hullW * 0.46), hullH + 1.15, cz * (hullL * 0.38));
+          group.add(cleat);
+        }
       }
 
-      // Stern Armor Deck & Critical Diesel Engine Compartment (Weak spot!)
-      const sternDeck = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.2, 1.0, 2.5), boatSteelMat);
-      sternDeck.position.set(0, hullH + 0.32, -hullL * 0.36);
+      // 2. Stern Armor Deck & Critical Diesel Engine Compartment (Weak spot!)
+      const sternDeck = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.15, 1.05, 2.7), boatWoodMat);
+      sternDeck.position.set(0, hullH + 0.34, -hullL * 0.36);
       sternDeck.userData = { boatRef: boatObj, isWeakSpot: true }; // Stern engine strike deals x2 critical damage!
       group.add(sternDeck);
       hitboxes.push(sternDeck);
 
-      // Coxswain Armored Pilot Cockpit (Port side)
-      const pilotBox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 1.2), boatSteelMat);
-      pilotBox.position.set(-hullW * 0.28, hullH + 0.85, -hullL * 0.32);
-      const pilotVisor = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.1), unitMaterials.heavyArmor);
-      pilotVisor.position.set(-hullW * 0.28, hullH + 1.15, -hullL * 0.26);
-      group.add(pilotBox, pilotVisor);
+      // Louvered Diesel Engine Cowling Hatch & Grille
+      const engineHatch = new THREE.Mesh(new THREE.BoxGeometry(hullW * 0.55, 0.16, 1.8), boatSteelMat);
+      engineHatch.position.set(0, hullH + 0.92, -hullL * 0.36);
+      engineHatch.userData = { boatRef: boatObj, isWeakSpot: true };
+      group.add(engineHatch);
 
-      // Twin Stern .30 Cal Machine Gun Tubs & Gunners
-      for (let mg = -1; mg <= 1; mg += 2) {
-        const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.72, 10), boatSteelMat);
-        tub.position.set(mg * 1.35, hullH + 0.95, -hullL * 0.38);
-        const mgGun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.85), unitMaterials.heavyArmor);
-        mgGun.position.set(mg * 1.35, hullH + 1.32, -hullL * 0.35);
-        const gunner = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), unitMaterials.helmet);
-        gunner.position.set(mg * 1.35, hullH + 1.48, -hullL * 0.42);
-        group.add(tub, mgGun, gunner);
+      // Dual engine exhaust pipes out transom
+      for (let ex = -1; ex <= 1; ex += 2) {
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.45, 8), boatSteelMat);
+        pipe.rotateX(Math.PI / 2);
+        pipe.position.set(ex * 0.85, hullH + 0.25, -hullL * 0.49);
+        group.add(pipe);
       }
 
-      // Hinged Bow Drop Ramp (with pulley cables)
+      // 3. Coxswain Armored Pilot Cockpit (Port side) with Helm & Life Ring
+      const pilotBox = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.35, 1.25), boatSteelMat);
+      pilotBox.position.set(-hullW * 0.28, hullH + 0.85, -hullL * 0.30);
+      const pilotVisor = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.16, 0.12), unitMaterials.heavyArmor);
+      pilotVisor.position.set(-hullW * 0.28, hullH + 1.18, -hullL * 0.24);
+      // Ship steering helm wheel
+      const helm = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.035, 6, 14), bronzeMat);
+      helm.position.set(-hullW * 0.28, hullH + 0.88, -hullL * 0.28);
+      // Cable winch hoist drum behind pilot shelter
+      const winch = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.55, 10), boatSteelMat);
+      winch.rotateZ(Math.PI / 2);
+      winch.position.set(-hullW * 0.28, hullH + 0.72, -hullL * 0.40);
+      group.add(pilotBox, pilotVisor, helm, winch);
+
+      // Red and White Canvas Life Ring Buoy on outer pilot bulkhead
+      const ringTorus = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16), new THREE.MeshStandardMaterial({ color: 0xeeece8, roughness: 0.7 }));
+      ringTorus.rotateY(Math.PI / 2);
+      ringTorus.position.set(-hullW * 0.48, hullH + 0.75, -hullL * 0.22);
+      const redBandTop = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.18), new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.6 }));
+      redBandTop.position.set(-hullW * 0.48, hullH + 0.95, -hullL * 0.22);
+      const redBandBot = redBandTop.clone();
+      redBandBot.position.y = hullH + 0.55;
+      group.add(ringTorus, redBandTop, redBandBot);
+
+      // 4. Twin Stern .30 Cal Machine Gun Tubs & Gunners
+      for (let mg = -1; mg <= 1; mg += 2) {
+        const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.60, 0.60, 0.75, 12), boatWoodMat);
+        tub.position.set(mg * 1.35, hullH + 0.95, -hullL * 0.38);
+        const tubRim = new THREE.Mesh(new THREE.CylinderGeometry(0.63, 0.63, 0.10, 12), boatSteelMat);
+        tubRim.position.set(mg * 1.35, hullH + 1.32, -hullL * 0.38);
+        const mgGun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.90), unitMaterials.heavyArmor);
+        mgGun.position.set(mg * 1.35, hullH + 1.36, -hullL * 0.34);
+        const mgBbl = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.55, 6), unitMaterials.heavyArmor);
+        mgBbl.rotateX(Math.PI / 2);
+        mgBbl.position.set(mg * 1.35, hullH + 1.36, -hullL * 0.28);
+        const gunner = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), unitMaterials.helmet);
+        gunner.position.set(mg * 1.35, hullH + 1.48, -hullL * 0.42);
+        group.add(tub, tubRim, mgGun, mgBbl, gunner);
+      }
+
+      // 5. Hinged Bow Drop Ramp (Armored Steel with Welded Ribs & Pulley Cables)
       const rampGroup = new THREE.Group();
       rampGroup.position.set(0, 0.35, hullL * 0.5);
-      const ramp = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.45, 1.95, 0.24), unitMaterials.heavyArmor);
+      const ramp = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.45, 1.95, 0.24), boatSteelMat);
       ramp.position.set(0, 0.95, 0);
       ramp.userData = { boatRef: boatObj, isWeakSpot: false };
       rampGroup.add(ramp);
+
+      // Welded horizontal structural ribs across ramp face
+      for (let r = 0; r < 3; r++) {
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(hullW - 0.55, 0.12, 0.12), boatSteelMat);
+        rib.position.set(0, 0.45 + r * 0.50, 0.14);
+        rampGroup.add(rib);
+      }
+      // Top cable lifting eye-shackles
+      for (let s = -1; s <= 1; s += 2) {
+        const eye = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.025, 6, 10), bronzeMat);
+        eye.position.set(s * (hullW * 0.42), 1.88, 0.12);
+        rampGroup.add(eye);
+      }
       group.add(rampGroup);
       hitboxes.push(ramp);
       boatObj.rampGroup = rampGroup;
       boatObj.ramp = ramp;
 
-      // Visible passenger troops inside the cargo hold waiting to beach!
+      // Steel Hoist Cables from cockpit winches to ramp
+      for (let s = -1; s <= 1; s += 2) {
+        const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, hullL * 0.72, 4), cableMat);
+        cable.rotateX(Math.PI / 2 - 0.18);
+        cable.position.set(s * (hullW * 0.44), hullH + 0.88, hullL * 0.15);
+        group.add(cable);
+      }
+
+      // 6. Under-Hull Marine Propulsion: Twin Bronze Propellers & Steering Rudders
+      for (let p = -1; p <= 1; p += 2) {
+        const propHub = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.22, 8), bronzeMat);
+        propHub.rotateX(Math.PI / 2);
+        propHub.position.set(p * 1.15, 0.24, -hullL * 0.48);
+        // 3-blade propeller
+        const bladeGeo = new THREE.BoxGeometry(0.48, 0.12, 0.03);
+        const blades = new THREE.Group();
+        blades.position.copy(propHub.position);
+        for (let b = 0; b < 3; b++) {
+          const blade = new THREE.Mesh(bladeGeo, bronzeMat);
+          blade.rotation.z = (b * Math.PI * 2) / 3;
+          blade.rotation.x = 0.35;
+          blades.add(blade);
+        }
+        // Balance rudder fin behind screw
+        const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.42, 0.45), bronzeMat);
+        rudder.position.set(p * 1.15, 0.22, -hullL * 0.50);
+        group.add(propHub, blades, rudder);
+        boatObj.props.push(blades);
+      }
+
+      // 7. Visible passenger troops inside the cargo hold waiting to beach!
       boatSpec.cargo.forEach((cType, cIdx) => {
         const tGrp = new THREE.Group();
         const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
@@ -2401,7 +2585,18 @@
         boatObj.troopMeshes.push(tGrp);
       });
 
-      // Twin White Sea Foam Propeller Wake Trails
+      // 8. Dynamic Translucent Sea Spray Bow Foam Waves (splits water on approach)
+      for (let s = -1; s <= 1; s += 2) {
+        const bowWaveGeo = new THREE.PlaneGeometry(1.2, 3.4);
+        bowWaveGeo.rotateX(-Math.PI / 2);
+        const bowWaveMat = new THREE.MeshBasicMaterial({ color: 0xe8f6fa, transparent: true, opacity: 0.65 });
+        const bowWave = new THREE.Mesh(bowWaveGeo, bowWaveMat);
+        bowWave.position.set(s * (hullW * 0.48), 0.12, hullL * 0.32);
+        bowWave.rotation.y = s * 0.35;
+        group.add(bowWave);
+      }
+
+      // 9. Twin White Sea Foam Propeller Wake Trails
       const wakeGeo = new THREE.PlaneGeometry(1.8, 8.5);
       wakeGeo.rotateX(-Math.PI / 2);
       const wakeMat = new THREE.MeshBasicMaterial({ color: 0xdff0f5, transparent: true, opacity: 0.58 });
@@ -4044,6 +4239,14 @@
           boat.group.position.y = Math.sin(nowSec * 2.5 + boat.group.position.x) * 0.22;
           boat.group.rotation.z = Math.cos(nowSec * 2.0 + boat.group.position.x) * 0.04;
           if (boat.hpBar) updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
+
+          // Counter-rotating twin bronze marine screws
+          if (boat.props && boat.props.length > 0 && (boat.state === 'SAILING' || boat.state === 'RETREATING')) {
+            const spinDir = boat.state === 'SAILING' ? 1 : -1;
+            boat.props.forEach((prop, pIdx) => {
+              prop.rotation.z += dt * 38 * (pIdx % 2 === 0 ? 1 : -1) * spinDir;
+            });
+          }
 
           if (boat.state === 'SAILING') {
             boat.group.position.z += boat.speed * dt;
