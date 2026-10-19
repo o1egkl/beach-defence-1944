@@ -1598,6 +1598,7 @@
       const perimeterSandbagMat = new THREE.MeshStandardMaterial({ map: textures.sandbag, roughness: 0.95 });
       const bagGeo = new THREE.BoxGeometry(1.5, 0.55, 0.85);
       for (let sx = -30; sx <= 30; sx += 6.5) {
+        if (Math.abs(sx) < 4.5) continue; // Keep center approach corridor completely clear
         const wall = new THREE.Group();
         for (let row = 0; row < 2; row++) {
           for (let col = 0; col < 2; col++) {
@@ -1646,86 +1647,79 @@
         createSmokeColumn(wx, 1.5, wz);
       });
 
-      // 8. Reinforced Concrete Bunker Casemate Embrasure & Sandbag Parapet
+      // 8. Reinforced Concrete Bunker Casemate Embrasure (Panoramic View Aperture)
       const sillMat = new THREE.MeshStandardMaterial({
         map: textures.concrete,
         roughness: 0.92,
         metalness: 0.1
-      });
-      const armorPlateMat = new THREE.MeshStandardMaterial({
-        map: textures.metal,
-        color: 0x24282b,
-        roughness: 0.52,
-        metalness: 0.82
-      });
-      const sandbagMat = new THREE.MeshStandardMaterial({
-        map: textures.sandbag,
-        roughness: 0.94
       });
       const ammoCanMat = new THREE.MeshStandardMaterial({
         color: 0x364032,
         roughness: 0.62,
         metalness: 0.55
       });
+      const peripheralBagMat = new THREE.MeshStandardMaterial({
+        map: textures.sandbag,
+        roughness: 0.94
+      });
 
       const bunkerEmbrasureGroup = new THREE.Group();
 
-      // Lower sill bench (thick reinforced concrete)
-      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 1.6, 5.5), sillMat);
-      sillMesh.position.set(0, 6.6, 39.8);
+      // Lower sill bench (thick reinforced concrete parapet shelf below gun)
+      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(32, 1.6, 6.0), sillMat);
+      sillMesh.position.set(0, 6.2, 40.5);
       sillMesh.receiveShadow = true;
       bunkerEmbrasureGroup.add(sillMesh);
 
-      // Massive overhead concrete lintel / bunker roof overhang
-      const lintelMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 2.2, 5.0), sillMat);
-      lintelMesh.position.set(0, 10.4, 40.2);
+      // Overhead concrete lintel (high ceiling overhang above gun sightline)
+      const lintelMesh = new THREE.Mesh(new THREE.BoxGeometry(32, 2.2, 6.0), sillMat);
+      lintelMesh.position.set(0, 11.4, 40.8);
       lintelMesh.castShadow = true;
       bunkerEmbrasureGroup.add(lintelMesh);
 
-      // Regelbau Stepped Blast Cheeks (Schartentrichter) flanking Left & Right
+      // Flanking Casemate Blast Cheeks pushed to extreme flanks (|x| >= 8.2)
       for (let side = -1; side <= 1; side += 2) {
-        const step1 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.4, 3.2), sillMat);
-        step1.position.set(side * 6.5, 8.4, 40.5);
-        const step2 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.5), sillMat);
-        step2.position.set(side * 4.6, 8.4, 39.6);
-        const step3 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.4, 2.0), sillMat);
-        step3.position.set(side * 3.2, 8.4, 38.8);
-        bunkerEmbrasureGroup.add(step1, step2, step3);
+        // Outer blast wall pillar
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(3.6, 5.2, 6.0), sillMat);
+        pillar.position.set(side * 9.5, 8.7, 40.5);
+        pillar.castShadow = true;
+        pillar.receiveShadow = true;
+
+        // Angled embrasure chamfer
+        const chamfer = new THREE.Mesh(new THREE.BoxGeometry(1.6, 4.8, 3.5), sillMat);
+        chamfer.position.set(side * 8.2, 8.7, 41.0);
+        chamfer.castShadow = true;
+        chamfer.receiveShadow = true;
+
+        bunkerEmbrasureGroup.add(pillar, chamfer);
       }
 
-      // Armored Steel Schartenplatte (Faceplate with MG port & observation slot)
-      const armorPlate = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.8, 0.28), armorPlateMat);
-      armorPlate.position.set(0, 8.2, 39.2);
-      bunkerEmbrasureGroup.add(armorPlate);
+      // German Patronenkasten 41 Ammo Boxes on peripheral side sill benches
+      const ammoBoxGeo = new THREE.BoxGeometry(0.55, 0.45, 0.95);
+      const box1 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box1.position.set(-6.6, 7.15, 40.4);
+      box1.rotation.y = 0.25;
+      const box2 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box2.position.set(-6.5, 7.6, 40.4);
+      box2.rotation.y = 0.12;
+      const box3 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
+      box3.position.set(6.6, 7.15, 40.4);
+      box3.rotation.y = -0.32;
+      bunkerEmbrasureGroup.add(box1, box2, box3);
 
-      // Stacked Burlap Sandbags along the lower sill shelf
-      const sandbagGeo = new THREE.BoxGeometry(1.2, 0.42, 0.65);
-      const bagPositions = [
-        [-2.4, 7.6, 39.2, -0.05], [-1.2, 7.6, 39.1, 0.04], [1.6, 7.6, 39.2, 0.06], [2.8, 7.6, 39.3, -0.04],
-        [-1.8, 7.95, 39.15, 0.03], [2.2, 7.95, 39.25, -0.05],
-        [-3.6, 7.6, 39.4, 0.08], [3.8, 7.6, 39.4, -0.07],
-        [-3.2, 7.95, 39.35, -0.04], [3.4, 7.95, 39.35, 0.05]
+      // Low Sandbag stacks strictly on peripheral side corners (|x| >= 6.8)
+      const cornerBagGeo = new THREE.BoxGeometry(1.2, 0.42, 0.65);
+      const cornerBags = [
+        [-7.0, 7.2, 40.5, 0.1], [-7.0, 7.6, 40.5, -0.05],
+        [7.0, 7.2, 40.5, -0.1], [7.0, 7.6, 40.5, 0.08]
       ];
-      bagPositions.forEach(([bx, by, bz, rotY]) => {
-        const bag = new THREE.Mesh(sandbagGeo, sandbagMat);
+      cornerBags.forEach(([bx, by, bz, rotY]) => {
+        const bag = new THREE.Mesh(cornerBagGeo, peripheralBagMat);
         bag.position.set(bx, by, bz);
         bag.rotation.y = rotY;
         bag.castShadow = true;
         bunkerEmbrasureGroup.add(bag);
       });
-
-      // German Patronenkasten 41 Ammo Boxes on side sill
-      const ammoBoxGeo = new THREE.BoxGeometry(0.55, 0.45, 0.95);
-      const box1 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box1.position.set(-2.8, 7.6, 40.2);
-      box1.rotation.y = 0.25;
-      const box2 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box2.position.set(-2.7, 8.02, 40.2);
-      box2.rotation.y = 0.15;
-      const box3 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box3.position.set(2.9, 7.6, 40.1);
-      box3.rotation.y = -0.3;
-      bunkerEmbrasureGroup.add(box1, box2, box3);
 
       scene.add(bunkerEmbrasureGroup);
 
