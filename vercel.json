@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/beach_defence_1944_ww2_3d_first_person_coastal_defense.html" }
+  ]
+}
