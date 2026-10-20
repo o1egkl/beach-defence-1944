@@ -230,9 +230,9 @@
     <!-- Bottom Tactical Section (Pinned to Bottom Edge - Middle 80% Screen 100% Clear!) -->
     <div class="w-full max-w-7xl mx-auto flex flex-col gap-2 pointer-events-auto">
       
-      <!-- 4-Weapon Arsenal Selector Dock (Keys 1 - 4) - Compact Low-Profile Bar -->
-      <div class="w-full max-w-3xl mx-auto">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+      <!-- 3-Weapon Arsenal Selector Dock (Keys 1 - 3) - Compact Low-Profile Bar -->
+      <div class="w-full max-w-2xl mx-auto">
+        <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
           <!-- Weapon 1: MG-42 Machine Gun -->
           <button id="weapon-slot-1" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border-2 border-amber-500 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
             <div class="flex items-center justify-between">
@@ -275,21 +275,6 @@
             </div>
             <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
               <div id="wtab-bar-3" class="h-full bg-rose-500 rounded transition-all duration-75" style="width: 100%;"></div>
-            </div>
-          </button>
-
-          <!-- Weapon 4: Luftwaffe Stuka Air Strike -->
-          <button id="weapon-slot-4" type="button" class="weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-cyan-400 bg-cyan-500/20 border border-cyan-500/40 px-1 py-0.2 rounded">[4] AIR STRIKE</span>
-              <span id="wtab-badge-4" class="text-[9px] font-mono-tac font-bold text-cyan-300">READY</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-0.5">
-              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">STUKA DIVE</span>
-              <span id="wtab-ammo-4" class="font-mono-tac text-xs font-bold text-cyan-400">READY</span>
-            </div>
-            <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
-              <div id="wtab-bar-4" class="h-full bg-cyan-400 rounded transition-all duration-75" style="width: 100%;"></div>
             </div>
           </button>
         </div>
@@ -9288,23 +9273,6 @@
           rpm: 25,
           critMult: 1.5,
           lastShotTime: 0
-        },
-        4: {
-          id: 'airstrike',
-          slot: 4,
-          name: 'LUFTWAFFE STUKA AIR STRIKE',
-          tierName: 'Stuka Air Strike',
-          type: 'airstrike',
-          damage: 950,
-          armorPen: 1.0,
-          maxAmmo: 1,
-          curAmmo: 1,
-          cooldownDuration: 28.0,
-          cooldownTimer: 0,
-          isCooling: false,
-          rpm: 2,
-          critMult: 2.0,
-          lastShotTime: 0
         }
       },
       weapon: null,
@@ -9388,12 +9356,8 @@
       w3.cooldownDuration = Math.max(1.4, +(2.8 - cLv * 0.14 * Math.sqrt(techMult)).toFixed(2));
       w3.maxAmmo = Math.round(10 + aLv * 2);
 
-      // Weapon 4: Luftwaffe Stuka Air Strike
-      const w4 = state.weapons[4];
-      w4.damage = Math.round(950 + dLv * 130 * Math.sqrt(techMult));
-      w4.cooldownDuration = Math.max(14.0, +(28.0 - cLv * 1.6 * Math.sqrt(techMult)).toFixed(1));
-
       // Keep active state.weapon aligned with selected slot
+      if (state.selectedWeapon > 3) state.selectedWeapon = 1;
       state.weapon = state.weapons[state.selectedWeapon || 1];
     }
 
@@ -10034,7 +9998,7 @@
     let oceanMesh, oceanGeo, surfFoamMesh, breakerMesh;
     const gunGroup = new THREE.Group();
     let gunBarrelGroup, muzzleFlashMesh, barrelHeatMat;
-    let mg42Group, cannonGroup, rocketGroup, airStrikeGroup;
+    let mg42Group, cannonGroup, rocketGroup;
     const aimPlane = new THREE.Plane(new THREE.Vector3(0, 0.98, 0.2).normalize(), 0);
     const raycaster = new THREE.Raycaster();
     const environmentTargets = []; // Meshes for ground/water raycasting
@@ -11028,30 +10992,7 @@
       rocketGroup.add(rocketTube, shield, viewPort, rocketGrip);
       rocketGroup.visible = false;
 
-      // 19. Luftwaffe Tactical Radio & Air Strike Designator
-      airStrikeGroup = new THREE.Group();
-      // Binocular optical rangefinder body
-      for (let s = -1; s <= 1; s += 2) {
-        const ocular = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.065, 0.52, 14), gunMetal);
-        ocular.rotateX(Math.PI / 2);
-        ocular.position.set(s * 0.12, 0.08, -0.15);
-        const lens = new THREE.Mesh(new THREE.CircleGeometry(0.048, 12), new THREE.MeshStandardMaterial({
-          color: 0x38bdf8, roughness: 0.1, metalness: 0.9
-        }));
-        lens.position.set(s * 0.12, 0.08, -0.41);
-        lens.rotateY(Math.PI);
-        airStrikeGroup.add(ocular, lens);
-      }
-      const binocBridge = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.06, 0.22), brassMat);
-      binocBridge.position.set(0, 0.08, -0.15);
-      // Tactical Radio Whip Antenna
-      const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.012, 1.1, 6), gunMetal);
-      antenna.position.set(0.24, 0.55, 0.12);
-      antenna.rotation.z = -0.15;
-      airStrikeGroup.add(binocBridge, antenna);
-      airStrikeGroup.visible = false;
-
-      gunBarrelGroup.add(mg42Group, cannonGroup, rocketGroup, airStrikeGroup, muzzleFlashMesh);
+      gunBarrelGroup.add(mg42Group, cannonGroup, rocketGroup, muzzleFlashMesh);
       gunGroup.add(gunBarrelGroup, mountPivot, elevWheel);
 
       gunGroup.position.set(0.38, 7.55, 40.7);
@@ -12157,11 +12098,10 @@
       if (mg42Group) mg42Group.visible = (state.selectedWeapon === 1);
       if (cannonGroup) cannonGroup.visible = (state.selectedWeapon === 2);
       if (rocketGroup) rocketGroup.visible = (state.selectedWeapon === 3);
-      if (airStrikeGroup) airStrikeGroup.visible = (state.selectedWeapon === 4);
     }
 
     function selectWeapon(slot) {
-      if (slot < 1 || slot > 4) return;
+      if (slot < 1 || slot > 3) return;
       if (state.selectedWeapon === slot) return;
       state.selectedWeapon = slot;
       state.weapon = state.weapons[slot];
@@ -12172,14 +12112,12 @@
       const badges = {
         1: '🔫 EQUIPPED: MG-42 RAPID MACHINE GUN',
         2: '💥 EQUIPPED: 75mm PaK 40 AT CANNON',
-        3: '🚀 EQUIPPED: PANZERSCHRECK 54 ROCKET',
-        4: '✈️ EQUIPPED: STUKA AIR STRIKE BEACON'
+        3: '🚀 EQUIPPED: PANZERSCHRECK 54 ROCKET'
       };
       const colors = {
         1: 'text-amber-300 border-amber-400 bg-stone-950/95 font-bold',
         2: 'text-orange-300 border-orange-500 bg-stone-950/95 font-bold',
-        3: 'text-rose-300 border-rose-500 bg-stone-950/95 font-bold',
-        4: 'text-cyan-300 border-cyan-400 bg-stone-950/95 font-bold'
+        3: 'text-rose-300 border-rose-500 bg-stone-950/95 font-bold'
       };
       spawnFloatingCallout(state.aimWorldPoint, badges[slot], colors[slot]);
     }
@@ -12385,77 +12323,6 @@
       applyExplosionDamage(pos, 14.0, damage, 580);
     }
 
-    function createStukaDiveBomber() {
-      const plane = new THREE.Group();
-      const planeMat = new THREE.MeshStandardMaterial({ color: 0x2e3b2b, roughness: 0.6, metalness: 0.4 });
-      const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.5 });
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.45, 9.2, 12), planeMat);
-      body.rotateX(Math.PI / 2);
-
-      const wings = new THREE.Mesh(new THREE.BoxGeometry(17, 0.22, 3.2), planeMat);
-      wings.position.set(0, -0.1, 0.5);
-
-      const wingTipL = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.24, 3.22), yellowMat);
-      wingTipL.position.set(-7.5, -0.1, 0.5);
-      const wingTipR = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.24, 3.22), yellowMat);
-      wingTipR.position.set(7.5, -0.1, 0.5);
-
-      const tail = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.16, 1.5), planeMat);
-      tail.position.set(0, 0.2, -4.2);
-      const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.8, 1.5), planeMat);
-      rudder.position.set(0, 1.0, -4.2);
-
-      const propDisc = new THREE.Mesh(new THREE.CircleGeometry(1.8, 12), new THREE.MeshBasicMaterial({ color: 0x111315, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
-      propDisc.position.set(0, 0, 4.7);
-
-      plane.add(body, wings, wingTipL, wingTipR, tail, rudder, propDisc);
-      return plane;
-    }
-
-    function triggerStukaStrikeRun(targetPt) {
-      const plane = createStukaDiveBomber();
-      const startX = targetPt.x - 25;
-      const startY = 48;
-      const startZ = 95;
-      plane.position.set(startX, startY, startZ);
-      plane.lookAt(targetPt.x + 35, 15, -140);
-      scene.add(plane);
-
-      state.airStrikes.push({
-        plane,
-        startPos: new THREE.Vector3(startX, startY, startZ),
-        endPos: new THREE.Vector3(targetPt.x + 35, 18, -140),
-        targetPt: targetPt.clone(),
-        progress: 0,
-        bombsDropped: false,
-        duration: 2.8,
-        bombs: []
-      });
-    }
-
-    function callAirStrike(nowSec) {
-      const w = state.weapons[4];
-      if (state.mode !== 'PLAYING') return;
-      if (w.cooldownTimer > 0) {
-        spawnFloatingCallout(state.aimWorldPoint, `AIR STRIKE RECHARGING: ${Math.ceil(w.cooldownTimer)}s`, 'text-cyan-300 border-cyan-500 bg-cyan-950/90 font-bold');
-        return;
-      }
-
-      w.cooldownTimer = w.cooldownDuration;
-      w.curAmmo = 0;
-      sfx.playAirStrikeCall();
-
-      raycaster.setFromCamera(state.mouseNDC, camera);
-      const envHits = raycaster.intersectObjects(environmentTargets, false);
-      const targetPt = envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone();
-      targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
-
-      spawnFloatingCallout(targetPt, '✈️ AIR STRIKE TARGET MARKED — STUKA INBOUND!', 'text-cyan-200 border-cyan-400 bg-stone-950/95 font-bold scale-110');
-      spawnBurstParticles(targetPt, 0xef4444, 28, 12);
-      triggerStukaStrikeRun(targetPt);
-      updateHUD();
-    }
-
     function firePlayerWeapon(nowSec) {
       if (state.mode !== 'PLAYING') return;
       if (state.selectedWeapon === 1) {
@@ -12464,8 +12331,6 @@
         fireCannon(nowSec);
       } else if (state.selectedWeapon === 3) {
         fireRocket(nowSec);
-      } else if (state.selectedWeapon === 4) {
-        callAirStrike(nowSec);
       }
     }
 
@@ -12847,17 +12712,12 @@
       state.particles.forEach(p => scene.remove(p.mesh));
       state.supplyDrops.forEach(d => scene.remove(d.group));
       state.rockets.forEach(r => scene.remove(r.mesh));
-      state.airStrikes.forEach(a => {
-        scene.remove(a.plane);
-        a.bombs.forEach(b => scene.remove(b.mesh));
-      });
       state.boats = [];
       state.enemies = [];
       state.grenadeObjs = [];
       state.particles = [];
       state.supplyDrops = [];
       state.rockets = [];
-      state.airStrikes = [];
     }
 
     function startWave(waveIdx) {
@@ -12866,11 +12726,12 @@
       const cfg = WAVE_CONFIGS[Math.min(waveIdx, WAVE_CONFIGS.length - 1)];
 
       recomputeWeaponStats();
-      for (let s = 1; s <= 4; s++) {
+      for (let s = 1; s <= 3; s++) {
         state.weapons[s].curAmmo = state.weapons[s].maxAmmo;
         state.weapons[s].isCooling = false;
         state.weapons[s].cooldownTimer = 0;
       }
+      if (state.selectedWeapon > 3) state.selectedWeapon = 1;
       state.weapon = state.weapons[state.selectedWeapon || 1];
       updateWeaponViewmodel();
 
@@ -13448,8 +13309,6 @@
         selectWeapon(2);
       } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
         selectWeapon(3);
-      } else if (e.code === 'Digit4' || e.code === 'Numpad4') {
-        selectWeapon(4);
       } else if (e.code === 'KeyG') {
         throwGrenade();
       } else if (e.code === 'KeyT') {
@@ -13476,22 +13335,22 @@
       if (e.code === 'Space') state.isFiring = false;
     });
 
-    // Mouse Wheel Quick Weapon Cycling
+    // Mouse Wheel Quick Weapon Cycling (MG-42, 75mm PaK 40, Panzerschreck)
     window.addEventListener('wheel', e => {
       if (state.mode !== 'PLAYING') return;
       if (e.deltaY > 0) {
         let next = state.selectedWeapon + 1;
-        if (next > 4) next = 1;
+        if (next > 3) next = 1;
         selectWeapon(next);
       } else if (e.deltaY < 0) {
         let prev = state.selectedWeapon - 1;
-        if (prev < 1) prev = 4;
+        if (prev < 1) prev = 3;
         selectWeapon(prev);
       }
     }, { passive: true });
 
-    // 4-Weapon Arsenal Selector Dock Click Listeners
-    for (let s = 1; s <= 4; s++) {
+    // 3-Weapon Arsenal Selector Dock Click Listeners
+    for (let s = 1; s <= 3; s++) {
       const btn = document.getElementById(`weapon-slot-${s}`);
       if (btn) {
         btn.addEventListener('click', () => {
@@ -13871,82 +13730,6 @@
             detonateRocket(r.targetPt, r.damage);
             scene.remove(r.mesh);
             state.rockets.splice(i, 1);
-          }
-        }
-
-        // Update Stuka Air Strikes & Falling Bombs
-        for (let i = state.airStrikes.length - 1; i >= 0; i--) {
-          const a = state.airStrikes[i];
-          a.progress += dt / a.duration;
-          a.plane.position.lerpVectors(a.startPos, a.endPos, Math.min(1, a.progress));
-          a.plane.rotation.x = 0.16 * Math.sin(a.progress * Math.PI);
-
-          if (a.progress >= 0.38 && !a.bombsDropped) {
-            a.bombsDropped = true;
-            for (let b = 0; b < 3; b++) {
-              const bombTarget = a.targetPt.clone().add(new THREE.Vector3((b - 1) * 9, 0, (b - 1) * 7));
-              bombTarget.y = getBeachHeightAt(bombTarget.x, bombTarget.z);
-              const bombStart = a.plane.position.clone().add(new THREE.Vector3((b - 1) * 4, -1.5, 0));
-              const bombMesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.24, 0.18, 1.4, 8),
-                new THREE.MeshStandardMaterial({ color: 0x222622, metalness: 0.6, roughness: 0.4 })
-              );
-              bombMesh.rotateX(Math.PI / 2);
-              bombMesh.position.copy(bombStart);
-              scene.add(bombMesh);
-              a.bombs.push({
-                mesh: bombMesh,
-                startPt: bombStart,
-                targetPt: bombTarget,
-                progress: 0,
-                delay: b * 0.22,
-                duration: 0.75,
-                exploded: false
-              });
-            }
-          }
-
-          let allBombsDone = true;
-          a.bombs.forEach(bomb => {
-            if (bomb.exploded) return;
-            allBombsDone = false;
-            if (bomb.delay > 0) {
-              bomb.delay -= dt;
-              return;
-            }
-            bomb.progress += dt / bomb.duration;
-            bomb.mesh.position.lerpVectors(bomb.startPt, bomb.targetPt, Math.min(1, bomb.progress));
-            bomb.mesh.position.y += Math.sin(bomb.progress * Math.PI) * 4.0;
-            bomb.mesh.rotation.x += dt * 8;
-
-            if (bomb.progress >= 1.0) {
-              bomb.exploded = true;
-              scene.remove(bomb.mesh);
-              sfx.playExplosion();
-              flashScreen('rgba(251, 146, 60, 0.4)');
-              spawnBurstParticles(bomb.targetPt, 0xf97316, 42, 24);
-              spawnBurstParticles(bomb.targetPt, 0xfacc15, 28, 18);
-
-              const shockGeo = new THREE.SphereGeometry(1, 16, 12);
-              const shockMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.85 });
-              const shockMesh = new THREE.Mesh(shockGeo, shockMat);
-              shockMesh.position.copy(bomb.targetPt);
-              scene.add(shockMesh);
-              state.particles.push({
-                type: 'shockwave',
-                mesh: shockMesh,
-                life: 0.45,
-                maxLife: 0.45,
-                maxRadius: 18.0
-              });
-
-              applyExplosionDamage(bomb.targetPt, 18.0, 750, 720);
-            }
-          });
-
-          if (a.progress >= 1.0 && allBombsDone) {
-            scene.remove(a.plane);
-            state.airStrikes.splice(i, 1);
           }
         }
 
