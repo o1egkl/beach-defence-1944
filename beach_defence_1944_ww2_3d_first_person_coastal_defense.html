@@ -715,9 +715,9 @@
           <button id="btn-armory-resume" type="button" class="hidden px-7 py-3 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-stone-950 shadow-[0_0_25px_rgba(16,185,129,0.45)] transition transform active:scale-95">
             ▶️ RESUME CURRENT WAVE
           </button>
-          <button id="btn-deploy-wave" type="button" class="w-full sm:w-auto px-8 py-3 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 shadow-[0_0_25px_rgba(245,158,11,0.45)] transition transform active:scale-95 flex flex-col items-center justify-center">
+          <button id="btn-deploy-wave" type="button" class="w-full sm:w-auto px-8 py-3.5 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-stone-950 ring-4 ring-amber-400/70 shadow-[0_0_35px_rgba(245,158,11,0.85)] animate-pulse hover:animate-none transition transform active:scale-95 flex flex-col items-center justify-center cursor-pointer">
             <span>⚔️ DEPLOY TO BUNKER — START WAVE 1</span>
-            <span class="text-[11px] font-mono-tac font-bold opacity-85 tracking-normal">(PRESS ENTER OR SPACE TO DEPLOY)</span>
+            <span class="text-[11px] font-mono-tac font-bold text-stone-950 tracking-normal">(CLICK OR PRESS ENTER / SPACE)</span>
           </button>
         </div>
       </div>
@@ -11176,9 +11176,10 @@
     function spawnBoat(boatSpec, index) {
       const group = new THREE.Group();
       const laneX = (index % 5 - 2) * 15 + (Math.random() * 6 - 3);
-      const startZ = -145 - Math.random() * 25;
+      // Spawn within clear line-of-sight (under 95m from bunker) so landing craft are immediately visible cutting through waves
+      const startZ = index < 2 ? (-44 - Math.random() * 8) : (-62 - Math.random() * 14);
 
-      let speed = 12.8;
+      let speed = index < 2 ? 17.5 : 16.2;
       let hullW = 4.4, hullH = 1.85, hullL = 9.8;
 
       // Authentic WW2 Higgins Boat Materials
@@ -12748,14 +12749,33 @@
       state.waveCombatPoints = 0;
       state.enemiesKilledInWave = 0;
 
-      // Count total enemies in this wave
+      // Count total enemies in this wave and tighten boat arrival cadence
       let totalCount = 0;
       waveSpawnSchedule = cfg.boats.map((b, idx) => {
         totalCount += b.cargo.length;
-        return { ...b, idx, spawned: false };
+        const pairIdx = Math.floor(idx / 2);
+        // Initial boat pair spawns at 0.5s; subsequent pairs arrive every 5.8s for continuous non-stop beach action
+        const dynamicDelay = (pairIdx === 0) ? 0.5 : (1.0 + pairIdx * 5.8);
+        return { ...b, delay: dynamicDelay, idx, spawned: false };
       });
+
+      // Immediate Vanguard Beachhead Assault Squad: aggressive infantry storming the dunes at wave start!
+      const vanguardTypes = waveIdx === 0
+        ? ['rifle', 'rifle', 'storm', 'rifle', 'rifle', 'storm']
+        : waveIdx < 5
+          ? ['rifle', 'storm', 'rifle', 'scout_car', 'storm', 'rifle']
+          : ['storm', 'storm', 'halftrack', 'storm', 'tank', 'storm'];
+
+      totalCount += vanguardTypes.length;
       state.totalEnemiesInWave = totalCount;
       waveElapsed = 0;
+
+      // Deploy vanguard units right onto the sand dunes in direct player line of sight!
+      vanguardTypes.forEach((uType, vIdx) => {
+        const laneX = ((vIdx % 6) - 2.5) * 8.5 + (Math.random() * 4 - 2);
+        const spawnZ = 2 + (vIdx % 3) * 4.5 + Math.random() * 2.5; // Z between 2 and 14 on beach sand
+        spawnEnemyUnit(uType, laneX, spawnZ);
+      });
 
       // Schedule parachute time booster drops distributed across extended wave duration
       state.dropTimers = [];
@@ -13297,7 +13317,7 @@
       }
 
       if (state.mode === 'ARMORY') {
-        if (e.code === 'Enter' || e.code === 'Space') {
+        if (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE' || e.code === 'Digit1') {
           e.preventDefault();
           const deployBtn = document.getElementById('btn-deploy-wave');
           if (deployBtn) deployBtn.click();
@@ -13422,6 +13442,16 @@
       sfx.playReadyClank();
       startWave(state.waveIndex);
     });
+
+    const armoryModalEl = document.getElementById('armory-modal');
+    if (armoryModalEl) {
+      armoryModalEl.addEventListener('click', (e) => {
+        if (e.target.id === 'armory-modal') {
+          const deployBtn = document.getElementById('btn-deploy-wave');
+          if (deployBtn) deployBtn.click();
+        }
+      });
+    }
 
     document.getElementById('btn-reset-campaign').addEventListener('click', () => {
       state.isWaveInProgress = false;
