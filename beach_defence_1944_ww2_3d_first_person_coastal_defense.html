@@ -715,8 +715,9 @@
           <button id="btn-armory-resume" type="button" class="hidden px-7 py-3 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-stone-950 shadow-[0_0_25px_rgba(16,185,129,0.45)] transition transform active:scale-95">
             ▶️ RESUME CURRENT WAVE
           </button>
-          <button id="btn-deploy-wave" type="button" class="w-full sm:w-auto px-8 py-3 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 shadow-[0_0_25px_rgba(245,158,11,0.45)] transition transform active:scale-95">
-            ⚔️ DEPLOY TO BUNKER — START WAVE 1
+          <button id="btn-deploy-wave" type="button" class="w-full sm:w-auto px-8 py-3 rounded-xl font-military text-lg sm:text-xl tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 shadow-[0_0_25px_rgba(245,158,11,0.45)] transition transform active:scale-95 flex flex-col items-center justify-center">
+            <span>⚔️ DEPLOY TO BUNKER — START WAVE 1</span>
+            <span class="text-[11px] font-mono-tac font-bold opacity-85 tracking-normal">(PRESS ENTER OR SPACE TO DEPLOY)</span>
           </button>
         </div>
       </div>
@@ -13070,12 +13071,12 @@
           resumeBtn.classList.remove('hidden');
           resumeBtn.textContent = `▶️ RESUME WAVE ${state.waveIndex + 1}`;
         }
-        deployBtn.textContent = `↺ RESTART WAVE ${state.waveIndex + 1}`;
+        deployBtn.innerHTML = `<span>↺ RESTART WAVE ${state.waveIndex + 1}</span><span class="text-[11px] font-mono-tac font-bold opacity-85 tracking-normal">(PRESS ENTER OR SPACE)</span>`;
       } else {
         if (resumeBtn) {
           resumeBtn.classList.add('hidden');
         }
-        deployBtn.textContent = `⚔️ DEPLOY TO BUNKER — START WAVE ${state.waveIndex + 1}`;
+        deployBtn.innerHTML = `<span>⚔️ DEPLOY TO BUNKER — START WAVE ${state.waveIndex + 1}</span><span class="text-[11px] font-mono-tac font-bold opacity-85 tracking-normal">(PRESS ENTER OR SPACE)</span>`;
       }
     }
 
@@ -13107,8 +13108,8 @@
       document.getElementById('hud-accuracy').textContent = `${getAccuracyPercent()}%`;
       document.getElementById('hud-oneshots').textContent = `${state.oneShotKills} (+${state.oneShotKills} GREN)`;
 
-      // 4-Weapon Arsenal Selector Dock Updates
-      for (let s = 1; s <= 4; s++) {
+      // 3-Weapon Arsenal Selector Dock Updates
+      for (let s = 1; s <= 3; s++) {
         const slotBtn = document.getElementById(`weapon-slot-${s}`);
         const badgeEl = document.getElementById(`wtab-badge-${s}`);
         const ammoEl = document.getElementById(`wtab-ammo-${s}`);
@@ -13135,14 +13136,12 @@
           if (s === 1) ammoEl.textContent = `${w.curAmmo} RDS`;
           else if (s === 2) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} SHELLS`;
           else if (s === 3) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} ROCKETS`;
-          else if (s === 4) ammoEl.textContent = w.cooldownTimer > 0 ? `${Math.ceil(w.cooldownTimer)}s` : 'READY';
         }
 
         if (barEl) {
           let pct = 100;
           if (s === 1) pct = (w.curAmmo / w.maxAmmo) * 100;
           else if (s === 2 || s === 3) pct = w.isCooling ? (1 - w.cooldownTimer / w.cooldownDuration) * 100 : (w.curAmmo / w.maxAmmo) * 100;
-          else if (s === 4) pct = w.cooldownTimer > 0 ? (1 - w.cooldownTimer / w.cooldownDuration) * 100 : 100;
           barEl.style.width = `${Math.max(0, Math.min(100, pct))}%`;
         }
       }
@@ -13159,19 +13158,17 @@
       const statusLabel = document.getElementById('hud-mg-status-label');
       const reticleReload = document.getElementById('reticle-reload-tag');
 
-      if (state.weapon.isCooling || (state.selectedWeapon === 4 && state.weapon.cooldownTimer > 0)) {
+      if (state.weapon && (state.weapon.isCooling || state.weapon.cooldownTimer > 0)) {
         const progress = 1 - state.weapon.cooldownTimer / state.weapon.cooldownDuration;
         ammoBar.style.width = `${Math.max(0, Math.min(100, progress * 100))}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-red-600 to-orange-400 rounded transition-all duration-75';
         coolLabel.classList.remove('hidden');
-        coolLabel.textContent = state.selectedWeapon === 4
-          ? `STUKA RECHARGING: ${state.weapon.cooldownTimer.toFixed(1)}s`
-          : `RELOADING / COOLING: ${state.weapon.cooldownTimer.toFixed(1)}s`;
+        coolLabel.textContent = `RELOADING / COOLING: ${state.weapon.cooldownTimer.toFixed(1)}s`;
         statusLabel.textContent = 'RELOADING / COOLDOWN';
         statusLabel.className = 'text-xs font-bold text-red-400';
         reticleReload.classList.remove('hidden');
-      } else {
-        const pctAmmo = state.selectedWeapon === 4 ? 100 : (state.weapon.curAmmo / state.weapon.maxAmmo) * 100;
+      } else if (state.weapon) {
+        const pctAmmo = (state.weapon.curAmmo / state.weapon.maxAmmo) * 100;
         ammoBar.style.width = `${pctAmmo}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded transition-all duration-75';
         coolLabel.classList.add('hidden');
@@ -13295,6 +13292,15 @@
         if (e.code === 'Enter' || e.code === 'Space') {
           e.preventDefault();
           document.getElementById('btn-victory-ok').click();
+          return;
+        }
+      }
+
+      if (state.mode === 'ARMORY') {
+        if (e.code === 'Enter' || e.code === 'Space') {
+          e.preventDefault();
+          const deployBtn = document.getElementById('btn-deploy-wave');
+          if (deployBtn) deployBtn.click();
           return;
         }
       }
@@ -13691,9 +13697,10 @@
           return;
         }
 
-        // Handle All 4 Weapon Cooldown / Recharge Timers Concurrently
-        for (let s = 1; s <= 4; s++) {
+        // Handle All 3 Weapon Cooldown / Recharge Timers Concurrently
+        for (let s = 1; s <= 3; s++) {
           const w = state.weapons[s];
+          if (!w) continue;
           if (w.isCooling || w.cooldownTimer > 0) {
             w.cooldownTimer -= dt;
             if (w.cooldownTimer <= 0) {
@@ -13706,9 +13713,6 @@
                 if (state.selectedWeapon === 2) sfx.playReadyClank();
               } else if (s === 3) {
                 if (state.selectedWeapon === 3) sfx.playReadyClank();
-              } else if (s === 4) {
-                w.curAmmo = 1;
-                spawnFloatingCallout(state.aimWorldPoint, '✈️ AIR STRIKE READY FOR DEPLOYMENT!', 'text-cyan-300 border-cyan-400 bg-stone-950/95 font-bold');
               }
             }
           }
@@ -14018,12 +14022,22 @@
     window.addEventListener('pointerdown', () => sfx.init(), { passive: true });
     window.addEventListener('keydown', () => sfx.init(), { passive: true });
 
-    // Initialize 3D world & Armory on window load
-    window.onload = () => {
+    // Robust initialization: guarantees 3D world, Armory, and animate loop run on load or if already loaded
+    let isGameInitialized = false;
+    function initGame() {
+      if (isGameInitialized) return;
+      isGameInitialized = true;
       buildEnvironment();
       renderArmory();
       requestAnimationFrame(animate);
-    };
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initGame();
+    } else {
+      window.addEventListener('DOMContentLoaded', initGame);
+      window.addEventListener('load', initGame);
+    }
   </script>
 </body>
 </html>
