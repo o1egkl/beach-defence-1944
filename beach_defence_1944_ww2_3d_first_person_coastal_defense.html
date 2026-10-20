@@ -2077,9 +2077,16 @@
       });
 
       // 7. Shoreline Burning Wreckage & Animated Smoke Plumes
+      const wreckMat = new THREE.MeshStandardMaterial({
+        map: textures.rust,
+        normalMap: textures.metalNormal,
+        color: 0x1f2428, // Burned charred steel
+        roughness: 0.78,
+        metalness: 0.65
+      });
       const wreckCoords = [[-25, -7], [16, -6], [42, -9]];
       wreckCoords.forEach(([wx, wz]) => {
-        const wreck = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.6, 6.2), shipMat);
+        const wreck = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.6, 6.2), wreckMat);
         wreck.rotation.set(0.2, 0.4, 0.25);
         wreck.position.set(wx, 0.4, wz);
         scene.add(wreck);
