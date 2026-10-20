@@ -53,14 +53,14 @@
       pointer-events: none;
       z-index: 10;
       box-shadow:
-        inset 0 42px 65px rgba(10, 12, 9, 0.92),
-        inset 0 -38px 60px rgba(10, 12, 9, 0.92),
-        inset 48px 0 70px rgba(10, 12, 9, 0.85),
-        inset -48px 0 70px rgba(10, 12, 9, 0.85);
-      border-top: 18px solid #1b1f18;
-      border-bottom: 14px solid #171a14;
-      border-left: 16px solid #191d16;
-      border-right: 16px solid #191d16;
+        inset 0 42px 65px rgba(10, 12, 14, 0.94),
+        inset 0 -38px 60px rgba(10, 12, 14, 0.94),
+        inset 48px 0 70px rgba(10, 12, 14, 0.88),
+        inset -48px 0 70px rgba(10, 12, 14, 0.88);
+      border-top: 18px solid #1a1c1e;
+      border-bottom: 14px solid #141618;
+      border-left: 16px solid #181a1c;
+      border-right: 16px solid #181a1c;
     }
     @media (max-width: 640px) {
       .bunker-frame {
@@ -9458,22 +9458,46 @@
       textures.camoArmor = new THREE.CanvasTexture(cArm);
       textures.armorNormal = generateNormalMap(cArm, 3.0);
 
-      // 6. Weathered Concrete Wall (256x256)
+      // 6. German Regelbau Dark Gray Reinforced Concrete (512x512)
       const cConc = document.createElement('canvas');
-      cConc.width = cConc.height = 256;
+      cConc.width = cConc.height = 512;
       const ctxC = cConc.getContext('2d');
-      ctxC.fillStyle = '#42453d';
-      ctxC.fillRect(0, 0, 256, 256);
-      for (let i = 0; i < 1100; i++) {
-        const cx = Math.random() * 256, cy = Math.random() * 256;
-        ctxC.fillStyle = Math.random() > 0.5 ? 'rgba(22, 25, 20, 0.5)' : 'rgba(105, 110, 100, 0.4)';
-        ctxC.fillRect(cx, cy, 2, 2);
+      // Dark slate/charcoal bunker gray base
+      ctxC.fillStyle = '#2b2e32';
+      ctxC.fillRect(0, 0, 512, 512);
+
+      // Horizontal formwork timber pour seam lines (wooden board texture)
+      for (let y = 0; y < 512; y += 64) {
+        ctxC.fillStyle = '#181a1c';
+        ctxC.fillRect(0, y, 512, 2.5);
+        ctxC.fillStyle = '#3a3e43';
+        ctxC.fillRect(0, y + 2.5, 512, 1.2);
       }
+
+      // Concrete aggregate grain, basalt flecks, fine quartz specks
+      for (let i = 0; i < 3200; i++) {
+        const cx = Math.random() * 512, cy = Math.random() * 512;
+        ctxC.fillStyle = Math.random() > 0.5 ? 'rgba(16, 18, 20, 0.55)' : 'rgba(78, 84, 90, 0.45)';
+        ctxC.fillRect(cx, cy, 1.5, 1.5);
+      }
+
+      // Vertical damp rain stains & weathering runoff streaks
+      for (let i = 0; i < 40; i++) {
+        const sx = Math.random() * 512;
+        const len = 40 + Math.random() * 120;
+        const gradR = ctxC.createLinearGradient(0, 0, 0, len);
+        gradR.addColorStop(0, 'rgba(15, 17, 19, 0.55)');
+        gradR.addColorStop(1, 'rgba(15, 17, 19, 0)');
+        ctxC.fillStyle = gradR;
+        ctxC.fillRect(sx, Math.random() * 380, 2 + Math.random() * 4, len);
+      }
+
       textures.concrete = new THREE.CanvasTexture(cConc);
       textures.concrete.wrapS = textures.concrete.wrapT = THREE.RepeatWrapping;
-      textures.concrete.repeat.set(4, 2);
-      textures.concreteNormal = generateNormalMap(cConc, 2.5);
-      textures.concreteNormal.repeat.set(4, 2);
+      textures.concrete.repeat.set(6, 4);
+      textures.concreteNormal = generateNormalMap(cConc, 3.0);
+      textures.concreteNormal.wrapS = textures.concreteNormal.wrapT = THREE.RepeatWrapping;
+      textures.concreteNormal.repeat.set(6, 4);
 
       // 7. US Army M1941 Olive Drab Uniform Fabric with 29th Div Patch (512x512)
       const cUni = document.createElement('canvas');
@@ -10238,69 +10262,92 @@
 
       // 8. Reinforced Concrete Bunker Casemate Embrasure (Panoramic View Aperture)
       const sillMat = new THREE.MeshStandardMaterial({
+        color: 0x2e3236, // True dark charcoal/slate gray German pillbox concrete
         map: textures.concrete,
-        roughness: 0.92,
-        metalness: 0.1
+        normalMap: textures.concreteNormal,
+        roughness: 0.94,
+        metalness: 0.06
+      });
+      const embrasureArmorMat = new THREE.MeshStandardMaterial({
+        color: 0x22262a, // Dark tempered steel embrasure armor plate lining
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        roughness: 0.45,
+        metalness: 0.85
       });
       const ammoCanMat = new THREE.MeshStandardMaterial({
-        color: 0x364032,
+        color: 0x282c28, // Dark ordnance gray-green ammo box
         roughness: 0.62,
         metalness: 0.55
       });
       const peripheralBagMat = new THREE.MeshStandardMaterial({
         map: textures.sandbag,
+        color: 0x8a7d65,
         roughness: 0.94
       });
 
       const bunkerEmbrasureGroup = new THREE.Group();
 
-      // Lower sill bench (thick reinforced concrete parapet shelf below gun)
-      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(32, 1.6, 6.0), sillMat);
-      sillMesh.position.set(0, 6.2, 40.5);
+      // Lower sill bench (thick reinforced concrete parapet shelf below gun extending far to flanks)
+      // Spans from X = -50 to +50, Y from 4.6 to 6.8 (top face is at Y = 6.8), Z from 35.0 to 48.0
+      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(100, 2.2, 13.0), sillMat);
+      sillMesh.position.set(0, 5.7, 41.5);
       sillMesh.receiveShadow = true;
       bunkerEmbrasureGroup.add(sillMesh);
 
-      // Overhead concrete lintel (high ceiling overhang above gun sightline)
-      const lintelMesh = new THREE.Mesh(new THREE.BoxGeometry(32, 2.2, 6.0), sillMat);
-      lintelMesh.position.set(0, 11.4, 40.8);
+      // Overhead concrete lintel (high ceiling slab extending far to flanks and back past player)
+      // Spans from X = -50 to +50, Y from 10.6 to 13.6 (bottom face is at Y = 10.6), Z from 35.0 to 48.0
+      const lintelMesh = new THREE.Mesh(new THREE.BoxGeometry(100, 3.0, 13.0), sillMat);
+      lintelMesh.position.set(0, 12.1, 41.5);
       lintelMesh.castShadow = true;
+      lintelMesh.receiveShadow = true;
       bunkerEmbrasureGroup.add(lintelMesh);
 
-      // Flanking Casemate Blast Cheeks pushed to extreme flanks (|x| >= 8.2)
+      // Monolithic Flanking Casemate Blast Cheeks (Completely sealing the sides with ZERO gaps)
+      // Central embrasure opening is X from -8.0 to +8.0, Y from 6.8 to 10.6
+      // Left Blast Wall: Spans from X = -50.0 to -8.0 (width 42.0), Y from 6.8 to 10.6 (height 3.8), Z from 35.0 to 48.0 (depth 13.0)
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(42.0, 3.8, 13.0), sillMat);
+      leftWall.position.set(-29.0, 8.7, 41.5);
+      leftWall.castShadow = true;
+      leftWall.receiveShadow = true;
+
+      // Right Blast Wall: Spans from X = +8.0 to +50.0 (width 42.0), Y from 6.8 to 10.6 (height 3.8), Z from 35.0 to 48.0 (depth 13.0)
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(42.0, 3.8, 13.0), sillMat);
+      rightWall.position.set(29.0, 8.7, 41.5);
+      rightWall.castShadow = true;
+      rightWall.receiveShadow = true;
+
+      bunkerEmbrasureGroup.add(leftWall, rightWall);
+
+      // Beveled Armor Splay Reveals framing the embrasure aperture (45-degree angled deflectors)
+      // Positioned cleanly on inner reveals at X = +/- 8.0, Z = 38.6 (safely in front of camera at Z=42)
       for (let side = -1; side <= 1; side += 2) {
-        // Outer blast wall pillar
-        const pillar = new THREE.Mesh(new THREE.BoxGeometry(3.6, 5.2, 6.0), sillMat);
-        pillar.position.set(side * 9.5, 8.7, 40.5);
-        pillar.castShadow = true;
-        pillar.receiveShadow = true;
-
-        // Angled embrasure chamfer
-        const chamfer = new THREE.Mesh(new THREE.BoxGeometry(1.6, 4.8, 3.5), sillMat);
-        chamfer.position.set(side * 8.2, 8.7, 41.0);
-        chamfer.castShadow = true;
-        chamfer.receiveShadow = true;
-
-        bunkerEmbrasureGroup.add(pillar, chamfer);
+        const splay = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3.75, 2.8), embrasureArmorMat);
+        splay.position.set(side * 7.7, 8.7, 38.6);
+        splay.rotation.y = side * 0.45;
+        splay.castShadow = true;
+        splay.receiveShadow = true;
+        bunkerEmbrasureGroup.add(splay);
       }
 
       // German Patronenkasten 41 Ammo Boxes on peripheral side sill benches
       const ammoBoxGeo = new THREE.BoxGeometry(0.55, 0.45, 0.95);
       const box1 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box1.position.set(-6.6, 7.15, 40.4);
+      box1.position.set(-7.1, 7.05, 40.4);
       box1.rotation.y = 0.25;
       const box2 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box2.position.set(-6.5, 7.6, 40.4);
+      box2.position.set(-7.0, 7.50, 40.4);
       box2.rotation.y = 0.12;
       const box3 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box3.position.set(6.6, 7.15, 40.4);
+      box3.position.set(7.1, 7.05, 40.4);
       box3.rotation.y = -0.32;
       bunkerEmbrasureGroup.add(box1, box2, box3);
 
-      // Low Sandbag stacks strictly on peripheral side corners (|x| >= 6.8)
+      // Low Sandbag stacks strictly on peripheral side corners
       const cornerBagGeo = new THREE.BoxGeometry(1.2, 0.42, 0.65);
       const cornerBags = [
-        [-7.0, 7.2, 40.5, 0.1], [-7.0, 7.6, 40.5, -0.05],
-        [7.0, 7.2, 40.5, -0.1], [7.0, 7.6, 40.5, 0.08]
+        [-7.4, 7.05, 40.5, 0.1], [-7.4, 7.45, 40.5, -0.05],
+        [7.4, 7.05, 40.5, -0.1], [7.4, 7.45, 40.5, 0.08]
       ];
       cornerBags.forEach(([bx, by, bz, rotY]) => {
         const bag = new THREE.Mesh(cornerBagGeo, peripheralBagMat);
@@ -10332,7 +10379,7 @@
       gunRimLight.position.set(-2.8, 9.2, 41.2);
       scene.add(gunRimLight);
 
-      const gunParapetBounce = new THREE.PointLight(0xd4af6a, 1.2, 5.5);
+      const gunParapetBounce = new THREE.PointLight(0x5a6572, 0.75, 4.5);
       gunParapetBounce.position.set(0.6, 6.4, 40.8);
       scene.add(gunParapetBounce);
 
@@ -10398,11 +10445,11 @@
         metalness: 0.82
       });
       const mountMat = new THREE.MeshStandardMaterial({
-        map: textures.concrete,
+        map: textures.metal,
         normalMap: textures.metalNormal,
-        color: 0x3a423a,
-        roughness: 0.55,
-        metalness: 0.62
+        color: 0x272b30,
+        roughness: 0.45,
+        metalness: 0.78
       });
 
       gunBarrelGroup = new THREE.Group();
