@@ -12628,6 +12628,9 @@
       const envHits = raycaster.intersectObjects(environmentTargets, false);
       if (envHits.length > 0) {
         state.aimWorldPoint.copy(envHits[0].point);
+      } else {
+        const ray = raycaster.ray;
+        state.aimWorldPoint.copy(ray.origin).addScaledVector(ray.direction, 120);
       }
 
       // Check if hovering over an enemy to display armor/HP scanner
@@ -12962,9 +12965,14 @@
         // Natural idle breathing sway
         const gunSwayY = Math.sin(nowSec * 1.8) * 0.003;
         const gunSwayX = Math.cos(nowSec * 1.2) * 0.002;
-        gunGroup.position.y = 7.55 + gunSwayY;
-        gunGroup.position.x = 0.38 + gunSwayX;
-        gunGroup.position.z = 40.7;
+
+        // Viewmodel position anchored to camera yaw so gun remains in view when aiming left or right
+        const viewOffset = new THREE.Vector3(0.32, -0.92, -1.30);
+        viewOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), camera.rotation.y);
+        gunGroup.position.copy(camera.position).add(viewOffset);
+        gunGroup.position.x += gunSwayX;
+        gunGroup.position.y += gunSwayY;
+
         gunGroup.lookAt(state.aimWorldPoint);
         // Decay recoil & muzzle flash
         gunBarrelGroup.position.z += (0 - gunBarrelGroup.position.z) * 0.25;
