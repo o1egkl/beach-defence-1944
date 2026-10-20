@@ -11175,11 +11175,13 @@
 
     function spawnBoat(boatSpec, index) {
       const group = new THREE.Group();
-      const laneX = (index % 5 - 2) * 15 + (Math.random() * 6 - 3);
-      // Spawn within clear line-of-sight (under 95m from bunker) so landing craft are immediately visible cutting through waves
-      const startZ = index < 2 ? (-44 - Math.random() * 8) : (-62 - Math.random() * 14);
+      // Well-distributed beach landing lanes
+      const laneX = (index % 5 - 2) * 16 + (Math.random() * 4 - 2);
+      // Clearly visible on ocean water (under 120m from bunker, well inside the 160m fog line)
+      // Takes ~4.8s to 5.4s to reach surf, giving player approach tracking time without feeling rushed
+      const startZ = -70 - Math.random() * 8;
 
-      let speed = index < 2 ? 17.5 : 16.2;
+      let speed = 12.0 + Math.min(2.5, state.waveIndex * 0.15);
       let hullW = 4.4, hullH = 1.85, hullL = 9.8;
 
       // Authentic WW2 Higgins Boat Materials
@@ -11506,7 +11508,8 @@
         armorLabel = isStorm ? 'Infantry Helmet' : 'Unarmored';
         armorReduction = isStorm ? 0.12 : 0.0;
         maxHp = Math.round((isStorm ? 102 : 58) * waveScale);
-        speed = (isStorm ? 4.3 : 3.6) + Math.random() * 0.5;
+        const baseSpeed = isStorm ? 3.4 : 2.75;
+        speed = (state.waveIndex === 0 ? baseSpeed : baseSpeed + Math.min(1.2, state.waveIndex * 0.12)) + Math.random() * 0.35;
         points = isStorm ? 150 : 100;
         hpBarY = 2.85;
 
@@ -11969,8 +11972,8 @@
         isDying: false,
         dyingTime: 0,
         wobbleSeed: Math.random() * 10,
-        lastShotTime: 0.6 + Math.random() * 2.2,
-        shootInterval: (unitType === 'boss_tank') ? 3.6 : (unitType === 'tank') ? 5.2 : (unitType === 'halftrack' || unitType === 'scout_car') ? 3.4 : (unitType === 'storm') ? 2.4 + Math.random() * 1.2 : 3.0 + Math.random() * 1.4,
+        lastShotTime: (typeof performance !== 'undefined' ? performance.now() * 0.001 : 0) + 1.2 + Math.random() * 2.0,
+        shootInterval: (unitType === 'boss_tank') ? 3.6 : (unitType === 'tank') ? 5.2 : (unitType === 'halftrack' || unitType === 'scout_car') ? 3.6 : (unitType === 'storm') ? (3.0 + Math.max(0, 1.6 - state.waveIndex * 0.3) + Math.random() * 1.2) : (4.0 + Math.max(0, 1.8 - state.waveIndex * 0.35) + Math.random() * 1.5),
         dead: false
       };
 
@@ -12749,33 +12752,29 @@
       state.waveCombatPoints = 0;
       state.enemiesKilledInWave = 0;
 
-      // Count total enemies in this wave and tighten boat arrival cadence
+      // Count total enemies in this wave and set natural, well-paced boat arrival cadence
       let totalCount = 0;
       waveSpawnSchedule = cfg.boats.map((b, idx) => {
         totalCount += b.cargo.length;
-        const pairIdx = Math.floor(idx / 2);
-        // Initial boat pair spawns at 0.5s; subsequent pairs arrive every 5.8s for continuous non-stop beach action
-        const dynamicDelay = (pairIdx === 0) ? 0.5 : (1.0 + pairIdx * 5.8);
+        // Paced landing intervals so the game feels authentic, thrilling, and fair rather than overwhelming
+        let dynamicDelay;
+        if (waveIdx === 0) {
+          // Wave 1 Introductory Recon: Boat 0 at 0.5s (lands at ~5.4s), then subsequent boats arrive at comfortable 11s intervals
+          dynamicDelay = (idx === 0) ? 0.5 : (1.0 + idx * 11.0);
+        } else if (waveIdx < 4) {
+          // Waves 2-4: Staggered landings every 9.0s
+          dynamicDelay = (idx === 0) ? 0.5 : (1.0 + idx * 9.0);
+        } else {
+          // Advanced waves: Coordinated flanking pairs every 7.5s
+          const pairIdx = Math.floor(idx / 2);
+          dynamicDelay = (pairIdx === 0) ? 0.5 : (1.0 + pairIdx * 7.5);
+        }
         return { ...b, delay: dynamicDelay, idx, spawned: false };
       });
 
-      // Immediate Vanguard Beachhead Assault Squad: aggressive infantry storming the dunes at wave start!
-      const vanguardTypes = waveIdx === 0
-        ? ['rifle', 'rifle', 'storm', 'rifle', 'rifle', 'storm']
-        : waveIdx < 5
-          ? ['rifle', 'storm', 'rifle', 'scout_car', 'storm', 'rifle']
-          : ['storm', 'storm', 'halftrack', 'storm', 'tank', 'storm'];
-
-      totalCount += vanguardTypes.length;
+      // No enemies pre-spawn on the beach: all troops authentically storm ashore from landing craft!
       state.totalEnemiesInWave = totalCount;
       waveElapsed = 0;
-
-      // Deploy vanguard units right onto the sand dunes in direct player line of sight!
-      vanguardTypes.forEach((uType, vIdx) => {
-        const laneX = ((vIdx % 6) - 2.5) * 8.5 + (Math.random() * 4 - 2);
-        const spawnZ = 2 + (vIdx % 3) * 4.5 + Math.random() * 2.5; // Z between 2 and 14 on beach sand
-        spawnEnemyUnit(uType, laneX, spawnZ);
-      });
 
       // Schedule parachute time booster drops distributed across extended wave duration
       state.dropTimers = [];
@@ -13995,11 +13994,12 @@
 
           // If an enemy reaches the bunker perimeter (z >= 35), they penalize time or breach!
           if (enemy.group.position.z >= 35) {
-            state.timeRemaining = Math.max(0, state.timeRemaining - 11);
-            flashScreen('rgba(239, 68, 68, 0.45)');
-            spawnFloatingCallout(enemy.group.position, '⚠️ PERIMETER BREACH! -11.0s TIME', 'text-red-200 border-red-500 bg-red-950/95');
+            const breachPenalty = state.waveIndex === 0 ? 3.0 : Math.min(8.0, 3.5 + state.waveIndex * 0.5);
+            state.timeRemaining = Math.max(0, state.timeRemaining - breachPenalty);
+            flashScreen('rgba(239, 68, 68, 0.40)');
+            spawnFloatingCallout(enemy.group.position, `⚠️ PERIMETER BREACH! -${breachPenalty.toFixed(1)}s TIME`, 'text-red-200 border-red-500 bg-red-950/95');
             // Push enemy back slightly so player must still eliminate them
-            enemy.group.position.z = 16;
+            enemy.group.position.z = 14;
           }
         }
 
