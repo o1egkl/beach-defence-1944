@@ -9446,7 +9446,7 @@
     container.appendChild(renderer.domElement);
 
     // Cinematic Lighting: Sky hemisphere + directional sun + warm golden sand bounce
-    const hemiLight = new THREE.HemisphereLight(0xd4e8f8, 0xc2a46c, 0.65);
+    const hemiLight = new THREE.HemisphereLight(0xd4e8f8, 0xdcb45a, 0.70);
     scene.add(hemiLight);
 
     const ambientLight = new THREE.AmbientLight(0xd8e8f2, 0.45);
@@ -9551,8 +9551,8 @@
       const cSand = document.createElement('canvas');
       cSand.width = cSand.height = 512;
       const ctxS = cSand.getContext('2d');
-      // Rich warm golden yellow ochre base (Omaha Beach golden sand)
-      ctxS.fillStyle = '#dfb871';
+      // Rich warm sunny golden yellow ochre base (Omaha Beach sun-drenched golden sand)
+      ctxS.fillStyle = '#f0c74b';
       ctxS.fillRect(0, 0, 512, 512);
 
       // Multi-frequency wind-carved dune ripples & warm golden sand undulations
@@ -9560,10 +9560,10 @@
         for (let x = 0; x < 512; x += 2) {
           const wave = Math.sin(y * 0.065 + Math.cos(x * 0.035) * 3) * 12 + Math.sin(y * 0.16 + x * 0.018) * 5;
           const noise = (Math.random() - 0.5) * 28 + wave;
-          // Golden sandy palette: warm amber shadows to sunlit golden quartz highlights
-          const r = Math.min(255, Math.max(0, 224 + Math.round(noise * 0.95)));
-          const g = Math.min(255, Math.max(0, 184 + Math.round(noise * 0.82)));
-          const b = Math.min(255, Math.max(0, 114 + Math.round(noise * 0.55)));
+          // Radiant golden sandy palette: warm amber shadows to brilliant sunlit golden yellow quartz highlights
+          const r = Math.min(255, Math.max(0, 246 + Math.round(noise * 0.75)));
+          const g = Math.min(255, Math.max(0, 204 + Math.round(noise * 0.82)));
+          const b = Math.min(255, Math.max(0, 68 + Math.round(noise * 0.52)));
           ctxS.fillStyle = `rgb(${r},${g},${b})`;
           ctxS.fillRect(x, y, 2, 1);
         }
@@ -9601,7 +9601,7 @@
       cWet.width = cWet.height = 512;
       const ctxW = cWet.getContext('2d');
       // Saturated damp golden bronze base
-      ctxW.fillStyle = '#8f6e3c';
+      ctxW.fillStyle = '#a87a2d';
       ctxW.fillRect(0, 0, 512, 512);
 
       // Damp sand grain variation & subtle wave swash marks
@@ -9609,9 +9609,9 @@
         const swash = Math.sin(y * 0.05) * 8;
         for (let x = 0; x < 512; x += 3) {
           const n = (Math.random() - 0.5) * 20 + swash;
-          const r = Math.min(255, Math.max(0, 142 + Math.round(n * 0.9)));
-          const g = Math.min(255, Math.max(0, 110 + Math.round(n * 0.75)));
-          const b = Math.min(255, Math.max(0, 60 + Math.round(n * 0.5)));
+          const r = Math.min(255, Math.max(0, 185 + Math.round(n * 0.85)));
+          const g = Math.min(255, Math.max(0, 145 + Math.round(n * 0.75)));
+          const b = Math.min(255, Math.max(0, 48 + Math.round(n * 0.45)));
           ctxW.fillStyle = `rgb(${r},${g},${b})`;
           ctxW.fillRect(x, y, 3, 1);
         }
@@ -10063,11 +10063,11 @@
       beachGeo.computeVertexNormals();
 
       const beachMat = new THREE.MeshStandardMaterial({
-        color: 0xf6e5b8, // Warm sunlit golden tint over golden Normandy sand
+        color: 0xf9d868, // Radiant sunny golden yellow sand
         map: textures.sand,
         normalMap: textures.sandNormal,
-        roughness: 0.92,
-        metalness: 0.04
+        roughness: 0.90,
+        metalness: 0.02
       });
       const beachMesh = new THREE.Mesh(beachGeo, beachMat);
       beachMesh.position.set(0, 0, 14);
@@ -10104,13 +10104,13 @@
       const wetGeo = new THREE.PlaneGeometry(280, 22, 48, 10);
       wetGeo.rotateX(-Math.PI / 2);
       const wetMat = new THREE.MeshStandardMaterial({
-        color: 0xdec088, // Rich damp golden sand reflection
+        color: 0xe2ba55, // Rich saturated damp golden bronze sand
         map: textures.wetSand,
         normalMap: textures.wetSandNormal,
-        roughness: 0.14,
-        metalness: 0.38,
+        roughness: 0.16,
+        metalness: 0.32,
         transparent: true,
-        opacity: 0.82
+        opacity: 0.85
       });
       const wetMesh = new THREE.Mesh(wetGeo, wetMat);
       wetMesh.position.set(0, 0.04, -8);
