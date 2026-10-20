@@ -9187,14 +9187,14 @@
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
-    // Cinematic Lighting: Sky hemisphere + directional sun + warm sand bounce
-    const hemiLight = new THREE.HemisphereLight(0xcfe2ee, 0x6e634e, 0.55);
+    // Cinematic Lighting: Sky hemisphere + directional sun + warm golden sand bounce
+    const hemiLight = new THREE.HemisphereLight(0xd4e8f8, 0xc2a46c, 0.65);
     scene.add(hemiLight);
 
-    const ambientLight = new THREE.AmbientLight(0xd5e2ea, 0.45);
+    const ambientLight = new THREE.AmbientLight(0xd8e8f2, 0.45);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfff3db, 1.15);
+    const dirLight = new THREE.DirectionalLight(0xfff6e5, 1.25);
     dirLight.position.set(50, 90, 40);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
@@ -9236,7 +9236,8 @@
       boatHull: null,
       boatNormal: null,
       sandbag: null,
-      waterNormal: null
+      waterNormal: null,
+      seafoam: null
     };
 
     function generateNormalMap(canvas, strength = 2.0) {
@@ -9288,50 +9289,87 @@
     }
 
     function initProceduralTextures() {
-      // 1. Sand Diffuse with shell specks & ripple bands (512x512)
+      // 1. Golden Normandy Beach Sand Diffuse with shell specks & ripple bands (512x512)
       const cSand = document.createElement('canvas');
       cSand.width = cSand.height = 512;
       const ctxS = cSand.getContext('2d');
-      ctxS.fillStyle = '#9b8f75';
+      // Rich warm golden yellow ochre base (Omaha Beach golden sand)
+      ctxS.fillStyle = '#dfb871';
       ctxS.fillRect(0, 0, 512, 512);
+
+      // Multi-frequency wind-carved dune ripples & warm golden sand undulations
       for (let y = 0; y < 512; y++) {
-        const ripple = Math.sin(y * 0.08) * 10;
-        for (let x = 0; x < 512; x += 3) {
-          const n = (Math.random() - 0.5) * 26 + ripple;
-          const r = Math.min(255, Math.max(0, 155 + n));
-          const g = Math.min(255, Math.max(0, 143 + n * 0.9));
-          const b = Math.min(255, Math.max(0, 117 + n * 0.7));
+        for (let x = 0; x < 512; x += 2) {
+          const wave = Math.sin(y * 0.065 + Math.cos(x * 0.035) * 3) * 12 + Math.sin(y * 0.16 + x * 0.018) * 5;
+          const noise = (Math.random() - 0.5) * 28 + wave;
+          // Golden sandy palette: warm amber shadows to sunlit golden quartz highlights
+          const r = Math.min(255, Math.max(0, 224 + Math.round(noise * 0.95)));
+          const g = Math.min(255, Math.max(0, 184 + Math.round(noise * 0.82)));
+          const b = Math.min(255, Math.max(0, 114 + Math.round(noise * 0.55)));
           ctxS.fillStyle = `rgb(${r},${g},${b})`;
-          ctxS.fillRect(x, y, 3, 1);
+          ctxS.fillRect(x, y, 2, 1);
         }
       }
-      for (let i = 0; i < 800; i++) {
+
+      // Authentic crushed seashell flecks, crystalline quartz specks & shingle pebbles
+      // Calcite/shell white & ivory specks
+      for (let i = 0; i < 1500; i++) {
         const px = Math.random() * 512, py = Math.random() * 512;
-        ctxS.fillStyle = Math.random() > 0.4 ? 'rgba(235, 230, 215, 0.6)' : 'rgba(75, 68, 55, 0.5)';
+        ctxS.fillStyle = Math.random() > 0.4 ? 'rgba(255, 252, 242, 0.85)' : 'rgba(255, 240, 205, 0.75)';
+        ctxS.fillRect(px, py, 1.5, 1.5);
+      }
+      // Terracotta & pink granite mineral granules
+      for (let i = 0; i < 650; i++) {
+        const px = Math.random() * 512, py = Math.random() * 512;
+        ctxS.fillStyle = 'rgba(215, 135, 85, 0.55)';
         ctxS.fillRect(px, py, 2, 2);
       }
+      // Dark flint and basalt pebbles
+      for (let i = 0; i < 750; i++) {
+        const px = Math.random() * 512, py = Math.random() * 512;
+        ctxS.fillStyle = 'rgba(75, 58, 42, 0.55)';
+        ctxS.fillRect(px, py, 2, 2);
+      }
+
       textures.sand = new THREE.CanvasTexture(cSand);
       textures.sand.wrapS = textures.sand.wrapT = THREE.RepeatWrapping;
-      textures.sand.repeat.set(16, 8);
-      textures.sandNormal = generateNormalMap(cSand, 2.6);
-      textures.sandNormal.repeat.set(16, 8);
+      textures.sand.repeat.set(18, 9);
+      textures.sandNormal = generateNormalMap(cSand, 3.2);
+      textures.sandNormal.wrapS = textures.sandNormal.wrapT = THREE.RepeatWrapping;
+      textures.sandNormal.repeat.set(18, 9);
 
-      // 2. Wet Shoreline Glaze (512x512)
+      // 2. Wet Shoreline Glaze (Saturated Damp Golden Sand with Water Sheen)
       const cWet = document.createElement('canvas');
       cWet.width = cWet.height = 512;
       const ctxW = cWet.getContext('2d');
-      ctxW.fillStyle = '#554a37';
+      // Saturated damp golden bronze base
+      ctxW.fillStyle = '#8f6e3c';
       ctxW.fillRect(0, 0, 512, 512);
-      for (let i = 0; i < 4500; i++) {
+
+      // Damp sand grain variation & subtle wave swash marks
+      for (let y = 0; y < 512; y++) {
+        const swash = Math.sin(y * 0.05) * 8;
+        for (let x = 0; x < 512; x += 3) {
+          const n = (Math.random() - 0.5) * 20 + swash;
+          const r = Math.min(255, Math.max(0, 142 + Math.round(n * 0.9)));
+          const g = Math.min(255, Math.max(0, 110 + Math.round(n * 0.75)));
+          const b = Math.min(255, Math.max(0, 60 + Math.round(n * 0.5)));
+          ctxW.fillStyle = `rgb(${r},${g},${b})`;
+          ctxW.fillRect(x, y, 3, 1);
+        }
+      }
+      // Glossy water sheen and tiny foam bubbles trapped in wet sand
+      for (let i = 0; i < 2800; i++) {
         const x = Math.random() * 512, y = Math.random() * 512;
-        ctxW.fillStyle = Math.random() > 0.5 ? 'rgba(35, 30, 22, 0.45)' : 'rgba(175, 195, 200, 0.25)';
-        ctxW.fillRect(x, y, 2 + Math.random() * 4, 1);
+        ctxW.fillStyle = Math.random() > 0.4 ? 'rgba(230, 245, 255, 0.32)' : 'rgba(50, 38, 20, 0.45)';
+        ctxW.fillRect(x, y, 2 + Math.random() * 3, 1);
       }
       textures.wetSand = new THREE.CanvasTexture(cWet);
       textures.wetSand.wrapS = textures.wetSand.wrapT = THREE.RepeatWrapping;
-      textures.wetSand.repeat.set(12, 6);
-      textures.wetSandNormal = generateNormalMap(cWet, 1.8);
-      textures.wetSandNormal.repeat.set(12, 6);
+      textures.wetSand.repeat.set(14, 6);
+      textures.wetSandNormal = generateNormalMap(cWet, 2.2);
+      textures.wetSandNormal.wrapS = textures.wetSandNormal.wrapT = THREE.RepeatWrapping;
+      textures.wetSandNormal.repeat.set(14, 6);
 
       // 3. Gun Metal with Micro Scratches, Silver Edge Wear & Blued Ordnance Steel (512x512)
       const cMet = document.createElement('canvas');
@@ -9635,28 +9673,76 @@
       textures.sandbag = new THREE.CanvasTexture(cBag);
       textures.fabricNormal = generateNormalMap(cBag, 2.8);
 
-      // 13. Ocean Water Ripple Facet Normal Map (256x256)
+      // 13. Ocean Water Ripple & Directional Chop Normal Map (512x512)
       const cWater = document.createElement('canvas');
-      cWater.width = cWater.height = 256;
+      cWater.width = cWater.height = 512;
       const ctxH2O = cWater.getContext('2d');
       ctxH2O.fillStyle = '#808080';
-      ctxH2O.fillRect(0, 0, 256, 256);
-      for (let i = 0; i < 240; i++) {
-        const x = Math.random() * 256, y = Math.random() * 256;
-        const rad = 8 + Math.random() * 26;
-        const grad = ctxH2O.createRadialGradient(x, y, 0, x, y, rad);
-        grad.addColorStop(0, Math.random() > 0.5 ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)');
+      ctxH2O.fillRect(0, 0, 512, 512);
+
+      // Micro capillary waves & caustics
+      for (let i = 0; i < 460; i++) {
+        const x = Math.random() * 512, y = Math.random() * 512;
+        const radX = 14 + Math.random() * 32;
+        const radY = 7 + Math.random() * 16;
+        const grad = ctxH2O.createRadialGradient(x, y, 0, x, y, radX);
+        grad.addColorStop(0, Math.random() > 0.48 ? 'rgba(255,255,255,0.52)' : 'rgba(0,0,0,0.52)');
         grad.addColorStop(1, 'rgba(128,128,128,0)');
         ctxH2O.fillStyle = grad;
-        ctxH2O.beginPath(); ctxH2O.arc(x, y, rad, 0, Math.PI * 2); ctxH2O.fill();
+        ctxH2O.beginPath();
+        ctxH2O.ellipse(x, y, radX, radY, (Math.random() - 0.5) * 0.45, 0, Math.PI * 2);
+        ctxH2O.fill();
       }
-      textures.waterNormal = generateNormalMap(cWater, 3.2);
+      // Horizontal wind-driven chop streaks
+      for (let i = 0; i < 280; i++) {
+        const x = Math.random() * 512, y = Math.random() * 512;
+        const len = 22 + Math.random() * 55;
+        const gradS = ctxH2O.createLinearGradient(x - len * 0.5, y, x + len * 0.5, y);
+        gradS.addColorStop(0, 'rgba(128,128,128,0)');
+        gradS.addColorStop(0.5, Math.random() > 0.5 ? 'rgba(245,245,245,0.45)' : 'rgba(15,15,15,0.45)');
+        gradS.addColorStop(1, 'rgba(128,128,128,0)');
+        ctxH2O.fillStyle = gradS;
+        ctxH2O.fillRect(x - len * 0.5, y - 2, len, 4);
+      }
+
+      textures.waterNormal = generateNormalMap(cWater, 3.8);
       textures.waterNormal.wrapS = textures.waterNormal.wrapT = THREE.RepeatWrapping;
-      textures.waterNormal.repeat.set(24, 24);
+      textures.waterNormal.repeat.set(28, 18);
+
+      // 14. Shoreline Breaking Seafoam Texture (512x256)
+      const cFoam = document.createElement('canvas');
+      cFoam.width = 512; cFoam.height = 256;
+      const ctxFm = cFoam.getContext('2d');
+      ctxFm.clearRect(0, 0, 512, 256);
+
+      // Organic scalloped foam wash with bubbling froth
+      const foamGrad = ctxFm.createLinearGradient(0, 0, 0, 256);
+      foamGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      foamGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.90)');
+      foamGrad.addColorStop(0.70, 'rgba(240, 250, 255, 0.75)');
+      foamGrad.addColorStop(1.0, 'rgba(215, 240, 250, 0)');
+      ctxFm.fillStyle = foamGrad;
+      ctxFm.fillRect(0, 0, 512, 256);
+
+      // Bubbles & cellular foam lacework
+      for (let i = 0; i < 950; i++) {
+        const bx = Math.random() * 512;
+        const by = 35 + Math.random() * 190;
+        const br = 2 + Math.random() * 7;
+        ctxFm.fillStyle = Math.random() > 0.3 ? 'rgba(255, 255, 255, 0.92)' : 'rgba(200, 235, 250, 0.55)';
+        ctxFm.beginPath(); ctxFm.arc(bx, by, br, 0, Math.PI * 2); ctxFm.fill();
+        ctxFm.strokeStyle = 'rgba(180, 220, 240, 0.65)';
+        ctxFm.lineWidth = 1;
+        ctxFm.stroke();
+      }
+
+      textures.seafoam = new THREE.CanvasTexture(cFoam);
+      textures.seafoam.wrapS = textures.seafoam.wrapT = THREE.RepeatWrapping;
+      textures.seafoam.repeat.set(4, 1);
     }
 
     // --- 5. BUILD 3D WW2 BEACH, OCEAN, OBSTACLES & BUNKER EMBRASURE ---
-    let oceanMesh, oceanGeo, surfFoamMesh;
+    let oceanMesh, oceanGeo, surfFoamMesh, breakerMesh;
     const gunGroup = new THREE.Group();
     let gunBarrelGroup, muzzleFlashMesh, barrelHeatMat;
     const aimPlane = new THREE.Plane(new THREE.Vector3(0, 0.98, 0.2).normalize(), 0);
@@ -9699,10 +9785,11 @@
       beachGeo.computeVertexNormals();
 
       const beachMat = new THREE.MeshStandardMaterial({
+        color: 0xf6e5b8, // Warm sunlit golden tint over golden Normandy sand
         map: textures.sand,
         normalMap: textures.sandNormal,
-        roughness: 0.88,
-        metalness: 0.08
+        roughness: 0.92,
+        metalness: 0.04
       });
       const beachMesh = new THREE.Mesh(beachGeo, beachMat);
       beachMesh.position.set(0, 0, 14);
@@ -9739,27 +9826,57 @@
       const wetGeo = new THREE.PlaneGeometry(280, 22, 48, 10);
       wetGeo.rotateX(-Math.PI / 2);
       const wetMat = new THREE.MeshStandardMaterial({
+        color: 0xdec088, // Rich damp golden sand reflection
         map: textures.wetSand,
         normalMap: textures.wetSandNormal,
-        roughness: 0.12,
-        metalness: 0.42,
+        roughness: 0.14,
+        metalness: 0.38,
         transparent: true,
-        opacity: 0.76
+        opacity: 0.82
       });
       const wetMesh = new THREE.Mesh(wetGeo, wetMat);
       wetMesh.position.set(0, 0.04, -8);
       wetMesh.receiveShadow = true;
       scene.add(wetMesh);
 
-      // 2. High-Fidelity Atlantic / English Channel Ocean Water (Z from -750 to -10)
-      oceanGeo = new THREE.PlaneGeometry(1200, 750, 96, 72);
+      // 2. High-Fidelity Atlantic / English Channel Ocean Water (Z from -760 to -10)
+      oceanGeo = new THREE.PlaneGeometry(1200, 800, 100, 80);
       oceanGeo.rotateX(-Math.PI / 2);
+
+      // Realistic Optical Depth Vertex Colors: Shore Turquoise -> Channel Sapphire -> Deep Atlantic Navy
+      const oceanColors = [];
+      const oPos = oceanGeo.attributes.position;
+      for (let i = 0; i < oPos.count; i++) {
+        const z = oPos.getZ(i); // Local z ranges from -400 to +400. z=400 is closest to beach
+        const t = Math.max(0, Math.min(1, (z + 400) / 800)); // 0 = deepest water, 1 = beach surf
+        let r, g, b;
+        if (t < 0.45) {
+          // Deep Atlantic (-760m to -400m): Deep stormy navy-slate
+          const u = t / 0.45;
+          r = 0.02 + u * 0.03;
+          g = 0.12 + u * 0.16;
+          b = 0.28 + u * 0.24;
+        } else {
+          // Mid Channel to Shallow Shoreline (-400m to -10m):
+          // Over the golden beach sand, sunlight scatters into brilliant translucent emerald-turquoise!
+          const u = (t - 0.45) / 0.55;
+          r = 0.05 + u * 0.07;
+          g = 0.28 + u * 0.35;
+          b = 0.52 + u * 0.14;
+        }
+        oceanColors.push(r, g, b);
+      }
+      oceanGeo.setAttribute('color', new THREE.Float32BufferAttribute(oceanColors, 3));
+      oceanGeo.computeVertexNormals();
+
       const oceanMat = new THREE.MeshStandardMaterial({
-        color: 0x0e4572, // Vibrant deep Atlantic / English Channel sapphire blue
-        roughness: 0.16,
-        metalness: 0.68,
+        vertexColors: true,
+        roughness: 0.08,
+        metalness: 0.35,
         normalMap: textures.waterNormal,
-        flatShading: true
+        normalScale: new THREE.Vector2(2.0, 2.0),
+        transparent: true,
+        opacity: 0.94
       });
       oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
       oceanMesh.position.set(0, -0.15, -360);
@@ -9767,17 +9884,36 @@
       scene.add(oceanMesh);
       environmentTargets.push(oceanMesh);
 
-      // Multi-Layered Shoreline Surf Foam Strips
-      const surfGeo = new THREE.PlaneGeometry(280, 7.5, 48, 2);
+      // Multi-Layered Shoreline Surf & Breaker Roller Wave Meshes
+      // 1. Shoreline Surf Swash Foam Strip (Washing up and down the golden sand)
+      const surfGeo = new THREE.PlaneGeometry(280, 10.5, 54, 4);
       surfGeo.rotateX(-Math.PI / 2);
-      const surfMat = new THREE.MeshBasicMaterial({
-        color: 0xe8f4f8,
+      const surfMat = new THREE.MeshStandardMaterial({
+        map: textures.seafoam,
+        color: 0xffffff,
+        roughness: 0.45,
         transparent: true,
-        opacity: 0.70
+        opacity: 0.78,
+        depthWrite: false
       });
       surfFoamMesh = new THREE.Mesh(surfGeo, surfMat);
-      surfFoamMesh.position.set(0, 0.12, -9);
+      surfFoamMesh.position.set(0, 0.14, -8.5);
       scene.add(surfFoamMesh);
+
+      // 2. Outer Breaker Wave Roller (where ocean swells pitch up and break into curling foam)
+      const breakerGeo = new THREE.PlaneGeometry(300, 14, 54, 4);
+      breakerGeo.rotateX(-Math.PI / 2);
+      const breakerMat = new THREE.MeshStandardMaterial({
+        map: textures.seafoam,
+        color: 0xecf9fc,
+        roughness: 0.35,
+        transparent: true,
+        opacity: 0.65,
+        depthWrite: false
+      });
+      breakerMesh = new THREE.Mesh(breakerGeo, breakerMat);
+      breakerMesh.position.set(0, 0.20, -22);
+      scene.add(breakerMesh);
 
       // 3. Czech Hedgehog Anti-Tank Obstacles (Steel Angle Beams with Rust)
       const beamGeo = new THREE.BoxGeometry(0.32, 3.4, 0.32);
@@ -12755,27 +12891,48 @@
       lastFrameTime = nowMs;
       const nowSec = nowMs / 1000;
 
-      // 1. Animate Ocean Waves, Water Ripples & Shoreline Surf
+      // 1. Animate Ocean Waves, Water Ripples, Shoreline Surf & Breakers
       if (textures.waterNormal) {
-        textures.waterNormal.offset.x = (nowSec * 0.035) % 1;
-        textures.waterNormal.offset.y = (nowSec * 0.050) % 1;
+        // Multi-speed drift towards the beach (+Z direction)
+        textures.waterNormal.offset.x = (nowSec * 0.018) % 1;
+        textures.waterNormal.offset.y = (nowSec * 0.042) % 1;
       }
       if (oceanGeo) {
         const pos = oceanGeo.attributes.position;
+        const t = nowSec;
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i);
           const z = pos.getZ(i);
-          const waveY = Math.sin(x * 0.05 + nowSec * 1.5) * 0.55 + Math.cos(z * 0.08 + nowSec * 1.8) * 0.55;
+          // 1. Long deep Atlantic swell moving in toward the beach (+Z)
+          const swell1 = Math.sin(z * 0.038 + t * 1.6) * 0.68;
+          // 2. Angled English Channel cross-swell
+          const swell2 = Math.cos(x * 0.026 - z * 0.020 + t * 1.25) * 0.44;
+          // 3. High-frequency surface wind chop
+          const chop = Math.sin(x * 0.075 + z * 0.065 + t * 2.3) * 0.18;
+          // 4. Shoaling compression (waves steepen as depth decreases near shore)
+          const shallows = Math.max(0, (z + 200) / 400);
+          const waveY = (swell1 + swell2 + chop) * (1.0 + shallows * 0.35);
           pos.setY(i, waveY);
         }
         pos.needsUpdate = true;
       }
+
+      // Shoreline Surf Swash & Breaker Wave Animation (Synchronized 4.6s Tide Cycle)
+      const T = 4.6;
+      const waveCycle = (nowSec % T) / T;
+      const wavePhase = Math.sin(waveCycle * Math.PI * 2);
+
       if (surfFoamMesh) {
-        const T = 4.6;
-        const waveCycle = (nowSec % T) / T;
-        const advance = Math.sin(waveCycle * Math.PI * 2);
-        surfFoamMesh.position.z = -8.8 + advance * 1.6;
-        surfFoamMesh.material.opacity = 0.35 + (advance > 0 ? advance * 0.45 : 0.05);
+        // Swash washing up on the yellow sand and retreating
+        surfFoamMesh.position.z = -8.2 + wavePhase * 2.2;
+        surfFoamMesh.material.opacity = 0.35 + (wavePhase > 0 ? wavePhase * 0.52 : 0.08);
+      }
+      if (breakerMesh) {
+        // Breaker roller wave rising up at the sandbar edge and foaming over
+        const breakerPhase = Math.sin((waveCycle + 0.28) * Math.PI * 2);
+        breakerMesh.position.z = -22.5 + breakerPhase * 2.0;
+        breakerMesh.position.y = 0.16 + Math.max(0, breakerPhase * 0.38);
+        breakerMesh.material.opacity = 0.22 + (breakerPhase > 0 ? breakerPhase * 0.56 : 0.04);
       }
       sfx.updateOceanAmbience(nowSec);
 
