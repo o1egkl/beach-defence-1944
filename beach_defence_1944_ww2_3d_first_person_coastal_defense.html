@@ -623,11 +623,25 @@
     // BEACH DEFENCE — WW2 3D FIRST-PERSON COASTAL DEFENSE GAME
     // ============================================================================
 
-    // --- 1. WEB AUDIO SYNTHESIZER (WW2 SOUND EFFECTS) ---
+    // --- 1. WEB AUDIO SYNTHESIZER (WW2 SOUND EFFECTS & OCEAN AMBIENCE) ---
     class SoundEngine {
       constructor() {
         this.ctx = null;
-        this.muted = false;
+        this._muted = false;
+        this.oceanRunning = false;
+        this.oceanNodes = null;
+        this.oceanMasterGain = null;
+        this.oceanTargetGain = 0.26;
+      }
+      get muted() {
+        return this._muted;
+      }
+      set muted(val) {
+        this._muted = !!val;
+        if (this.oceanMasterGain && this.ctx) {
+          const now = this.ctx.currentTime;
+          this.oceanMasterGain.gain.setTargetAtTime(this._muted ? 0 : this.oceanTargetGain, now, 0.08);
+        }
       }
       init() {
         if (!this.ctx) {
@@ -637,6 +651,120 @@
         if (this.ctx && this.ctx.state === 'suspended') {
           this.ctx.resume();
         }
+        if (this.ctx && !this.oceanRunning) {
+          this.startOceanAmbience();
+        }
+      }
+      startOceanAmbience() {
+        if (this.oceanRunning || !this.ctx) return;
+        try {
+          const sampleRate = this.ctx.sampleRate;
+          const dur = 5.0;
+          const bufferSize = Math.floor(sampleRate * dur);
+          const buffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+          const data = buffer.getChannelData(0);
+          let lastOut = 0.0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            // Brown noise integration for deep natural sea roar
+            lastOut = (lastOut + 0.028 * white) / 1.028;
+            // Blend with pink/white noise for foamy surf spray
+            data[i] = lastOut * 3.4 + white * 0.06;
+          }
+          // Seamless crossfade loop over 0.5s
+          const fadeLen = Math.floor(sampleRate * 0.5);
+          for (let i = 0; i < fadeLen; i++) {
+            const t = i / fadeLen;
+            data[i] = data[i] * t + data[bufferSize - fadeLen + i] * (1 - t);
+          }
+
+          const source = this.ctx.createBufferSource();
+          source.buffer = buffer;
+          source.loop = true;
+
+          // Deep rolling ocean swell
+          const swellFilter = this.ctx.createBiquadFilter();
+          swellFilter.type = 'lowpass';
+          swellFilter.frequency.value = 220;
+          swellFilter.Q.value = 1.1;
+
+          const swellGain = this.ctx.createGain();
+          swellGain.gain.value = 0.12;
+
+          source.connect(swellFilter);
+          swellFilter.connect(swellGain);
+
+          // Surf white water breaking on shore sand
+          const foamFilter = this.ctx.createBiquadFilter();
+          foamFilter.type = 'bandpass';
+          foamFilter.frequency.value = 650;
+          foamFilter.Q.value = 1.2;
+
+          const foamGain = this.ctx.createGain();
+          foamGain.gain.value = 0.04;
+
+          source.connect(foamFilter);
+          foamFilter.connect(foamGain);
+
+          // Ocean Master Output
+          this.oceanMasterGain = this.ctx.createGain();
+          this.oceanMasterGain.gain.value = this._muted ? 0 : this.oceanTargetGain;
+
+          swellGain.connect(this.oceanMasterGain);
+          foamGain.connect(this.oceanMasterGain);
+          this.oceanMasterGain.connect(this.ctx.destination);
+
+          source.start(0);
+          this.oceanRunning = true;
+          this.oceanNodes = { source, swellFilter, swellGain, foamFilter, foamGain };
+        } catch (e) {
+          console.warn('Ocean sound init deferred:', e);
+        }
+      }
+      updateOceanAmbience(nowSec) {
+        if (!this.oceanRunning || !this.oceanNodes || !this.ctx) return;
+        if (this.ctx.state === 'suspended') return;
+
+        // Modulate master gain for mute state
+        const targetMaster = this._muted ? 0 : this.oceanTargetGain;
+        if (Math.abs(this.oceanMasterGain.gain.value - targetMaster) > 0.01) {
+          this.oceanMasterGain.gain.setTargetAtTime(targetMaster, this.ctx.currentTime, 0.08);
+        }
+
+        // 4.6-second rhythmic ocean wave tide cycle
+        const T = 4.6;
+        const cycle = (nowSec % T) / T;
+
+        let swellLevel, foamLevel, swellCutoff, foamCutoff;
+        if (cycle < 0.45) {
+          // Swell rolling in towards shore
+          const p = cycle / 0.45;
+          swellLevel = 0.08 + Math.sin(p * Math.PI * 0.5) * 0.32;
+          swellCutoff = 180 + p * 240;
+          foamLevel = 0.02 + Math.pow(p, 2.5) * 0.12;
+          foamCutoff = 480 + p * 180;
+        } else if (cycle < 0.68) {
+          // Wave crests and crashes onto beach sand
+          const p = (cycle - 0.45) / 0.23;
+          swellLevel = 0.40 - p * 0.22;
+          swellCutoff = 420 - p * 120;
+          const foamPeak = Math.sin(p * Math.PI);
+          foamLevel = 0.14 + foamPeak * 0.24;
+          foamCutoff = 660 + foamPeak * 260;
+        } else {
+          // Water washes back into sea (undertow)
+          const p = (cycle - 0.68) / 0.32;
+          swellLevel = 0.18 - p * 0.10;
+          swellCutoff = 300 - p * 120;
+          foamLevel = 0.14 * (1 - p) + 0.02;
+          foamCutoff = 660 - p * 180;
+        }
+
+        const t = this.ctx.currentTime;
+        this.oceanNodes.swellGain.gain.setTargetAtTime(swellLevel, t, 0.06);
+        this.oceanNodes.foamGain.gain.setTargetAtTime(foamLevel, t, 0.06);
+        this.oceanNodes.swellFilter.frequency.setTargetAtTime(swellCutoff, t, 0.06);
+        this.oceanNodes.foamFilter.frequency.setTargetAtTime(foamCutoff, t, 0.06);
       }
       playMachineGunShot(caliberLevel = 0) {
         if (this.muted) return;
@@ -904,43 +1032,11 @@
       }
 
       playFlyby() {
-        if (this.muted) return;
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const dur = 2.4;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, now);
-        osc.frequency.exponentialRampToValueAtTime(280, now + 0.9);
-        osc.frequency.exponentialRampToValueAtTime(110, now + dur);
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.22, now + 0.9);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + dur);
+        // Silenced: siren-like sweeping sounds eliminated per user request
       }
 
       playNavalBombardment() {
-        if (this.muted) return;
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const dur = 2.4;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(58, now);
-        osc.frequency.exponentialRampToValueAtTime(16, now + 0.65);
-        gain.gain.setValueAtTime(0.38, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + dur);
+        // Silenced: siren/drone sounds between waves eliminated per user request
       }
 
       playCasingDrop() {
@@ -12388,9 +12484,13 @@
         pos.needsUpdate = true;
       }
       if (surfFoamMesh) {
-        surfFoamMesh.position.z = -9 + Math.sin(nowSec * 2.1) * 1.4;
-        surfFoamMesh.material.opacity = 0.45 + Math.sin(nowSec * 2.1) * 0.25;
+        const T = 4.6;
+        const waveCycle = (nowSec % T) / T;
+        const advance = Math.sin(waveCycle * Math.PI * 2);
+        surfFoamMesh.position.z = -8.8 + advance * 1.6;
+        surfFoamMesh.material.opacity = 0.35 + (advance > 0 ? advance * 0.45 : 0.05);
       }
+      sfx.updateOceanAmbience(nowSec);
 
       // Animate Allied Naval Bombardment Fleet (Destroyers & Battleships)
       if (state.navalFleet) {
@@ -12414,7 +12514,7 @@
               ship.lastSalvoTime = nowSec;
               ship.muzzleFlash.material.opacity = 1.0;
               createSmokeColumn(ship.group.position.x + 48, 12, ship.group.position.z);
-              sfx.playNavalBombardment();
+              // Naval bombardment audio removed to eliminate drone/siren between waves
             }
           }
         });
@@ -12495,7 +12595,6 @@
         if (nowSec - state.lastFlybyTime > 24) {
           state.lastFlybyTime = nowSec;
           spawnFighterFlyby();
-          sfx.playFlyby();
         }
       }
       for (let i = state.aircraft.length - 1; i >= 0; i--) {
@@ -12814,6 +12913,10 @@
 
       renderer.render(scene, camera);
     }
+
+    // Global user-gesture audio unlock so ocean wave ambient starts on first interaction
+    window.addEventListener('pointerdown', () => sfx.init(), { passive: true });
+    window.addEventListener('keydown', () => sfx.init(), { passive: true });
 
     // Initialize 3D world & Armory on window load
     window.onload = () => {
