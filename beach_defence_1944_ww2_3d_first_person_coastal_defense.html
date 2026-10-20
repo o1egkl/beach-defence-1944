@@ -9799,11 +9799,6 @@
             y += Math.sin(((dist - rad) / (rad * 0.35)) * Math.PI) * 0.25;
           }
         });
-        // High coastal cliffs on far left and right flanks
-        if (Math.abs(x) > 65) {
-          const cliffFactor = (Math.abs(x) - 65) * 0.22;
-          y += Math.pow(cliffFactor, 1.8) * 1.2;
-        }
         posAttr.setY(i, y);
       }
       beachGeo.computeVertexNormals();
@@ -10268,23 +10263,6 @@
         roughness: 0.94,
         metalness: 0.06
       });
-      const embrasureArmorMat = new THREE.MeshStandardMaterial({
-        color: 0x22262a, // Dark tempered steel embrasure armor plate lining
-        map: textures.metal,
-        normalMap: textures.metalNormal,
-        roughness: 0.45,
-        metalness: 0.85
-      });
-      const ammoCanMat = new THREE.MeshStandardMaterial({
-        color: 0x282c28, // Dark ordnance gray-green ammo box
-        roughness: 0.62,
-        metalness: 0.55
-      });
-      const peripheralBagMat = new THREE.MeshStandardMaterial({
-        map: textures.sandbag,
-        color: 0x8a7d65,
-        roughness: 0.94
-      });
 
       const bunkerEmbrasureGroup = new THREE.Group();
 
@@ -10318,45 +10296,6 @@
       rightWall.receiveShadow = true;
 
       bunkerEmbrasureGroup.add(leftWall, rightWall);
-
-      // Beveled Armor Splay Reveals framing the embrasure aperture (45-degree angled deflectors)
-      // Positioned cleanly on inner reveals at X = +/- 8.0, Z = 38.6 (safely in front of camera at Z=42)
-      for (let side = -1; side <= 1; side += 2) {
-        const splay = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3.75, 2.8), embrasureArmorMat);
-        splay.position.set(side * 7.7, 8.7, 38.6);
-        splay.rotation.y = side * 0.45;
-        splay.castShadow = true;
-        splay.receiveShadow = true;
-        bunkerEmbrasureGroup.add(splay);
-      }
-
-      // German Patronenkasten 41 Ammo Boxes on peripheral side sill benches
-      const ammoBoxGeo = new THREE.BoxGeometry(0.55, 0.45, 0.95);
-      const box1 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box1.position.set(-7.1, 7.05, 40.4);
-      box1.rotation.y = 0.25;
-      const box2 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box2.position.set(-7.0, 7.50, 40.4);
-      box2.rotation.y = 0.12;
-      const box3 = new THREE.Mesh(ammoBoxGeo, ammoCanMat);
-      box3.position.set(7.1, 7.05, 40.4);
-      box3.rotation.y = -0.32;
-      bunkerEmbrasureGroup.add(box1, box2, box3);
-
-      // Low Sandbag stacks strictly on peripheral side corners
-      const cornerBagGeo = new THREE.BoxGeometry(1.2, 0.42, 0.65);
-      const cornerBags = [
-        [-7.4, 7.05, 40.5, 0.1], [-7.4, 7.45, 40.5, -0.05],
-        [7.4, 7.05, 40.5, -0.1], [7.4, 7.45, 40.5, 0.08]
-      ];
-      cornerBags.forEach(([bx, by, bz, rotY]) => {
-        const bag = new THREE.Mesh(cornerBagGeo, peripheralBagMat);
-        bag.position.set(bx, by, bz);
-        bag.rotation.y = rotY;
-        bag.castShadow = true;
-        bunkerEmbrasureGroup.add(bag);
-      });
-
       scene.add(bunkerEmbrasureGroup);
 
       // 9. First-Person 3D Mounted WW2 MG42 Machine Gun
