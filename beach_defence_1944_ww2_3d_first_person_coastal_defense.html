@@ -835,6 +835,25 @@
         osc.stop(now + dur);
       }
 
+      playNavalBombardment() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const dur = 2.4;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(58, now);
+        osc.frequency.exponentialRampToValueAtTime(16, now + 0.65);
+        gain.gain.setValueAtTime(0.38, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + dur);
+      }
+
       playCasingDrop() {
         if (this.muted) return;
         this.init();
@@ -1066,6 +1085,7 @@
       supplyDrops: [],
       spentCasings: [],
       aircraft: [],
+      navalFleet: [],
       smokePlumes: [],
       barrelHeat: 0,
       lastFlybyTime: 0,
@@ -1112,13 +1132,43 @@
     // --- 4. THREE.JS 3D SCENE SETUP ---
     const container = document.getElementById('game-canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x4a5860);
-    scene.fog = new THREE.FogExp2(0x6a7b85, 0.0035);
+    scene.background = new THREE.Color(0x6288a5); // Deep coastal maritime blue
+    scene.fog = new THREE.Fog(0x688ea8, 160, 780); // Linear atmospheric sea haze (crisp fleet visibility)
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 450);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 950);
     // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.5, 42) looking out toward -Z (the ocean)
     camera.position.set(0, 8.5, 42);
     camera.lookAt(0, 3, -30);
+
+    // Realistic Normandy Coastal Atmospheric Skydome
+    const cSky = document.createElement('canvas');
+    cSky.width = cSky.height = 512;
+    const ctxSky = cSky.getContext('2d');
+    const skyGrad = ctxSky.createLinearGradient(0, 0, 0, 512);
+    skyGrad.addColorStop(0.0, '#1c4d76'); // Deep zenith ocean sky blue
+    skyGrad.addColorStop(0.42, '#386c94'); // Mid atmospheric blue
+    skyGrad.addColorStop(0.76, '#749ab2'); // Soft coastal marine haze
+    skyGrad.addColorStop(1.0, '#8cb0c4'); // Ocean horizon light
+    ctxSky.fillStyle = skyGrad;
+    ctxSky.fillRect(0, 0, 512, 512);
+
+    // Layered sunlit cirrus & cumulus coastal clouds along horizon
+    for (let i = 0; i < 32; i++) {
+      const cx = Math.random() * 512;
+      const cy = 160 + Math.random() * 240;
+      const cr = 40 + Math.random() * 85;
+      const gradC = ctxSky.createRadialGradient(cx, cy, 0, cx, cy, cr);
+      gradC.addColorStop(0, 'rgba(240, 248, 255, 0.28)');
+      gradC.addColorStop(0.55, 'rgba(220, 235, 245, 0.12)');
+      gradC.addColorStop(1, 'rgba(205, 225, 240, 0)');
+      ctxSky.fillStyle = gradC;
+      ctxSky.beginPath(); ctxSky.arc(cx, cy, cr, 0, Math.PI * 2); ctxSky.fill();
+    }
+    const skyTex = new THREE.CanvasTexture(cSky);
+    const skydomeGeo = new THREE.SphereGeometry(880, 32, 16);
+    const skydomeMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false });
+    const skydomeMesh = new THREE.Mesh(skydomeGeo, skydomeMat);
+    scene.add(skydomeMesh);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1178,7 +1228,8 @@
       tankHull: null,
       boatHull: null,
       boatNormal: null,
-      sandbag: null
+      sandbag: null,
+      waterNormal: null
     };
 
     function generateNormalMap(canvas, strength = 2.0) {
@@ -1576,6 +1627,25 @@
       ctxBg.fillRect(0, 120, 256, 16);
       textures.sandbag = new THREE.CanvasTexture(cBag);
       textures.fabricNormal = generateNormalMap(cBag, 2.8);
+
+      // 13. Ocean Water Ripple Facet Normal Map (256x256)
+      const cWater = document.createElement('canvas');
+      cWater.width = cWater.height = 256;
+      const ctxH2O = cWater.getContext('2d');
+      ctxH2O.fillStyle = '#808080';
+      ctxH2O.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 240; i++) {
+        const x = Math.random() * 256, y = Math.random() * 256;
+        const rad = 8 + Math.random() * 26;
+        const grad = ctxH2O.createRadialGradient(x, y, 0, x, y, rad);
+        grad.addColorStop(0, Math.random() > 0.5 ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)');
+        grad.addColorStop(1, 'rgba(128,128,128,0)');
+        ctxH2O.fillStyle = grad;
+        ctxH2O.beginPath(); ctxH2O.arc(x, y, rad, 0, Math.PI * 2); ctxH2O.fill();
+      }
+      textures.waterNormal = generateNormalMap(cWater, 3.2);
+      textures.waterNormal.wrapS = textures.waterNormal.wrapT = THREE.RepeatWrapping;
+      textures.waterNormal.repeat.set(24, 24);
     }
 
     // --- 5. BUILD 3D WW2 BEACH, OCEAN, OBSTACLES & BUNKER EMBRASURE ---
@@ -1674,28 +1744,29 @@
       wetMesh.receiveShadow = true;
       scene.add(wetMesh);
 
-      // 2. Multi-Harmonic Ocean Water (Z from -260 to -10)
-      oceanGeo = new THREE.PlaneGeometry(360, 260, 60, 48);
+      // 2. High-Fidelity Atlantic / English Channel Ocean Water (Z from -750 to -10)
+      oceanGeo = new THREE.PlaneGeometry(1200, 750, 96, 72);
       oceanGeo.rotateX(-Math.PI / 2);
       const oceanMat = new THREE.MeshStandardMaterial({
-        color: 0x1d3f4a,
-        roughness: 0.25,
-        metalness: 0.35,
+        color: 0x0e4572, // Vibrant deep Atlantic / English Channel sapphire blue
+        roughness: 0.16,
+        metalness: 0.68,
+        normalMap: textures.waterNormal,
         flatShading: true
       });
       oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
-      oceanMesh.position.set(0, -0.15, -135);
+      oceanMesh.position.set(0, -0.15, -360);
       oceanMesh.receiveShadow = true;
       scene.add(oceanMesh);
       environmentTargets.push(oceanMesh);
 
       // Multi-Layered Shoreline Surf Foam Strips
-      const surfGeo = new THREE.PlaneGeometry(250, 6.5, 40, 2);
+      const surfGeo = new THREE.PlaneGeometry(280, 7.5, 48, 2);
       surfGeo.rotateX(-Math.PI / 2);
       const surfMat = new THREE.MeshBasicMaterial({
-        color: 0xe2eef0,
+        color: 0xe8f4f8,
         transparent: true,
-        opacity: 0.65
+        opacity: 0.70
       });
       surfFoamMesh = new THREE.Mesh(surfGeo, surfMat);
       surfFoamMesh.position.set(0, 0.12, -9);
@@ -1770,28 +1841,239 @@
         scene.add(wall);
       }
 
-      // 6. Distant Naval Invasion Fleet on Ocean Horizon (Z = -210 to -240)
-      const shipMat = new THREE.MeshStandardMaterial({ color: 0x253136, roughness: 0.85 });
-      const balloonMat = new THREE.MeshStandardMaterial({ color: 0xa8b4ba, roughness: 0.4 });
-      [-85, -45, 10, 65, 105].forEach((sx, idx) => {
+      // 6. Highly Visible Allied Naval Bombardment Armada (Frontline Destroyers & Capital Dreadnoughts)
+      const hullCamMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x2b3842, // Naval blue-grey camouflage steel
+        roughness: 0.45,
+        metalness: 0.68
+      });
+      const bootToppingMat = new THREE.MeshStandardMaterial({
+        color: 0x5a201c, // Anti-fouling red waterline boot-topping
+        roughness: 0.60,
+        metalness: 0.35
+      });
+      const superMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x3d4b56,
+        roughness: 0.42,
+        metalness: 0.70
+      });
+      const navalGunMat = new THREE.MeshStandardMaterial({
+        color: 0x1d242a,
+        roughness: 0.35,
+        metalness: 0.85
+      });
+      const balloonMat = new THREE.MeshStandardMaterial({
+        color: 0x94a2a8,
+        roughness: 0.35,
+        metalness: 0.45
+      });
+
+      state.navalFleet = [];
+
+      // A. Frontline Fleet Destroyers (Fletcher-class Close Fire Support - Right in Plain Sight!)
+      const destroyerConfigs = [
+        { x: -92, z: -135, rotY: 0.08, name: 'USS Heermann (DD-532)' },
+        { x: 104, z: -155, rotY: -0.06, name: 'USS Frankford (DD-497)' }
+      ];
+      destroyerConfigs.forEach((cfg, idx) => {
         const ship = new THREE.Group();
-        const hull = new THREE.Mesh(new THREE.BoxGeometry(32, 5.2, 7.5), shipMat);
-        const bridge = new THREE.Mesh(new THREE.BoxGeometry(9, 6.5, 5.5), shipMat);
-        bridge.position.set(0, 5.5, 0);
-        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.45, 12), shipMat);
-        mast.position.set(3, 9, 0);
-        const guns = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 11), shipMat);
-        guns.rotation.z = Math.PI / 2;
-        guns.position.set(-8, 3.8, 0);
-        ship.add(hull, bridge, mast, guns);
-        ship.position.set(sx, 1.8, -215 - idx * 10);
+        ship.position.set(cfg.x, 1.4, cfg.z);
+        ship.rotation.y = cfg.rotY;
+
+        // Slender Destroyer Hull with flared sheer bow
+        const hull = new THREE.Mesh(new THREE.BoxGeometry(48, 5.2, 6.4), hullCamMat);
+        hull.position.y = 2.4;
+        hull.castShadow = true;
+        const boot = new THREE.Mesh(new THREE.BoxGeometry(48.2, 1.2, 6.2), bootToppingMat);
+        boot.position.y = 0.6;
+        ship.add(hull, boot);
+
+        // Multi-level Bridge Wheelhouse & Radar Mast
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(11, 4.8, 5.2), superMat);
+        bridge.position.set(4, 5.8, 0);
+        const chartHouse = new THREE.Mesh(new THREE.BoxGeometry(6, 3.2, 4.2), superMat);
+        chartHouse.position.set(2, 8.8, 0);
+        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.35, 14, 8), superMat);
+        mast.position.set(5, 12, 0);
+        const radar = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.4, 0.4), navalGunMat);
+        radar.position.set(5, 18, 0);
+        ship.add(bridge, chartHouse, mast, radar);
+
+        // Twin Raked Smokestacks
+        [-2, -10].forEach(fx => {
+          const funnel = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, 5.5, 10), superMat);
+          funnel.rotation.z = -0.12;
+          funnel.position.set(fx, 6.8, 0);
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.6, 10), navalGunMat);
+          cap.position.set(fx, 9.4, 0);
+          ship.add(funnel, cap);
+        });
+
+        // 5-Inch Enclosed Gun Mounts (Turret 51 forward, Turret 52 aft)
+        const fwdTurret = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.6, 4.2), navalGunMat);
+        fwdTurret.position.set(16, 5.6, 0);
+        const fwdBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 11, 8), navalGunMat);
+        fwdBarrel.rotateZ(-Math.PI / 2);
+        fwdBarrel.position.set(20.5, 5.6, 0);
+        ship.add(fwdTurret, fwdBarrel);
+
+        const aftTurret = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.6, 4.2), navalGunMat);
+        aftTurret.position.set(-18, 5.6, 0);
+        const aftBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 11, 8), navalGunMat);
+        aftBarrel.rotateZ(Math.PI / 2);
+        aftBarrel.position.set(-22.5, 5.6, 0);
+        ship.add(aftTurret, aftBarrel);
+
+        // Bow wave foam
+        const bowWave = new THREE.Mesh(new THREE.PlaneGeometry(12, 1.8), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 }));
+        bowWave.rotation.x = -Math.PI / 2;
+        bowWave.position.set(22, 0.05, 0);
+        ship.add(bowWave);
+
         scene.add(ship);
+        state.navalFleet.push({
+          group: ship,
+          type: 'destroyer',
+          baseY: 1.4,
+          phase: idx * 2.5,
+          lastSalvoTime: idx * 4.0
+        });
+      });
+
+      // B. Capital Dreadnought Battleships (USS Nevada / HMS Warspite Bombardment Group)
+      const battleshipConfigs = [
+        { x: -52, z: -195, rotY: 0.04, name: 'USS Nevada (BB-36)' },
+        { x: 18, z: -235, rotY: -0.02, name: 'HMS Warspite (03)' },
+        { x: 142, z: -275, rotY: -0.05, name: 'USS Texas (BB-35)' }
+      ];
+      battleshipConfigs.forEach((cfg, idx) => {
+        const ship = new THREE.Group();
+        ship.position.set(cfg.x, 2.4, cfg.z);
+        ship.rotation.y = cfg.rotY;
+
+        // Heavy Dreadnought Armored Hull (84m length, 14.5m beam)
+        const hull = new THREE.Mesh(new THREE.BoxGeometry(84, 9.5, 14.5), hullCamMat);
+        hull.position.y = 4.2;
+        hull.castShadow = true;
+        const boot = new THREE.Mesh(new THREE.BoxGeometry(84.4, 2.4, 14.2), bootToppingMat);
+        boot.position.y = 1.0;
+        ship.add(hull, boot);
+
+        // Armor Citadel Strake
+        const belt = new THREE.Mesh(new THREE.BoxGeometry(55, 4.5, 15.2), hullCamMat);
+        belt.position.set(0, 5.2, 0);
+        ship.add(belt);
+
+        // Multi-tier Armored Bridge Citadel & Navigation Tower
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(16, 9.5, 11), superMat);
+        bridge.position.set(8, 11.5, 0);
+        const conningTower = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 4.5, 6.5, 12), superMat);
+        conningTower.position.set(13, 14, 0);
+        const upperBridge = new THREE.Mesh(new THREE.BoxGeometry(9, 5.5, 8.5), superMat);
+        upperBridge.position.set(7, 17, 0);
+        const director = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.8, 6.5), navalGunMat);
+        director.position.set(7, 20.5, 0);
+        ship.add(bridge, conningTower, upperBridge, director);
+
+        // Heavy Tripod Foremast with Radar Antenna (34m high!)
+        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.65, 24, 8), superMat);
+        mast.position.set(10, 24, 0);
+        const radar = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.2, 0.5), navalGunMat);
+        radar.position.set(10, 32, 0);
+        ship.add(mast, radar);
+
+        // Dual Heavy Funnels (Smokestacks)
+        [-4, -16].forEach(fx => {
+          const funnel = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 9.5, 12), superMat);
+          funnel.rotation.z = -0.10;
+          funnel.position.set(fx, 12.5, 0);
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 1.2, 12), navalGunMat);
+          cap.position.set(fx, 16.8, 0);
+          ship.add(funnel, cap);
+        });
+
+        // Superfiring 14-Inch Heavy Gun Turrets (Turret 'A' & 'B')
+        const turretA = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
+        turretA.position.set(24, 10.2, 0);
+        for (let b = -1; b <= 1; b++) {
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
+          barrel.rotateZ(-Math.PI / 2);
+          barrel.position.set(36, 10.2, b * 2.8);
+          turretA.add(barrel);
+        }
+        ship.add(turretA);
+
+        // Turret 'B' (Elevated Barbette)
+        const barbetteB = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 5.5, 4.2, 14), superMat);
+        barbetteB.position.set(12, 11.0, 0);
+        const turretB = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
+        turretB.position.set(12, 14.5, 0);
+        for (let b = -1; b <= 1; b++) {
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
+          barrel.rotateZ(-Math.PI / 2);
+          barrel.position.set(24, 14.5, b * 2.8);
+          turretB.add(barrel);
+        }
+        ship.add(barbetteB, turretB);
+
+        // Aft Heavy Gun Turrets ('X' and 'Y')
+        const turretX = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
+        turretX.position.set(-26, 10.2, 0);
+        for (let b = -1; b <= 1; b++) {
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
+          barrel.rotateZ(Math.PI / 2);
+          barrel.position.set(-38, 10.2, b * 2.8);
+          turretX.add(barrel);
+        }
+        ship.add(turretX);
+
+        // Flanking 5-Inch Secondary Battery Turrets
+        for (let side = -1; side <= 1; side += 2) {
+          for (let tx = -8; tx <= 8; tx += 8) {
+            const sec = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.2, 3.5), navalGunMat);
+            sec.position.set(tx, 10.0, side * 6.5);
+            const b = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 6, 8), navalGunMat);
+            b.rotateX(side * Math.PI / 2);
+            b.position.set(tx, 10.0, side * 9.5);
+            ship.add(sec, b);
+          }
+        }
+
+        // Muzzle Flash Star Mesh for Shore Bombardment
+        const flashGeo = new THREE.SphereGeometry(3.8, 8, 8);
+        const flashMat = new THREE.MeshBasicMaterial({ color: 0xffaa22, transparent: true, opacity: 0 });
+        const muzzleFlash = new THREE.Mesh(flashGeo, flashMat);
+        muzzleFlash.position.set(48, 11, 0);
+        ship.add(muzzleFlash);
 
         // Tethered Barrage Balloon overhead
-        const balloon = new THREE.Mesh(new THREE.SphereGeometry(3.5, 12, 10), balloonMat);
-        balloon.scale.set(1.6, 0.9, 0.9);
-        balloon.position.set(sx + 8, 38 + idx * 4, -190 - idx * 8);
-        scene.add(balloon);
+        const balloonGrp = new THREE.Group();
+        const balloon = new THREE.Mesh(new THREE.SphereGeometry(4.8, 14, 12), balloonMat);
+        balloon.scale.set(1.7, 1.0, 1.0);
+        const fin1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.2, 2.2), balloonMat);
+        fin1.position.set(-5.5, 0, 0);
+        balloon.add(fin1);
+        const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 48), navalGunMat);
+        cable.position.set(0, -24, 0);
+        balloonGrp.add(balloon, cable);
+        balloonGrp.position.set(cfg.x + 12, 54 + idx * 5, cfg.z);
+        scene.add(balloonGrp);
+
+        scene.add(ship);
+        state.navalFleet.push({
+          group: ship,
+          type: 'battleship',
+          baseY: 2.4,
+          phase: idx * 1.9,
+          muzzleFlash,
+          balloon: balloonGrp,
+          balloonBaseX: cfg.x + 12,
+          lastSalvoTime: idx * 5.0 + 3.0
+        });
       });
 
       // 7. Shoreline Burning Wreckage & Animated Smoke Plumes
@@ -2307,31 +2589,46 @@
       heavyArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, roughness: 0.45, metalness: 0.72 }),
       woodRifle: new THREE.MeshStandardMaterial({ map: textures.wood, normalMap: textures.woodNormal, roughness: 0.55 }),
       sandbag: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, roughness: 0.92 }),
-      weakSpot: new THREE.MeshBasicMaterial({ color: 0xf59e0b }),
-      hpBg: new THREE.MeshBasicMaterial({ color: 0x1c1917 }),
-      hpFill: new THREE.MeshBasicMaterial({ color: 0xef4444 })
+      weakSpot: new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x1c2228, // Authentic blued armor steel driver visor & louvered grille
+        roughness: 0.38,
+        metalness: 0.82
+      }),
+      hpBg: new THREE.MeshBasicMaterial({ color: 0x0a0c0e, transparent: true, opacity: 0.75 }),
+      hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 })
     };
 
     function createFloatingHPBar(width = 1.8) {
       const group = new THREE.Group();
-      const bg = new THREE.Mesh(new THREE.PlaneGeometry(width, 0.22), unitMaterials.hpBg);
-      const fillGeo = new THREE.PlaneGeometry(width - 0.06, 0.15);
-      const fillMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+      // Sleek, thin tactical bar that stays hidden until damaged (eliminates cartoon clutter!)
+      const bg = new THREE.Mesh(new THREE.PlaneGeometry(width, 0.08), unitMaterials.hpBg);
+      const fillGeo = new THREE.PlaneGeometry(width - 0.04, 0.05);
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 });
       const fill = new THREE.Mesh(fillGeo, fillMat);
-      fill.position.z = 0.02;
+      fill.position.z = 0.01;
       group.add(bg, fill);
-      group.userData = { fill, fillMat, maxWidth: width - 0.06 };
+      group.userData = { fill, fillMat, maxWidth: width - 0.04 };
+      group.visible = false; // Hidden at 100% full health!
       return group;
     }
 
     function updateFloatingHPBar(hpBarGroup, ratio) {
-      const clamped = Math.max(0.001, Math.min(1, ratio));
+      if (!hpBarGroup || !hpBarGroup.userData) return;
+      const clamped = Math.max(0, Math.min(1, ratio));
+      // Only display health bar when unit is actively damaged (< 0.999) and alive (> 0)
+      if (clamped >= 0.999 || clamped <= 0) {
+        hpBarGroup.visible = false;
+        return;
+      }
+      hpBarGroup.visible = true;
       const { fill, fillMat, maxWidth } = hpBarGroup.userData;
-      fill.scale.x = clamped;
+      fill.scale.x = Math.max(0.001, clamped);
       fill.position.x = -(1 - clamped) * maxWidth * 0.5;
-      if (clamped > 0.55) fillMat.color.setHex(0x22c55e);
-      else if (clamped > 0.25) fillMat.color.setHex(0xf59e0b);
-      else fillMat.color.setHex(0xef4444);
+      if (clamped > 0.55) fillMat.color.setHex(0x38bdf8); // Tactical navy cyan
+      else if (clamped > 0.25) fillMat.color.setHex(0xfbbf24); // Warning combat amber
+      else fillMat.color.setHex(0xef4444); // Critical damage red
       hpBarGroup.lookAt(camera.position);
     }
 
@@ -4189,20 +4486,52 @@
       lastFrameTime = nowMs;
       const nowSec = nowMs / 1000;
 
-      // 1. Animate Ocean Waves & Shoreline Surf
+      // 1. Animate Ocean Waves, Water Ripples & Shoreline Surf
+      if (textures.waterNormal) {
+        textures.waterNormal.offset.x = (nowSec * 0.035) % 1;
+        textures.waterNormal.offset.y = (nowSec * 0.050) % 1;
+      }
       if (oceanGeo) {
         const pos = oceanGeo.attributes.position;
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i);
           const z = pos.getZ(i);
-          const waveY = Math.sin(x * 0.09 + nowSec * 1.8) * 0.45 + Math.cos(z * 0.12 + nowSec * 2.1) * 0.45;
+          const waveY = Math.sin(x * 0.05 + nowSec * 1.5) * 0.55 + Math.cos(z * 0.08 + nowSec * 1.8) * 0.55;
           pos.setY(i, waveY);
         }
         pos.needsUpdate = true;
       }
       if (surfFoamMesh) {
-        surfFoamMesh.position.z = -10 + Math.sin(nowSec * 2.1) * 1.4;
-        surfFoamMesh.material.opacity = 0.4 + Math.sin(nowSec * 2.1) * 0.2;
+        surfFoamMesh.position.z = -9 + Math.sin(nowSec * 2.1) * 1.4;
+        surfFoamMesh.material.opacity = 0.45 + Math.sin(nowSec * 2.1) * 0.25;
+      }
+
+      // Animate Allied Naval Bombardment Fleet (Destroyers & Battleships)
+      if (state.navalFleet) {
+        state.navalFleet.forEach(ship => {
+          // Gentle heave and pitch on ocean swells
+          ship.group.position.y = ship.baseY + Math.sin(nowSec * 1.4 + ship.phase) * 0.22;
+          ship.group.rotation.z = Math.sin(nowSec * 1.1 + ship.phase) * 0.015;
+
+          // Tethered Barrage Balloon swaying in sea breeze
+          if (ship.balloon) {
+            ship.balloon.position.x = ship.balloonBaseX + Math.sin(nowSec * 0.8 + ship.phase) * 3.5;
+            ship.balloon.rotation.z = Math.sin(nowSec * 0.6 + ship.phase) * 0.08;
+          }
+
+          // Periodic Shore Bombardment Firing from Capital Battleships
+          if (ship.type === 'battleship' && ship.muzzleFlash) {
+            if (ship.muzzleFlash.material.opacity > 0) {
+              ship.muzzleFlash.material.opacity = Math.max(0, ship.muzzleFlash.material.opacity - dt * 3.5);
+            }
+            if (nowSec - ship.lastSalvoTime > 13.0 + ship.phase) {
+              ship.lastSalvoTime = nowSec;
+              ship.muzzleFlash.material.opacity = 1.0;
+              createSmokeColumn(ship.group.position.x + 48, 12, ship.group.position.z);
+              sfx.playNavalBombardment();
+            }
+          }
+        });
       }
 
       // 2. Smoothly Rotate Camera & First-Person Machine Gun toward Aim Target
