@@ -225,6 +225,71 @@
       </div>
     </div>
 
+    <!-- 4-Weapon Arsenal Selector Dock (Keys 1 - 4) -->
+    <div class="w-full max-w-7xl mx-auto mb-2 pointer-events-auto">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <!-- Weapon 1: MG-42 Machine Gun -->
+        <button id="weapon-slot-1" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border-2 border-amber-500 rounded-xl p-2.5 text-left transition shadow-xl cursor-pointer">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono-tac font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 rounded">[1] MG-42</span>
+            <span id="wtab-badge-1" class="text-[9px] font-mono-tac font-bold text-amber-400">● ACTIVE</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="font-military text-sm text-stone-100 tracking-wide">RAPID MG</span>
+            <span id="wtab-ammo-1" class="font-mono-tac text-xs font-bold text-amber-400">45 RDS</span>
+          </div>
+          <div class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden">
+            <div id="wtab-bar-1" class="h-full bg-amber-500 rounded transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </button>
+
+        <!-- Weapon 2: 75mm PaK 40 Anti-Tank Cannon -->
+        <button id="weapon-slot-2" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border border-stone-800 rounded-xl p-2.5 text-left transition shadow-xl cursor-pointer">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono-tac font-bold text-orange-400 bg-orange-500/20 border border-orange-500/40 px-1.5 py-0.5 rounded">[2] 75mm PaK</span>
+            <span id="wtab-badge-2" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="font-military text-sm text-stone-100 tracking-wide">AT CANNON</span>
+            <span id="wtab-ammo-2" class="font-mono-tac text-xs font-bold text-orange-400">24 SHELLS</span>
+          </div>
+          <div class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden">
+            <div id="wtab-bar-2" class="h-full bg-orange-500 rounded transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </button>
+
+        <!-- Weapon 3: Panzerschreck Rocket Launcher -->
+        <button id="weapon-slot-3" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border border-stone-800 rounded-xl p-2.5 text-left transition shadow-xl cursor-pointer">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono-tac font-bold text-rose-400 bg-rose-500/20 border border-rose-500/40 px-1.5 py-0.5 rounded">[3] ROCKET</span>
+            <span id="wtab-badge-3" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="font-military text-sm text-stone-100 tracking-wide">PANZERSCHRECK</span>
+            <span id="wtab-ammo-3" class="font-mono-tac text-xs font-bold text-rose-400">10 ROCKETS</span>
+          </div>
+          <div class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden">
+            <div id="wtab-bar-3" class="h-full bg-rose-500 rounded transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </button>
+
+        <!-- Weapon 4: Luftwaffe Stuka Air Strike -->
+        <button id="weapon-slot-4" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border border-stone-800 rounded-xl p-2.5 text-left transition shadow-xl cursor-pointer">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono-tac font-bold text-cyan-400 bg-cyan-500/20 border border-cyan-500/40 px-1.5 py-0.5 rounded">[4] AIR STRIKE</span>
+            <span id="wtab-badge-4" class="text-[9px] font-mono-tac font-bold text-cyan-300">READY</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="font-military text-sm text-stone-100 tracking-wide">STUKA DIVE</span>
+            <span id="wtab-ammo-4" class="font-mono-tac text-xs font-bold text-cyan-400">READY</span>
+          </div>
+          <div class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden">
+            <div id="wtab-bar-4" class="h-full bg-cyan-400 rounded transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <!-- Bottom Tactical Bar: Weapon Ammo / Cooldown + Grenades + Time Boosters + Touch Controls -->
     <div class="flex flex-wrap items-end justify-between gap-2.5 w-full max-w-7xl mx-auto pointer-events-auto">
       
@@ -943,6 +1008,114 @@
           gain.connect(this.ctx.destination);
           osc.start(now + idx * 0.06);
           osc.stop(now + idx * 0.06 + 0.1);
+        });
+      }
+
+      playWeaponSwitch() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        [880, 1320].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.07);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.08);
+        });
+      }
+
+      playCannonShot() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        // Sub-bass concussive artillery punch
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(85, now);
+        osc.frequency.exponentialRampToValueAtTime(18, now + 0.42);
+        gain.gain.setValueAtTime(0.85, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.46);
+
+        // Heavy artillery muzzle blast roar
+        const dur = 0.55;
+        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.8);
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(380, now);
+        filter.frequency.exponentialRampToValueAtTime(55, now + dur);
+        const nGain = this.ctx.createGain();
+        nGain.gain.setValueAtTime(0.65, now);
+        nGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+        noise.connect(filter);
+        filter.connect(nGain);
+        nGain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+
+      playRocketLaunch() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const dur = 0.65;
+        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(450, now);
+        filter.frequency.exponentialRampToValueAtTime(1400, now + dur * 0.8);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.45, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+
+      playAirStrikeCall() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // Radio morse chirps
+        [1200, 1600, 1400].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.06);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.07);
         });
       }
 
@@ -9056,19 +9229,79 @@
         cooldown: 0,
         firerate: 0
       },
-      // Computed weapon stats for current level
-      weapon: {
-        damage: 34,
-        armorPen: 0.15,
-        maxAmmo: 45,
-        curAmmo: 45,
-        cooldownDuration: 2.6,
-        cooldownTimer: 0,
-        isCooling: false,
-        rpm: 520,
-        critMult: 2.6,
-        lastShotTime: 0
+      // 4-Weapon Tactical Arsenal
+      selectedWeapon: 1, // 1: MG-42, 2: 75mm Cannon, 3: Rocket Launcher, 4: Air Strike
+      weapons: {
+        1: {
+          id: 'mg42',
+          slot: 1,
+          name: 'MG-42 HEAVY MACHINE GUN',
+          tierName: 'MG-42 MK I',
+          type: 'bullet',
+          damage: 34,
+          armorPen: 0.15,
+          maxAmmo: 45,
+          curAmmo: 45,
+          cooldownDuration: 2.6,
+          cooldownTimer: 0,
+          isCooling: false,
+          rpm: 520,
+          critMult: 2.6,
+          lastShotTime: 0
+        },
+        2: {
+          id: 'cannon',
+          slot: 2,
+          name: '75mm PaK 40 AT CANNON',
+          tierName: '75mm PaK 40',
+          type: 'cannon',
+          damage: 540,
+          armorPen: 0.90,
+          maxAmmo: 24,
+          curAmmo: 24,
+          cooldownDuration: 2.2,
+          cooldownTimer: 0,
+          isCooling: false,
+          rpm: 32,
+          critMult: 1.8,
+          lastShotTime: 0
+        },
+        3: {
+          id: 'rocket',
+          slot: 3,
+          name: 'PANZERSCHRECK 54',
+          tierName: 'RPzB 54',
+          type: 'rocket',
+          damage: 480,
+          armorPen: 0.75,
+          maxAmmo: 10,
+          curAmmo: 10,
+          cooldownDuration: 2.8,
+          cooldownTimer: 0,
+          isCooling: false,
+          rpm: 25,
+          critMult: 1.5,
+          lastShotTime: 0
+        },
+        4: {
+          id: 'airstrike',
+          slot: 4,
+          name: 'LUFTWAFFE STUKA AIR STRIKE',
+          tierName: 'Stuka Air Strike',
+          type: 'airstrike',
+          damage: 950,
+          armorPen: 1.0,
+          maxAmmo: 1,
+          curAmmo: 1,
+          cooldownDuration: 28.0,
+          cooldownTimer: 0,
+          isCooling: false,
+          rpm: 2,
+          critMult: 2.0,
+          lastShotTime: 0
+        }
       },
+      weapon: null,
       // Level runtime metrics
       timeRemaining: 240,
       grenades: 5,
@@ -9087,6 +9320,8 @@
       boats: [],
       enemies: [],
       projectiles: [],
+      rockets: [],
+      airStrikes: [],
       grenadeObjs: [],
       particles: [],
       supplyDrops: [],
@@ -9105,6 +9340,7 @@
       cameraRecoilPitch: 0,
       keys: {}
     };
+    state.weapon = state.weapons[1];
 
     // Progressive upgrade scaling helper:
     // Each new wave unlocks a higher max upgrade tier AND increases the effectiveness of upgrades!
@@ -9124,12 +9360,35 @@
       const cLv = state.upgrades.cooldown;
       const fLv = state.upgrades.firerate;
 
-      state.weapon.damage = Math.round(34 + dLv * 12 * Math.sqrt(techMult));
-      state.weapon.armorPen = Math.min(0.92, +(0.15 + dLv * 0.04 * Math.sqrt(techMult)).toFixed(2));
-      state.weapon.maxAmmo = Math.round(45 + aLv * 12 * Math.sqrt(techMult));
-      state.weapon.cooldownDuration = Math.max(0.65, +(2.6 - cLv * 0.16 * Math.sqrt(techMult)).toFixed(2));
-      state.weapon.rpm = Math.min(1600, Math.round(520 + fLv * 45 * Math.sqrt(techMult)));
-      state.weapon.critMult = +(2.6 + fLv * 0.15).toFixed(2);
+      // Weapon 1: MG-42 Heavy Machine Gun
+      const w1 = state.weapons[1];
+      w1.damage = Math.round(34 + dLv * 12 * Math.sqrt(techMult));
+      w1.armorPen = Math.min(0.92, +(0.15 + dLv * 0.04 * Math.sqrt(techMult)).toFixed(2));
+      w1.maxAmmo = Math.round(45 + aLv * 12 * Math.sqrt(techMult));
+      w1.cooldownDuration = Math.max(0.65, +(2.6 - cLv * 0.16 * Math.sqrt(techMult)).toFixed(2));
+      w1.rpm = Math.min(1600, Math.round(520 + fLv * 45 * Math.sqrt(techMult)));
+      w1.critMult = +(2.6 + fLv * 0.15).toFixed(2);
+      w1.tierName = `MG-42 MK ${dLv + 1}`;
+
+      // Weapon 2: 75mm PaK 40 Anti-Tank Cannon
+      const w2 = state.weapons[2];
+      w2.damage = Math.round(540 + dLv * 85 * Math.sqrt(techMult));
+      w2.cooldownDuration = Math.max(1.1, +(2.2 - cLv * 0.12 * Math.sqrt(techMult)).toFixed(2));
+      w2.maxAmmo = Math.round(24 + aLv * 4);
+
+      // Weapon 3: Panzerschreck 54 Rocket Launcher
+      const w3 = state.weapons[3];
+      w3.damage = Math.round(480 + dLv * 75 * Math.sqrt(techMult));
+      w3.cooldownDuration = Math.max(1.4, +(2.8 - cLv * 0.14 * Math.sqrt(techMult)).toFixed(2));
+      w3.maxAmmo = Math.round(10 + aLv * 2);
+
+      // Weapon 4: Luftwaffe Stuka Air Strike
+      const w4 = state.weapons[4];
+      w4.damage = Math.round(950 + dLv * 130 * Math.sqrt(techMult));
+      w4.cooldownDuration = Math.max(14.0, +(28.0 - cLv * 1.6 * Math.sqrt(techMult)).toFixed(1));
+
+      // Keep active state.weapon aligned with selected slot
+      state.weapon = state.weapons[state.selectedWeapon || 1];
     }
 
     function getUpgradeCost(upgDef, currentLv) {
@@ -9769,6 +10028,7 @@
     let oceanMesh, oceanGeo, surfFoamMesh, breakerMesh;
     const gunGroup = new THREE.Group();
     let gunBarrelGroup, muzzleFlashMesh, barrelHeatMat;
+    let mg42Group, cannonGroup, rocketGroup, airStrikeGroup;
     const aimPlane = new THREE.Plane(new THREE.Vector3(0, 0.98, 0.2).normalize(), 0);
     const raycaster = new THREE.Raycaster();
     const environmentTargets = []; // Meshes for ground/water raycasting
@@ -10699,13 +10959,93 @@
       muzzleFlashMesh = new THREE.Mesh(flashGeo, flashMat);
       muzzleFlashMesh.position.set(0, 0.02, -2.65);
 
-      gunBarrelGroup.add(
+      // 16. Assemble MG-42 Specific Parts
+      mg42Group = new THREE.Group();
+      mg42Group.add(
         receiver, topCover, coverCenterRib, coverLatch, trunnionHinge,
         cockingTrack, cockingArm, cockingHandle, feedTray, drumGroup,
         beltGroup, innerBarrel, shroudGroup, spiderwebSightGroup,
         bipodGroup, boosterGroup, hider, rearSightBase, rearNotch,
-        leafRamp, frontPost, grip, triggerGuard, stockGroup, muzzleFlashMesh
+        leafRamp, frontPost, grip, triggerGuard, stockGroup
       );
+
+      // 17. 75mm PaK 40 Anti-Tank Cannon 3D Viewmodel Attachment
+      cannonGroup = new THREE.Group();
+      // Massive rifled heavy artillery barrel
+      const cannonBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.9, 16), gunMetal);
+      cannonBarrel.rotateX(Math.PI / 2);
+      cannonBarrel.position.set(0, 0.04, -1.45);
+      // Double-baffle muzzle brake (Mündungsbremse)
+      const brakeBox = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.22, 0.32), gunMetal);
+      brakeBox.position.set(0, 0.04, -2.85);
+      const brakePort1 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.12, 0.08), new THREE.MeshBasicMaterial({ color: 0x111315 }));
+      brakePort1.position.set(0, 0.04, -2.80);
+      const brakePort2 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.12, 0.08), new THREE.MeshBasicMaterial({ color: 0x111315 }));
+      brakePort2.position.set(0, 0.04, -2.92);
+      // Heavy hydraulic recoil cylinders (Rohrrücklauf)
+      const hydrLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.4, 12), gunMetal);
+      hydrLeft.rotateX(Math.PI / 2);
+      hydrLeft.position.set(-0.16, 0.04, -0.65);
+      const hydrRight = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.4, 12), gunMetal);
+      hydrRight.rotateX(Math.PI / 2);
+      hydrRight.position.set(0.16, 0.04, -0.65);
+      // Massive reinforced sliding-wedge breech block
+      const breechBlock = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.34, 0.65), gunMetal);
+      breechBlock.position.set(0, 0.02, 0.18);
+      // Optical panoramic gunner periscope
+      const periscope = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.42, 10), brassMat);
+      periscope.position.set(-0.20, 0.28, 0.05);
+      cannonGroup.add(cannonBarrel, brakeBox, brakePort1, brakePort2, hydrLeft, hydrRight, breechBlock, periscope);
+      cannonGroup.visible = false;
+
+      // 18. Panzerschreck 54 Rocket Launcher 3D Viewmodel Attachment
+      rocketGroup = new THREE.Group();
+      // 8.8cm rocket launch tube (Ofenrohr)
+      const rocketTube = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 2.7, 16, 1, true), new THREE.MeshStandardMaterial({
+        map: textures.metal, color: 0x3d443a, roughness: 0.55, metalness: 0.45
+      }));
+      rocketTube.rotateX(Math.PI / 2);
+      rocketTube.position.set(0, 0.04, -1.25);
+      // Front rectangular sheet-metal blast shield (Schutzschild)
+      const shield = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.78, 0.025), new THREE.MeshStandardMaterial({
+        map: textures.metal, color: 0x353b32, roughness: 0.6, metalness: 0.4
+      }));
+      shield.position.set(0, 0.12, -0.42);
+      // Glass viewing window on blast shield
+      const viewPort = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.035), new THREE.MeshStandardMaterial({
+        color: 0x88ccff, roughness: 0.1, metalness: 0.9, transparent: true, opacity: 0.75
+      }));
+      viewPort.position.set(-0.15, 0.32, -0.42);
+      // Magnetic generator pistol grip & trigger guard
+      const rocketGrip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, 0.12), bakeliteMat);
+      rocketGrip.position.set(0, -0.16, 0.18);
+      rocketGroup.add(rocketTube, shield, viewPort, rocketGrip);
+      rocketGroup.visible = false;
+
+      // 19. Luftwaffe Tactical Radio & Air Strike Designator
+      airStrikeGroup = new THREE.Group();
+      // Binocular optical rangefinder body
+      for (let s = -1; s <= 1; s += 2) {
+        const ocular = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.065, 0.52, 14), gunMetal);
+        ocular.rotateX(Math.PI / 2);
+        ocular.position.set(s * 0.12, 0.08, -0.15);
+        const lens = new THREE.Mesh(new THREE.CircleGeometry(0.048, 12), new THREE.MeshStandardMaterial({
+          color: 0x38bdf8, roughness: 0.1, metalness: 0.9
+        }));
+        lens.position.set(s * 0.12, 0.08, -0.41);
+        lens.rotateY(Math.PI);
+        airStrikeGroup.add(ocular, lens);
+      }
+      const binocBridge = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.06, 0.22), brassMat);
+      binocBridge.position.set(0, 0.08, -0.15);
+      // Tactical Radio Whip Antenna
+      const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.012, 1.1, 6), gunMetal);
+      antenna.position.set(0.24, 0.55, 0.12);
+      antenna.rotation.z = -0.15;
+      airStrikeGroup.add(binocBridge, antenna);
+      airStrikeGroup.visible = false;
+
+      gunBarrelGroup.add(mg42Group, cannonGroup, rocketGroup, airStrikeGroup, muzzleFlashMesh);
       gunGroup.add(gunBarrelGroup, mountPivot, elevWheel);
 
       gunGroup.position.set(0.38, 7.55, 40.7);
@@ -11806,7 +12146,323 @@
       }
     }
 
-    // --- 9. MACHINE GUN FIRING, COOLDOWN, ONE-SHOT KILL & GRENADES ---
+    // --- 9. TACTICAL WEAPON ARSENAL & COMBAT LOGIC ---
+    function updateWeaponViewmodel() {
+      if (mg42Group) mg42Group.visible = (state.selectedWeapon === 1);
+      if (cannonGroup) cannonGroup.visible = (state.selectedWeapon === 2);
+      if (rocketGroup) rocketGroup.visible = (state.selectedWeapon === 3);
+      if (airStrikeGroup) airStrikeGroup.visible = (state.selectedWeapon === 4);
+    }
+
+    function selectWeapon(slot) {
+      if (slot < 1 || slot > 4) return;
+      if (state.selectedWeapon === slot) return;
+      state.selectedWeapon = slot;
+      state.weapon = state.weapons[slot];
+      sfx.playWeaponSwitch();
+      updateWeaponViewmodel();
+      updateHUD();
+
+      const badges = {
+        1: '🔫 EQUIPPED: MG-42 RAPID MACHINE GUN',
+        2: '💥 EQUIPPED: 75mm PaK 40 AT CANNON',
+        3: '🚀 EQUIPPED: PANZERSCHRECK 54 ROCKET',
+        4: '✈️ EQUIPPED: STUKA AIR STRIKE BEACON'
+      };
+      const colors = {
+        1: 'text-amber-300 border-amber-400 bg-stone-950/95 font-bold',
+        2: 'text-orange-300 border-orange-500 bg-stone-950/95 font-bold',
+        3: 'text-rose-300 border-rose-500 bg-stone-950/95 font-bold',
+        4: 'text-cyan-300 border-cyan-400 bg-stone-950/95 font-bold'
+      };
+      spawnFloatingCallout(state.aimWorldPoint, badges[slot], colors[slot]);
+    }
+
+    function applyExplosionDamage(center, radius, baseDmg, boatDmg = 450) {
+      state.enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        const dist = enemy.group.position.distanceTo(center);
+        if (dist <= radius) {
+          const falloff = 1 - (dist / radius) * 0.55;
+          const dmg = Math.round(baseDmg * falloff);
+          enemy.hp -= dmg;
+          enemy.shotsTaken++;
+          if (enemy.hp <= 0) {
+            killEnemy(enemy, enemy.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), false, true);
+          } else {
+            updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
+            spawnFloatingCallout(enemy.group.position, `💥 -${dmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90 font-bold');
+          }
+        }
+      });
+
+      state.boats.forEach(boat => {
+        if (!boat.dead && (boat.state === 'SAILING' || boat.state === 'DEPLOYED')) {
+          const dist = boat.group.position.distanceTo(center);
+          if (dist <= radius * 1.25) {
+            const bDmg = Math.round(boatDmg * (1 - dist / (radius * 1.25)));
+            boat.hp -= bDmg;
+            if (boat.hp <= 0) {
+              destroyLandingBoat(boat, boat.group.position);
+            } else if (boat.hpBar) {
+              updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
+              spawnFloatingCallout(boat.group.position, `💥 BOAT -${bDmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90 font-bold');
+            }
+          }
+        }
+      });
+    }
+
+    function createHeavyCannonTracer(startPt, endPt) {
+      const dir = new THREE.Vector3().subVectors(endPt, startPt);
+      const dist = dir.length();
+      const mid = new THREE.Vector3().addVectors(startPt, endPt).multiplyScalar(0.5);
+
+      const geo = new THREE.CylinderGeometry(0.12, 0.12, dist, 8);
+      geo.rotateX(Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff9922, transparent: true, opacity: 0.95 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(mid);
+      mesh.lookAt(endPt);
+      scene.add(mesh);
+
+      state.particles.push({
+        type: 'tracer',
+        mesh,
+        life: 0.18,
+        maxLife: 0.18
+      });
+    }
+
+    function fireCannon(nowSec) {
+      const w = state.weapons[2];
+      if (state.mode !== 'PLAYING') return;
+      if (w.isCooling) return;
+      if (w.curAmmo <= 0) {
+        spawnFloatingCallout(state.aimWorldPoint, '75mm CANNON OUT OF SHELLS! [R] RELOAD', 'text-orange-300 border-orange-500 bg-orange-950/90');
+        sfx.playReadyClank();
+        return;
+      }
+
+      w.curAmmo--;
+      w.isCooling = true;
+      w.cooldownTimer = w.cooldownDuration;
+      state.shotsFired++;
+
+      sfx.playCannonShot();
+      muzzleFlashMesh.material.opacity = 1.0;
+      muzzleFlashMesh.scale.set(2.4, 2.4, 2.4);
+      muzzleLight.intensity = 5.5;
+      gunBarrelGroup.position.z = 0.36;
+      state.cameraRecoilPitch = Math.min(0.065, (state.cameraRecoilPitch || 0) + 0.038);
+      flashScreen('rgba(251, 146, 60, 0.35)');
+
+      const muzzleWorld = new THREE.Vector3();
+      muzzleFlashMesh.getWorldPosition(muzzleWorld);
+      muzzleLight.position.copy(muzzleWorld);
+
+      raycaster.setFromCamera(state.mouseNDC, camera);
+      const targetMeshes = [];
+      state.enemies.forEach(e => { if (!e.dead) targetMeshes.push(...e.hitboxes); });
+      state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) targetMeshes.push(...b.hitboxes); });
+      state.supplyDrops.forEach(d => { if (d.active) targetMeshes.push(d.crateMesh, d.canopy); });
+
+      const hits = raycaster.intersectObjects(targetMeshes, false);
+      const envHits = raycaster.intersectObjects(environmentTargets, false);
+      const hitPoint = (hits.length > 0) ? hits[0].point.clone() : (envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone());
+
+      createHeavyCannonTracer(muzzleWorld, hitPoint);
+      spawnBurstParticles(hitPoint, 0xf97316, 32, 20);
+      spawnBurstParticles(hitPoint, 0xfacc15, 20, 14);
+      sfx.playExplosion();
+
+      if (hits.length > 0) {
+        state.shotsHit++;
+        const hitObj = hits[0].object;
+        if (hitObj.userData.boatRef) {
+          const boat = hitObj.userData.boatRef;
+          const dmg = Math.round(w.damage * 1.6);
+          boat.hp -= dmg;
+          spawnFloatingCallout(hitPoint, `💥 75mm CANNON HIT -${dmg}!`, 'text-orange-300 border-orange-500 bg-stone-950/95 font-bold scale-110');
+          if (boat.hp <= 0) destroyLandingBoat(boat, hitPoint);
+          else if (boat.hpBar) updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
+        } else if (hitObj.userData.enemyRef) {
+          const enemy = hitObj.userData.enemyRef;
+          const effectiveArmor = Math.max(0, enemy.armorReduction * (1 - w.armorPen));
+          const dmg = Math.round(w.damage * (1 - effectiveArmor));
+          enemy.hp -= dmg;
+          enemy.shotsTaken++;
+          if (enemy.hp <= 0) {
+            killEnemy(enemy, hitPoint, false, true);
+          } else {
+            updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
+            spawnFloatingCallout(hitPoint, `💥 75mm SHELL -${dmg}`, 'text-orange-200 border-orange-400 bg-stone-950/90 font-bold');
+          }
+        }
+      }
+
+      applyExplosionDamage(hitPoint, 8.0, 260, 420);
+      updateHUD();
+    }
+
+    function createRocketProjectile(startPt, targetPt, damage) {
+      const geo = new THREE.CylinderGeometry(0.08, 0.08, 0.9, 10);
+      geo.rotateX(Math.PI / 2);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x3d443a, roughness: 0.5, metalness: 0.6 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(startPt);
+      mesh.lookAt(targetPt);
+      scene.add(mesh);
+
+      const rocketLight = new THREE.PointLight(0xff6600, 3.5, 6);
+      mesh.add(rocketLight);
+
+      state.rockets.push({
+        mesh,
+        startPt: startPt.clone(),
+        targetPt: targetPt.clone(),
+        damage,
+        progress: 0,
+        speed: 72
+      });
+    }
+
+    function fireRocket(nowSec) {
+      const w = state.weapons[3];
+      if (state.mode !== 'PLAYING') return;
+      if (w.isCooling) return;
+      if (w.curAmmo <= 0) {
+        spawnFloatingCallout(state.aimWorldPoint, 'OUT OF PANZERSCHRECK ROCKETS! [R] RELOAD', 'text-rose-300 border-rose-500 bg-rose-950/90');
+        sfx.playReadyClank();
+        return;
+      }
+
+      w.curAmmo--;
+      w.isCooling = true;
+      w.cooldownTimer = w.cooldownDuration;
+      state.shotsFired++;
+
+      sfx.playRocketLaunch();
+      gunBarrelGroup.position.z = 0.22;
+      state.cameraRecoilPitch = Math.min(0.04, (state.cameraRecoilPitch || 0) + 0.02);
+
+      const muzzleWorld = new THREE.Vector3();
+      muzzleFlashMesh.getWorldPosition(muzzleWorld);
+
+      raycaster.setFromCamera(state.mouseNDC, camera);
+      const envHits = raycaster.intersectObjects(environmentTargets, false);
+      const targetPt = envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone();
+
+      createRocketProjectile(muzzleWorld, targetPt, w.damage);
+      updateHUD();
+    }
+
+    function detonateRocket(pos, damage) {
+      sfx.playExplosion();
+      flashScreen('rgba(244, 63, 94, 0.3)');
+      spawnBurstParticles(pos, 0xf43f5e, 36, 22);
+      spawnBurstParticles(pos, 0xfbbf24, 24, 16);
+
+      const shockGeo = new THREE.SphereGeometry(1, 16, 12);
+      const shockMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.75 });
+      const shockMesh = new THREE.Mesh(shockGeo, shockMat);
+      shockMesh.position.copy(pos);
+      scene.add(shockMesh);
+      state.particles.push({
+        type: 'shockwave',
+        mesh: shockMesh,
+        life: 0.42,
+        maxLife: 0.42,
+        maxRadius: 15.0
+      });
+
+      applyExplosionDamage(pos, 14.0, damage, 580);
+    }
+
+    function createStukaDiveBomber() {
+      const plane = new THREE.Group();
+      const planeMat = new THREE.MeshStandardMaterial({ color: 0x2e3b2b, roughness: 0.6, metalness: 0.4 });
+      const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.5 });
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.45, 9.2, 12), planeMat);
+      body.rotateX(Math.PI / 2);
+
+      const wings = new THREE.Mesh(new THREE.BoxGeometry(17, 0.22, 3.2), planeMat);
+      wings.position.set(0, -0.1, 0.5);
+
+      const wingTipL = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.24, 3.22), yellowMat);
+      wingTipL.position.set(-7.5, -0.1, 0.5);
+      const wingTipR = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.24, 3.22), yellowMat);
+      wingTipR.position.set(7.5, -0.1, 0.5);
+
+      const tail = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.16, 1.5), planeMat);
+      tail.position.set(0, 0.2, -4.2);
+      const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.8, 1.5), planeMat);
+      rudder.position.set(0, 1.0, -4.2);
+
+      const propDisc = new THREE.Mesh(new THREE.CircleGeometry(1.8, 12), new THREE.MeshBasicMaterial({ color: 0x111315, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
+      propDisc.position.set(0, 0, 4.7);
+
+      plane.add(body, wings, wingTipL, wingTipR, tail, rudder, propDisc);
+      return plane;
+    }
+
+    function triggerStukaStrikeRun(targetPt) {
+      const plane = createStukaDiveBomber();
+      const startX = targetPt.x - 25;
+      const startY = 48;
+      const startZ = 95;
+      plane.position.set(startX, startY, startZ);
+      plane.lookAt(targetPt.x + 35, 15, -140);
+      scene.add(plane);
+
+      state.airStrikes.push({
+        plane,
+        startPos: new THREE.Vector3(startX, startY, startZ),
+        endPos: new THREE.Vector3(targetPt.x + 35, 18, -140),
+        targetPt: targetPt.clone(),
+        progress: 0,
+        bombsDropped: false,
+        duration: 2.8,
+        bombs: []
+      });
+    }
+
+    function callAirStrike(nowSec) {
+      const w = state.weapons[4];
+      if (state.mode !== 'PLAYING') return;
+      if (w.cooldownTimer > 0) {
+        spawnFloatingCallout(state.aimWorldPoint, `AIR STRIKE RECHARGING: ${Math.ceil(w.cooldownTimer)}s`, 'text-cyan-300 border-cyan-500 bg-cyan-950/90 font-bold');
+        return;
+      }
+
+      w.cooldownTimer = w.cooldownDuration;
+      w.curAmmo = 0;
+      sfx.playAirStrikeCall();
+
+      raycaster.setFromCamera(state.mouseNDC, camera);
+      const envHits = raycaster.intersectObjects(environmentTargets, false);
+      const targetPt = envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone();
+      targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
+
+      spawnFloatingCallout(targetPt, '✈️ AIR STRIKE TARGET MARKED — STUKA INBOUND!', 'text-cyan-200 border-cyan-400 bg-stone-950/95 font-bold scale-110');
+      spawnBurstParticles(targetPt, 0xef4444, 28, 12);
+      triggerStukaStrikeRun(targetPt);
+      updateHUD();
+    }
+
+    function firePlayerWeapon(nowSec) {
+      if (state.mode !== 'PLAYING') return;
+      if (state.selectedWeapon === 1) {
+        fireMachineGun(nowSec);
+      } else if (state.selectedWeapon === 2) {
+        fireCannon(nowSec);
+      } else if (state.selectedWeapon === 3) {
+        fireRocket(nowSec);
+      } else if (state.selectedWeapon === 4) {
+        callAirStrike(nowSec);
+      }
+    }
+
     function startGunCooldown() {
       if (state.weapon.isCooling) return;
       state.weapon.isCooling = true;
@@ -12184,11 +12840,18 @@
       state.grenadeObjs.forEach(g => scene.remove(g.mesh));
       state.particles.forEach(p => scene.remove(p.mesh));
       state.supplyDrops.forEach(d => scene.remove(d.group));
+      state.rockets.forEach(r => scene.remove(r.mesh));
+      state.airStrikes.forEach(a => {
+        scene.remove(a.plane);
+        a.bombs.forEach(b => scene.remove(b.mesh));
+      });
       state.boats = [];
       state.enemies = [];
       state.grenadeObjs = [];
       state.particles = [];
       state.supplyDrops = [];
+      state.rockets = [];
+      state.airStrikes = [];
     }
 
     function startWave(waveIdx) {
@@ -12197,9 +12860,13 @@
       const cfg = WAVE_CONFIGS[Math.min(waveIdx, WAVE_CONFIGS.length - 1)];
 
       recomputeWeaponStats();
-      state.weapon.curAmmo = state.weapon.maxAmmo;
-      state.weapon.isCooling = false;
-      state.weapon.cooldownTimer = 0;
+      for (let s = 1; s <= 4; s++) {
+        state.weapons[s].curAmmo = state.weapons[s].maxAmmo;
+        state.weapons[s].isCooling = false;
+        state.weapons[s].cooldownTimer = 0;
+      }
+      state.weapon = state.weapons[state.selectedWeapon || 1];
+      updateWeaponViewmodel();
 
       state.timeRemaining = cfg.timeLimit;
       state.grenades = cfg.grenades;
@@ -12573,9 +13240,48 @@
       document.getElementById('hud-accuracy').textContent = `${getAccuracyPercent()}%`;
       document.getElementById('hud-oneshots').textContent = `${state.oneShotKills} (+${state.oneShotKills} GREN)`;
 
-      // Weapon HUD
-      const totalUpgrades = state.upgrades.damage + state.upgrades.ammo + state.upgrades.cooldown + state.upgrades.firerate;
-      document.getElementById('hud-mg-tier').textContent = `MG-42 MK ${1 + Math.floor(totalUpgrades / 2)}`;
+      // 4-Weapon Arsenal Selector Dock Updates
+      for (let s = 1; s <= 4; s++) {
+        const slotBtn = document.getElementById(`weapon-slot-${s}`);
+        const badgeEl = document.getElementById(`wtab-badge-${s}`);
+        const ammoEl = document.getElementById(`wtab-ammo-${s}`);
+        const barEl = document.getElementById(`wtab-bar-${s}`);
+        const w = state.weapons[s];
+        if (!slotBtn || !w) continue;
+
+        const isSel = (state.selectedWeapon === s);
+        if (isSel) {
+          slotBtn.className = 'weapon-tab-btn relative bg-stone-900/95 border-2 border-amber-500 scale-[1.02] rounded-xl p-2.5 text-left transition shadow-2xl cursor-pointer ring-2 ring-amber-500/40';
+          if (badgeEl) {
+            badgeEl.textContent = '● ACTIVE';
+            badgeEl.className = 'text-[9px] font-mono-tac font-bold text-amber-400';
+          }
+        } else {
+          slotBtn.className = 'weapon-tab-btn relative bg-stone-950/80 hover:bg-stone-900 border border-stone-800 rounded-xl p-2.5 text-left transition shadow-xl cursor-pointer opacity-75 hover:opacity-100';
+          if (badgeEl) {
+            badgeEl.textContent = (w.isCooling || w.cooldownTimer > 0) ? 'RELOADING' : 'READY';
+            badgeEl.className = (w.isCooling || w.cooldownTimer > 0) ? 'text-[9px] font-mono-tac font-bold text-red-400' : 'text-[9px] font-mono-tac font-bold text-stone-500';
+          }
+        }
+
+        if (ammoEl) {
+          if (s === 1) ammoEl.textContent = `${w.curAmmo} RDS`;
+          else if (s === 2) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} SHELLS`;
+          else if (s === 3) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} ROCKETS`;
+          else if (s === 4) ammoEl.textContent = w.cooldownTimer > 0 ? `${Math.ceil(w.cooldownTimer)}s` : 'READY';
+        }
+
+        if (barEl) {
+          let pct = 100;
+          if (s === 1) pct = (w.curAmmo / w.maxAmmo) * 100;
+          else if (s === 2 || s === 3) pct = w.isCooling ? (1 - w.cooldownTimer / w.cooldownDuration) * 100 : (w.curAmmo / w.maxAmmo) * 100;
+          else if (s === 4) pct = w.cooldownTimer > 0 ? (1 - w.cooldownTimer / w.cooldownDuration) * 100 : 100;
+          barEl.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+        }
+      }
+
+      // Active Weapon Card (Bottom Left)
+      document.getElementById('hud-mg-tier').textContent = state.weapon.tierName;
       document.getElementById('hud-mg-dmg').textContent = state.weapon.damage;
       document.getElementById('hud-mg-ap').textContent = `${Math.round(state.weapon.armorPen * 100)}%`;
       document.getElementById('hud-ammo-cur').textContent = state.weapon.curAmmo;
@@ -12586,21 +13292,23 @@
       const statusLabel = document.getElementById('hud-mg-status-label');
       const reticleReload = document.getElementById('reticle-reload-tag');
 
-      if (state.weapon.isCooling) {
+      if (state.weapon.isCooling || (state.selectedWeapon === 4 && state.weapon.cooldownTimer > 0)) {
         const progress = 1 - state.weapon.cooldownTimer / state.weapon.cooldownDuration;
         ammoBar.style.width = `${Math.max(0, Math.min(100, progress * 100))}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-red-600 to-orange-400 rounded transition-all duration-75';
         coolLabel.classList.remove('hidden');
-        coolLabel.textContent = `COOLING BARREL: ${state.weapon.cooldownTimer.toFixed(1)}s`;
-        statusLabel.textContent = 'OVERHEATED / COOLING';
+        coolLabel.textContent = state.selectedWeapon === 4
+          ? `STUKA RECHARGING: ${state.weapon.cooldownTimer.toFixed(1)}s`
+          : `RELOADING / COOLING: ${state.weapon.cooldownTimer.toFixed(1)}s`;
+        statusLabel.textContent = 'RELOADING / COOLDOWN';
         statusLabel.className = 'text-xs font-bold text-red-400';
         reticleReload.classList.remove('hidden');
       } else {
-        const pctAmmo = (state.weapon.curAmmo / state.weapon.maxAmmo) * 100;
+        const pctAmmo = state.selectedWeapon === 4 ? 100 : (state.weapon.curAmmo / state.weapon.maxAmmo) * 100;
         ammoBar.style.width = `${pctAmmo}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded transition-all duration-75';
         coolLabel.classList.add('hidden');
-        statusLabel.textContent = 'BELT READY';
+        statusLabel.textContent = 'WEAPON ARMED & READY';
         statusLabel.className = 'text-xs font-semibold text-emerald-400';
         reticleReload.classList.add('hidden');
       }
@@ -12728,13 +13436,31 @@
       if (e.code === 'Space') {
         e.preventDefault();
         state.isFiring = true;
+      } else if (e.code === 'Digit1' || e.code === 'Numpad1') {
+        selectWeapon(1);
+      } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+        selectWeapon(2);
+      } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
+        selectWeapon(3);
+      } else if (e.code === 'Digit4' || e.code === 'Numpad4') {
+        selectWeapon(4);
       } else if (e.code === 'KeyG') {
         throwGrenade();
       } else if (e.code === 'KeyT') {
         useTimeBooster();
       } else if (e.code === 'KeyR') {
-        if (!state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
+        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
           startGunCooldown();
+        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
+          state.weapons[2].isCooling = true;
+          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
+          sfx.playReadyClank();
+          spawnFloatingCallout(state.aimWorldPoint, 'CHAMBERING 75mm SHELL...', 'text-orange-300 border-orange-500 bg-stone-950/90 font-bold');
+        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
+          state.weapons[3].isCooling = true;
+          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
+          sfx.playReadyClank();
+          spawnFloatingCallout(state.aimWorldPoint, 'LOADING ROCKET TUBE...', 'text-rose-300 border-rose-500 bg-stone-950/90 font-bold');
         }
       }
     });
@@ -12743,6 +13469,48 @@
       state.keys[e.code] = false;
       if (e.code === 'Space') state.isFiring = false;
     });
+
+    // Mouse Wheel Quick Weapon Cycling
+    window.addEventListener('wheel', e => {
+      if (state.mode !== 'PLAYING') return;
+      if (e.deltaY > 0) {
+        let next = state.selectedWeapon + 1;
+        if (next > 4) next = 1;
+        selectWeapon(next);
+      } else if (e.deltaY < 0) {
+        let prev = state.selectedWeapon - 1;
+        if (prev < 1) prev = 4;
+        selectWeapon(prev);
+      }
+    }, { passive: true });
+
+    // 4-Weapon Arsenal Selector Dock Click Listeners
+    for (let s = 1; s <= 4; s++) {
+      const btn = document.getElementById(`weapon-slot-${s}`);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          sfx.init();
+          selectWeapon(s);
+        });
+      }
+    }
+
+    const manualReloadBtn = document.getElementById('btn-manual-reload');
+    if (manualReloadBtn) {
+      manualReloadBtn.addEventListener('click', () => {
+        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
+          startGunCooldown();
+        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
+          state.weapons[2].isCooling = true;
+          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
+          sfx.playReadyClank();
+        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
+          state.weapons[3].isCooling = true;
+          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
+          sfx.playReadyClank();
+        }
+      });
+    }
 
     // UI Button Listeners
     document.getElementById('btn-victory-ok').addEventListener('click', () => {
@@ -13058,17 +13826,122 @@
           return;
         }
 
-        // Handle Machine Gun Cooldown Timer
-        if (state.weapon.isCooling) {
-          state.weapon.cooldownTimer -= dt;
-          if (state.weapon.cooldownTimer <= 0) {
-            state.weapon.isCooling = false;
-            state.weapon.cooldownTimer = 0;
-            state.weapon.curAmmo = state.weapon.maxAmmo;
-            sfx.playReadyClank();
+        // Handle All 4 Weapon Cooldown / Recharge Timers Concurrently
+        for (let s = 1; s <= 4; s++) {
+          const w = state.weapons[s];
+          if (w.isCooling || w.cooldownTimer > 0) {
+            w.cooldownTimer -= dt;
+            if (w.cooldownTimer <= 0) {
+              w.cooldownTimer = 0;
+              w.isCooling = false;
+              if (s === 1) {
+                w.curAmmo = w.maxAmmo;
+                if (state.selectedWeapon === 1) sfx.playReadyClank();
+              } else if (s === 2) {
+                if (state.selectedWeapon === 2) sfx.playReadyClank();
+              } else if (s === 3) {
+                if (state.selectedWeapon === 3) sfx.playReadyClank();
+              } else if (s === 4) {
+                w.curAmmo = 1;
+                spawnFloatingCallout(state.aimWorldPoint, '✈️ AIR STRIKE READY FOR DEPLOYMENT!', 'text-cyan-300 border-cyan-400 bg-stone-950/95 font-bold');
+              }
+            }
           }
-        } else if (state.isFiring) {
-          fireMachineGun(nowSec);
+        }
+
+        if (state.isFiring) {
+          firePlayerWeapon(nowSec);
+        }
+
+        // Update Panzerschreck Rockets
+        for (let i = state.rockets.length - 1; i >= 0; i--) {
+          const r = state.rockets[i];
+          const dist = r.startPt.distanceTo(r.targetPt);
+          r.progress += (r.speed * dt) / Math.max(1, dist);
+          r.mesh.position.lerpVectors(r.startPt, r.targetPt, Math.min(1, r.progress));
+          spawnBurstParticles(r.mesh.position, 0xf97316, 2, 4);
+
+          if (r.progress >= 1.0) {
+            detonateRocket(r.targetPt, r.damage);
+            scene.remove(r.mesh);
+            state.rockets.splice(i, 1);
+          }
+        }
+
+        // Update Stuka Air Strikes & Falling Bombs
+        for (let i = state.airStrikes.length - 1; i >= 0; i--) {
+          const a = state.airStrikes[i];
+          a.progress += dt / a.duration;
+          a.plane.position.lerpVectors(a.startPos, a.endPos, Math.min(1, a.progress));
+          a.plane.rotation.x = 0.16 * Math.sin(a.progress * Math.PI);
+
+          if (a.progress >= 0.38 && !a.bombsDropped) {
+            a.bombsDropped = true;
+            for (let b = 0; b < 3; b++) {
+              const bombTarget = a.targetPt.clone().add(new THREE.Vector3((b - 1) * 9, 0, (b - 1) * 7));
+              bombTarget.y = getBeachHeightAt(bombTarget.x, bombTarget.z);
+              const bombStart = a.plane.position.clone().add(new THREE.Vector3((b - 1) * 4, -1.5, 0));
+              const bombMesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.24, 0.18, 1.4, 8),
+                new THREE.MeshStandardMaterial({ color: 0x222622, metalness: 0.6, roughness: 0.4 })
+              );
+              bombMesh.rotateX(Math.PI / 2);
+              bombMesh.position.copy(bombStart);
+              scene.add(bombMesh);
+              a.bombs.push({
+                mesh: bombMesh,
+                startPt: bombStart,
+                targetPt: bombTarget,
+                progress: 0,
+                delay: b * 0.22,
+                duration: 0.75,
+                exploded: false
+              });
+            }
+          }
+
+          let allBombsDone = true;
+          a.bombs.forEach(bomb => {
+            if (bomb.exploded) return;
+            allBombsDone = false;
+            if (bomb.delay > 0) {
+              bomb.delay -= dt;
+              return;
+            }
+            bomb.progress += dt / bomb.duration;
+            bomb.mesh.position.lerpVectors(bomb.startPt, bomb.targetPt, Math.min(1, bomb.progress));
+            bomb.mesh.position.y += Math.sin(bomb.progress * Math.PI) * 4.0;
+            bomb.mesh.rotation.x += dt * 8;
+
+            if (bomb.progress >= 1.0) {
+              bomb.exploded = true;
+              scene.remove(bomb.mesh);
+              sfx.playExplosion();
+              flashScreen('rgba(251, 146, 60, 0.4)');
+              spawnBurstParticles(bomb.targetPt, 0xf97316, 42, 24);
+              spawnBurstParticles(bomb.targetPt, 0xfacc15, 28, 18);
+
+              const shockGeo = new THREE.SphereGeometry(1, 16, 12);
+              const shockMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.85 });
+              const shockMesh = new THREE.Mesh(shockGeo, shockMat);
+              shockMesh.position.copy(bomb.targetPt);
+              scene.add(shockMesh);
+              state.particles.push({
+                type: 'shockwave',
+                mesh: shockMesh,
+                life: 0.45,
+                maxLife: 0.45,
+                maxRadius: 18.0
+              });
+
+              applyExplosionDamage(bomb.targetPt, 18.0, 750, 720);
+            }
+          });
+
+          if (a.progress >= 1.0 && allBombsDone) {
+            scene.remove(a.plane);
+            state.airStrikes.splice(i, 1);
+          }
         }
 
         // Spawn scheduled landing boats
