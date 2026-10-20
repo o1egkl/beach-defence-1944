@@ -282,113 +282,123 @@
     </div>
   </div>
 
+  <!-- ================= WAVE COMPLETED / VICTORY STATS MODAL ================= -->
   <div id="victory-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md pointer-events-auto">
-    <div class="relative w-full max-w-2xl mx-auto my-auto bg-[#141812] border-2 border-amber-500/80 rounded-2xl shadow-[0_0_50px_rgba(245,158,11,0.35)] overflow-hidden flex flex-col">
+    <div class="relative w-full max-w-xl mx-auto my-auto bg-[#151912] border-2 border-emerald-500/80 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.35)] overflow-hidden flex flex-col">
       
       <!-- Header Banner with Military Badge -->
-      <div class="p-5 sm:p-6 bg-gradient-to-b from-stone-900 to-[#141812] border-b border-stone-700/80 text-center relative">
+      <div class="p-5 sm:p-6 bg-gradient-to-b from-stone-900 to-[#151912] border-b border-stone-800 text-center">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-mono-tac font-bold uppercase tracking-wider mb-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          ★ SECTOR DEFENSE SUCCESSFUL ★
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="vic-badge-text">★ WAVE 1 CLEARED ★</span>
         </div>
         <h2 id="victory-title" class="font-military text-3xl sm:text-4xl text-stone-100 tracking-wide">
-          WAVE 1 CLEARED!
+          SECTOR DEFENSE VICTORY
         </h2>
-        <p id="victory-subtitle" class="text-xs sm:text-sm text-stone-400 font-sans mt-1">
-          Amphibious invasion assault repelled. Coastal pillbox intact.
+        <p id="victory-subtitle" class="text-xs sm:text-sm text-emerald-400/90 font-mono-tac mt-1">
+          ALL HOSTILES ELIMINATED — BEACHHEAD SECURED
         </p>
-        <div class="text-4xl sm:text-5xl my-2">🎖️</div>
       </div>
 
-      <!-- Statistics Grid -->
-      <div class="p-5 sm:p-6 space-y-4 overflow-y-auto custom-scroll max-h-[55vh]">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+      <!-- Wave Statistics Grid (Resembling Pause Modal Layout) -->
+      <div class="p-5 sm:p-6 space-y-4">
+        <!-- Top 3 Core Metrics -->
+        <div class="grid grid-cols-3 gap-2.5 text-center">
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES ELIMINATED</div>
-            <div id="vic-kills" class="text-xl sm:text-2xl font-mono-tac font-bold text-stone-100 mt-1">10 / 10</div>
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">TIME REMAINING</div>
+            <div id="vic-time-left" class="text-lg font-mono-tac font-bold text-amber-400 mt-1">01:42.5</div>
           </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES KILLED</div>
+            <div id="vic-kills" class="text-lg font-mono-tac font-bold text-stone-100 mt-1">24 / 24</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">ACCURACY</div>
+            <div id="vic-accuracy" class="text-lg font-mono-tac font-bold text-emerald-400 mt-1">85.4%</div>
+          </div>
+        </div>
+
+        <!-- Secondary Tactical Metrics (Boats, One-Shots/Crits, Requisition Earned) -->
+        <div class="grid grid-cols-3 gap-2.5 text-center">
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
             <div class="text-[10px] text-stone-400 uppercase font-mono-tac">BOATS SUNK</div>
-            <div id="vic-boats" class="text-xl sm:text-2xl font-mono-tac font-bold text-amber-400 mt-1">0</div>
+            <div id="vic-boats" class="text-lg font-mono-tac font-bold text-amber-400 mt-1">2 Craft</div>
           </div>
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">SHOT ACCURACY</div>
-            <div id="vic-accuracy" class="text-xl sm:text-2xl font-mono-tac font-bold text-emerald-400 mt-1">100%</div>
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">CRITS / 1-SHOT</div>
+            <div id="vic-headshots" class="text-lg font-mono-tac font-bold text-red-400 mt-1">6 Kills</div>
           </div>
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">ONE-SHOT / CRITS</div>
-            <div id="vic-headshots" class="text-xl sm:text-2xl font-mono-tac font-bold text-red-400 mt-1">0</div>
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">SCORE EARNED</div>
+            <div id="vic-total-pts" class="text-lg font-mono-tac font-bold text-emerald-400 mt-1">+2,150 PTS</div>
           </div>
         </div>
 
-        <!-- Detailed Requisition & Score Calculation Breakdown -->
-        <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-4 space-y-2 text-xs font-mono-tac">
-          <div class="flex justify-between items-center text-stone-300">
-            <span>Time Remaining Bonus (<span id="vic-time-left">0.0</span>s):</span>
-            <span id="vic-time-pts" class="text-amber-400 font-bold">+0 PTS</span>
+        <!-- Score Bank & Bonus Pill -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-mono-tac text-stone-300 bg-stone-900/60 border border-stone-800/80 rounded-xl p-3">
+          <div class="flex items-center justify-between px-2">
+            <span>🎖️ TOTAL SCORE BANK:</span>
+            <strong id="vic-bank-pts" class="text-amber-400 font-bold">2,650 PTS</strong>
           </div>
-          <div class="flex justify-between items-center text-stone-300">
-            <span>Marksmanship Accuracy Bonus:</span>
-            <span id="vic-acc-pts" class="text-emerald-400 font-bold">+0 PTS</span>
-          </div>
-          <div class="flex justify-between items-center text-stone-300">
-            <span>Tactical Synergy Bonus (Time × Acc):</span>
-            <span id="vic-synergy-pts" class="text-sky-400 font-bold">+0 PTS</span>
-          </div>
-          <div class="flex justify-between items-center text-stone-300">
-            <span>Landing Craft Destruction Bonus:</span>
-            <span id="vic-boat-pts" class="text-amber-300 font-bold">+0 PTS</span>
-          </div>
-          <div class="pt-2 border-t border-stone-800 flex justify-between items-center text-sm">
-            <span class="text-stone-200 font-bold">TOTAL ROUND REQUISITION:</span>
-            <span id="vic-total-pts" class="text-amber-400 font-extrabold text-lg sm:text-xl font-military">+0 PTS</span>
-          </div>
-          <div class="flex justify-between items-center text-[11px] text-stone-400">
-            <span>TOTAL COMMAND REQUISITION BANK:</span>
-            <span id="vic-bank-pts" class="text-stone-200 font-bold">400 PTS</span>
+          <div class="flex items-center justify-between px-2">
+            <span>💣 BONUS GRENADES:</span>
+            <strong id="vic-bonus-grenades" class="text-red-400 font-bold">+6</strong>
           </div>
         </div>
       </div>
 
-      <!-- Action Button: OK -> Go to Armory / Upgrades -->
-      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 text-center shrink-0">
-        <button id="btn-victory-ok" type="button" class="w-full py-3.5 px-6 rounded-xl font-military text-lg sm:text-xl text-stone-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2">
-          <span>OK — PROCEED TO ARMORY & UPGRADES</span>
-          <span class="text-xl">➔</span>
+      <!-- Action Button: OK -> Go to Armory / Next Wave Screen -->
+      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex flex-col gap-2.5 shrink-0">
+        <button id="btn-victory-ok" type="button" class="w-full py-3.5 px-6 rounded-xl font-military text-lg sm:text-xl text-stone-950 bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500 hover:from-emerald-300 hover:to-amber-400 shadow-[0_0_30px_rgba(16,185,129,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2">
+          <span>OK — PROCEED TO NEXT SCREEN</span>
+          <span class="text-xs font-mono-tac opacity-80">(ENTER / SPACE)</span>
+          <span class="text-lg">➔</span>
         </button>
       </div>
 
     </div>
   </div>
 
+  <!-- ================= WAVE OVERRUN / DEFEAT MODAL ================= -->
   <div id="defeat-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md pointer-events-auto">
     <div class="relative w-full max-w-xl mx-auto my-auto bg-[#181111] border-2 border-red-500/80 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.35)] overflow-hidden flex flex-col">
       <div class="p-5 sm:p-6 bg-gradient-to-b from-stone-900 to-[#181111] border-b border-stone-800 text-center">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-300 text-xs font-mono-tac font-bold uppercase tracking-wider mb-2">
-          ✕ DEFENSE BREACHED ✕
+          <span class="inline-block w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+          <span>✕ DEFENSE BREACHED ✕</span>
         </div>
         <h2 id="defeat-title" class="font-military text-3xl sm:text-4xl text-stone-100 tracking-wide">
-          MISSION FAILED
+          WAVE OVERRUN
         </h2>
-        <p id="defeat-reason" class="text-xs sm:text-sm text-red-400/90 font-sans mt-1">
-          Time expired before invasion force was repelled.
+        <p id="defeat-reason" class="text-xs sm:text-sm text-red-400/90 font-mono-tac mt-1">
+          TIME EXPIRED BEFORE ALL HOSTILES WERE ELIMINATED!
         </p>
-        <div class="text-4xl sm:text-5xl my-2">💥</div>
       </div>
 
       <div class="p-5 sm:p-6 space-y-4">
         <div class="grid grid-cols-3 gap-2.5 text-center">
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES ELIMINATED</div>
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">TIME SURVIVED</div>
+            <div id="def-time-survived" class="text-lg font-mono-tac font-bold text-amber-400 mt-1">00:00</div>
+          </div>
+          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">HOSTILES KILLED</div>
             <div id="def-kills" class="text-lg font-mono-tac font-bold text-stone-100 mt-1">0 / 10</div>
           </div>
           <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">SHOT ACCURACY</div>
+            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">ACCURACY</div>
             <div id="def-accuracy" class="text-lg font-mono-tac font-bold text-emerald-400 mt-1">0%</div>
           </div>
-          <div class="bg-stone-950/80 border border-stone-800 rounded-xl p-3">
-            <div class="text-[10px] text-stone-400 uppercase font-mono-tac">CREDIT EARNED</div>
-            <div id="def-pts" class="text-lg font-mono-tac font-bold text-amber-400 mt-1">+0 PTS</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs font-mono-tac text-stone-300 bg-stone-900/60 border border-stone-800/80 rounded-xl p-3">
+          <div class="flex items-center justify-between px-2">
+            <span>🎖️ CONSOLATION SCORE:</span>
+            <strong id="def-pts" class="text-amber-400 font-bold">+0 PTS</strong>
+          </div>
+          <div class="flex items-center justify-between px-2">
+            <span>💰 COMMAND BANK:</span>
+            <strong id="def-bank-pts" class="text-stone-100 font-bold">500 PTS</strong>
           </div>
         </div>
       </div>
@@ -398,7 +408,7 @@
           ↺ RETRY WAVE
         </button>
         <button id="btn-defeat-armory" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-200 bg-stone-800 hover:bg-stone-700 border border-stone-600 transition active:scale-95">
-          🔧 ARMORY UPGRADES
+          OK — PROCEED TO ARMORY ➔
         </button>
       </div>
     </div>
@@ -12114,6 +12124,10 @@
 
       const accPct = getAccuracyPercent();
       const timeLeft = Math.max(0, +state.timeRemaining.toFixed(1));
+      const mins = Math.floor(timeLeft / 60);
+      const secs = (timeLeft % 60).toFixed(1).padStart(4, '0');
+      const minsStr = mins < 10 ? `0${mins}` : `${mins}`;
+      const timeFormatted = `${minsStr}:${secs}`;
 
       if (isVictory) {
         state.mode = 'VICTORY_SCREEN';
@@ -12127,20 +12141,53 @@
         state.score += waveBonusTotal;
         state.totalCampaignScore += waveBonusTotal + state.waveCombatPoints;
 
-        // Populate Victory Statistics Modal
-        const vicTitle = state.waveIndex >= WAVE_CONFIGS.length - 1 ? 'CAMPAIGN VICTORY!' : `WAVE ${state.waveIndex + 1} CLEARED!`;
+        // Populate Victory Statistics Modal (Clean tactical debrief matching pause modal)
+        const isCampaignWin = state.waveIndex >= WAVE_CONFIGS.length - 1;
+        const cfg = WAVE_CONFIGS[Math.min(state.waveIndex, WAVE_CONFIGS.length - 1)];
+        const vicTitle = isCampaignWin ? 'CAMPAIGN VICTORY!' : `WAVE ${state.waveIndex + 1} CLEARED!`;
+        const vicSub = isCampaignWin 
+          ? 'ALL 8 WAVES CLEARED — NORMANDY COAST SECURED!' 
+          : `WAVE ${state.waveIndex + 1}: ${cfg.name.toUpperCase()} REPULSED`;
+
+        const badgeEl = document.getElementById('vic-badge-text');
+        if (badgeEl) badgeEl.textContent = isCampaignWin ? '★ CAMPAIGN VICTORY ★' : `★ WAVE ${state.waveIndex + 1} CLEARED ★`;
         document.getElementById('victory-title').textContent = vicTitle;
+        const subEl = document.getElementById('victory-subtitle');
+        if (subEl) subEl.textContent = vicSub;
+
+        document.getElementById('vic-time-left').textContent = timeFormatted;
         document.getElementById('vic-kills').textContent = `${state.enemiesKilledInWave} / ${state.totalEnemiesInWave}`;
-        document.getElementById('vic-boats').textContent = `${state.boatsDestroyedInWave}`;
         document.getElementById('vic-accuracy').textContent = `${accPct}%`;
-        document.getElementById('vic-headshots').textContent = `${state.headshotsInWave + state.oneShotKills}`;
-        document.getElementById('vic-time-left').textContent = `${timeLeft}s`;
-        document.getElementById('vic-time-pts').textContent = `+${timePts.toLocaleString()} PTS`;
-        document.getElementById('vic-acc-pts').textContent = `+${accPts.toLocaleString()} PTS`;
-        document.getElementById('vic-synergy-pts').textContent = `+${synergyPts.toLocaleString()} PTS`;
-        document.getElementById('vic-boat-pts').textContent = `+${boatPts.toLocaleString()} PTS`;
+        document.getElementById('vic-boats').textContent = `${state.boatsDestroyedInWave} Craft`;
+        document.getElementById('vic-headshots').textContent = `${state.headshotsInWave + state.oneShotKills} Kills`;
         document.getElementById('vic-total-pts').textContent = `+${(waveBonusTotal + state.waveCombatPoints).toLocaleString()} PTS`;
         document.getElementById('vic-bank-pts').textContent = `${state.score.toLocaleString()} PTS`;
+        const bonusGrenadesEl = document.getElementById('vic-bonus-grenades');
+        if (bonusGrenadesEl) bonusGrenadesEl.textContent = `+${state.headshotsInWave + state.oneShotKills}`;
+
+        // Also update #wave-report-card in Armory Modal so the next screen shows previous wave stats
+        const reportCard = document.getElementById('wave-report-card');
+        if (reportCard) {
+          reportCard.classList.remove('hidden');
+          const rBadge = document.getElementById('report-badge');
+          if (rBadge) rBadge.textContent = `WAVE ${state.waveIndex + 1} CLEARED`;
+          const rHeading = document.getElementById('report-heading');
+          if (rHeading) rHeading.textContent = `WAVE ${state.waveIndex + 1} AFTER-ACTION REPORT`;
+          const rTotal = document.getElementById('report-total-earned');
+          if (rTotal) rTotal.textContent = `+${(waveBonusTotal + state.waveCombatPoints).toLocaleString()} PTS`;
+          const rTimeLeft = document.getElementById('report-time-left');
+          if (rTimeLeft) rTimeLeft.textContent = `${timeFormatted} (${timeLeft}s)`;
+          const rTimePts = document.getElementById('report-time-pts');
+          if (rTimePts) rTimePts.textContent = `+${timePts.toLocaleString()} Time Pts`;
+          const rAcc = document.getElementById('report-accuracy');
+          if (rAcc) rAcc.textContent = `${accPct}%`;
+          const rAccPts = document.getElementById('report-acc-pts');
+          if (rAccPts) rAccPts.textContent = `+${accPts.toLocaleString()} Acc Pts`;
+          const rSynergy = document.getElementById('report-synergy-pts');
+          if (rSynergy) rSynergy.textContent = `+${synergyPts.toLocaleString()} PTS`;
+          const rOneshots = document.getElementById('report-oneshots');
+          if (rOneshots) rOneshots.textContent = `${state.headshotsInWave + state.oneShotKills} Kills`;
+        }
 
         document.getElementById('victory-modal').classList.remove('hidden');
         document.getElementById('victory-modal').classList.add('flex');
@@ -12158,9 +12205,13 @@
         // Populate Defeat Modal
         document.getElementById('defeat-title').textContent = `WAVE ${state.waveIndex + 1} OVERRUN`;
         document.getElementById('defeat-reason').textContent = defeatReason || `WAVE ${state.waveIndex + 1} FAILED — TIME EXPIRED BEFORE ALL HOSTILES WERE ELIMINATED!`;
+        const defTime = document.getElementById('def-time-survived');
+        if (defTime) defTime.textContent = timeFormatted;
         document.getElementById('def-kills').textContent = `${state.enemiesKilledInWave} / ${state.totalEnemiesInWave}`;
         document.getElementById('def-accuracy').textContent = `${accPct}%`;
         document.getElementById('def-pts').textContent = `+${consolationPts} PTS`;
+        const defBank = document.getElementById('def-bank-pts');
+        if (defBank) defBank.textContent = `${state.score.toLocaleString()} PTS`;
 
         document.getElementById('defeat-modal').classList.remove('hidden');
         document.getElementById('defeat-modal').classList.add('flex');
@@ -12510,6 +12561,14 @@
         }
         togglePause();
         return;
+      }
+
+      if (state.mode === 'VICTORY_SCREEN') {
+        if (e.code === 'Enter' || e.code === 'Space') {
+          e.preventDefault();
+          document.getElementById('btn-victory-ok').click();
+          return;
+        }
       }
 
       if (state.mode !== 'PLAYING') return;
