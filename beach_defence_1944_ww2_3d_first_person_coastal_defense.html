@@ -10621,25 +10621,22 @@
       const walnutWoodMat = new THREE.MeshStandardMaterial({
         map: textures.wood,
         normalMap: textures.woodNormal,
-        color: 0x56321b, // Rich warm walnut timber
-        roughness: 0.54,
+        color: 0x5a361e, // Rich authentic German walnut timber matching reference photo
+        roughness: 0.48,
+        metalness: 0.06
+      });
+      const gripPanelMat = new THREE.MeshStandardMaterial({
+        map: textures.wood,
+        normalMap: textures.woodNormal,
+        color: 0x3d2616, // Dark walnut / ribbed bakelite grip panels matching photo
+        roughness: 0.52,
         metalness: 0.08
-      });
-      const bakeliteMat = new THREE.MeshStandardMaterial({
-        color: 0x1f1d1c, // Black ribbed bakelite pistol grip
-        roughness: 0.45,
-        metalness: 0.15
-      });
-      const sightWireMat = new THREE.MeshStandardMaterial({
-        color: 0x202428, // Fine dark blued wire for spiderweb reticle
-        roughness: 0.25,
-        metalness: 0.88
       });
       const bipodMat = new THREE.MeshStandardMaterial({
         map: textures.metal,
         normalMap: textures.metalNormal,
-        color: 0x282d33,
-        roughness: 0.35,
+        color: 0x2e343a,
+        roughness: 0.38,
         metalness: 0.82
       });
       const mountMat = new THREE.MeshStandardMaterial({
@@ -10649,303 +10646,279 @@
         roughness: 0.45,
         metalness: 0.78
       });
+      const buttPlateMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x2a2f35, // Stamped steel buttplate cap
+        roughness: 0.40,
+        metalness: 0.86
+      });
 
       gunBarrelGroup = new THREE.Group();
 
-      // 3. MG42 Slender Stamped Sheet-Metal Receiver Body with Chamfered Shoulders
-      const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.16, 1.12), gunMetal);
+      // 3. MG42 Slender Stamped Sheet-Metal Receiver Body (Matching Reference Photo)
+      const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.15, 1.12), gunMetal);
       receiver.position.set(0, 0, -0.15);
       receiver.castShadow = true;
 
-      // Top shoulder chamfers (45-degree beveled edges along receiver top)
+      // Top shoulder chamfers (45-degree beveled stamped edges along receiver top)
+      const chamfers = [];
       for (let s = -1; s <= 1; s += 2) {
-        const chamfer = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 1.05), gunMetal);
+        const chamfer = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.028, 1.06), gunMetal);
         chamfer.rotation.z = Math.PI / 4;
-        chamfer.position.set(s * 0.075, 0.075, -0.15);
-        gunBarrelGroup.add(chamfer);
+        chamfer.position.set(s * 0.07, 0.072, -0.15);
+        chamfers.push(chamfer);
       }
 
-      // Longitudinal stamped reinforcement ribs on left and right flanks
+      // Longitudinal stamped reinforcement ribs on left and right flanks (matching photo!)
+      const sideRibs = [];
       for (let s = -1; s <= 1; s += 2) {
-        const sideRib = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.035, 1.02), gunMetal);
-        sideRib.position.set(s * 0.082, 0.01, -0.15);
-        gunBarrelGroup.add(sideRib);
+        const sideRib = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.032, 1.04), gunMetal);
+        sideRib.position.set(s * 0.076, 0.01, -0.15);
+        sideRibs.push(sideRib);
       }
 
-      // 4. Stamped Top Feed Cover (Zuführeroberteil) with Spring Catch & Hinge
-      const topCover = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.045, 0.84), gunMetal);
-      topCover.position.set(0, 0.095, -0.20);
-      const coverCenterRib = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.02, 0.72), gunMetal);
-      coverCenterRib.position.set(0, 0.125, -0.20);
-      const coverLatch = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.065, 0.06), gunMetal);
-      coverLatch.position.set(0, 0.12, 0.22);
-      const trunnionHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.13, 8), gunMetal);
+      // 4. Stamped Top Feed Cover (Zuführeroberteil) with Spring Catch & Trunnion Hinge
+      const topCover = new THREE.Mesh(new THREE.BoxGeometry(0.126, 0.042, 0.82), gunMetal);
+      topCover.position.set(0, 0.092, -0.21);
+      const coverCenterRib = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.022, 0.74), gunMetal);
+      coverCenterRib.position.set(0, 0.118, -0.21);
+      const coverLatch = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.065, 0.055), gunMetal);
+      coverLatch.position.set(0, 0.115, 0.20);
+      const trunnionHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.126, 8), gunMetal);
       trunnionHinge.rotateZ(Math.PI / 2);
-      trunnionHinge.position.set(0, 0.10, -0.62);
+      trunnionHinge.position.set(0, 0.092, -0.62);
 
-      // 5. Cocking / Charging Handle (Spannschieber) on Right Track
-      const cockingTrack = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.06, 0.75), gunMetal);
-      cockingTrack.position.set(0.095, 0.01, -0.15);
-      const cockingArm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.025, 0.04), gunMetal);
-      cockingArm.position.set(0.14, 0.01, 0.02);
-      const cockingHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.18, 12), gunMetal);
-      cockingHandle.rotation.z = Math.PI / 2;
-      cockingHandle.position.set(0.19, 0.01, 0.02);
+      // 5. Cocking / Charging Handle (Spannschieber) with Vertical Grip Tube (Matching Reference Photo!)
+      const cockingGroup = new THREE.Group();
+      const cockingTrack = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.045, 0.72), gunMetal);
+      cockingTrack.position.set(0.082, 0.01, -0.15);
+      const cockingBlock = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.048, 0.12), gunMetal);
+      cockingBlock.position.set(0.095, 0.01, 0.03);
+      const cockingArm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.022, 0.035), gunMetal);
+      cockingArm.position.set(0.125, 0.01, 0.03);
+      // Prominent vertical cylindrical charging handle tube pointing downward as seen in reference photo!
+      const cockingHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.20, 12), gunMetal);
+      cockingHandle.position.set(0.155, -0.07, 0.03);
+      const cockingCapTop = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.022, 12), gunMetal);
+      cockingCapTop.position.set(0.155, 0.025, 0.03);
+      const cockingCapBtm = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.022, 12), gunMetal);
+      cockingCapBtm.position.set(0.155, -0.165, 0.03);
+      cockingGroup.add(cockingTrack, cockingBlock, cockingArm, cockingHandle, cockingCapTop, cockingCapBtm);
 
-      // 6. Gurttrommel 34 Olive-Drab Drum Magazine & 8 Linked Brass Cartridges (Matching Reference Photo)
-      const feedTray = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.025, 0.22), gunMetal);
-      feedTray.position.set(-0.12, 0.04, -0.28);
-
-      // Gurttrommel 34 (50-Round Drum Magazine) with concentric stamped face ribs & wire handle
-      const drumGroup = new THREE.Group();
-      drumGroup.position.set(-0.30, 0.03, -0.30);
-      const drumBody = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.18, 22), drumMat);
-      drumBody.rotation.z = Math.PI / 2;
-      drumGroup.add(drumBody);
-
-      // Concentric stamped strengthening ribs on outer face (matching photo!)
-      for (let r = 1; r <= 3; r++) {
-        const faceRib = new THREE.Mesh(new THREE.TorusGeometry(r * 0.065, 0.009, 6, 20), drumMat);
-        faceRib.position.x = -0.092;
-        drumGroup.add(faceRib);
-      }
-      // Perimeter corrugated bands
-      for (let c = -1; c <= 1; c += 2) {
-        const rimBand = new THREE.Mesh(new THREE.TorusGeometry(0.242, 0.010, 6, 22), gunMetal);
-        rimBand.position.x = c * 0.07;
-        drumGroup.add(rimBand);
-      }
-      // Wire carrying handle on drum lid
-      const drumHandle = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.011, 6, 16), gunMetal);
-      drumHandle.position.x = -0.098;
-      drumGroup.add(drumHandle);
-
-      // 8 Distinct 7.92x57mm Mauser Cartridges arching gracefully into feedway
-      const beltGroup = new THREE.Group();
-      for (let b = 0; b < 8; b++) {
-        const t = b / 7;
-        const bx = -0.26 + t * 0.18;
-        const by = 0.03 + Math.sin(t * Math.PI) * 0.045 + t * 0.04;
-        const bz = -0.31 + t * 0.04;
-
-        const roundGeo = new THREE.CylinderGeometry(0.016, 0.018, 0.13, 10);
-        roundGeo.rotateZ(Math.PI / 2);
-        const round = new THREE.Mesh(roundGeo, brassMat);
-        round.position.set(bx, by, bz);
-
-        const rimGeo = new THREE.CylinderGeometry(0.019, 0.019, 0.018, 10);
-        rimGeo.rotateZ(Math.PI / 2);
-        const rim = new THREE.Mesh(rimGeo, brassMat);
-        rim.position.set(bx - 0.065, by, bz);
-
-        const bulletTipGeo = new THREE.ConeGeometry(0.016, 0.045, 10);
-        bulletTipGeo.rotateZ(-Math.PI / 2);
-        const bulletTip = new THREE.Mesh(bulletTipGeo, copperTipMat);
-        bulletTip.position.set(bx + 0.085, by, bz);
-
-        const linkClip = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.065, 8), gunMetal);
-        linkClip.rotateZ(Math.PI / 2);
-        linkClip.position.set(bx, by, bz);
-
-        beltGroup.add(round, rim, bulletTip, linkClip);
-      }
+      // 6. Stamped Left Feedway Tray & Belt Guide (Matching Reference Photo)
+      const feedGroup = new THREE.Group();
+      const feedTray = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.022, 0.18), gunMetal);
+      feedTray.position.set(-0.11, 0.038, -0.27);
+      const feedFlap = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.045, 0.16), gunMetal);
+      feedFlap.position.set(-0.16, 0.055, -0.27);
+      const deflector = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.065, 0.14), gunMetal);
+      deflector.position.set(-0.08, -0.03, -0.27);
+      feedGroup.add(feedTray, feedFlap, deflector);
 
       // 7. Ventilated Cooling Shroud (Kühllaufmantel) with Longitudinal Slots & Inner Hot Barrel
-      const innerBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 1.82, 14), barrelHeatMat);
+      const innerBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 1.78, 14), barrelHeatMat);
       innerBarrel.rotateX(Math.PI / 2);
-      innerBarrel.position.set(0, 0.02, -1.45);
+      innerBarrel.position.set(0, 0.015, -1.45);
 
       const shroudGroup = new THREE.Group();
-      const shroudPlateTop = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.024, 1.45), barrelHeatMat);
-      shroudPlateTop.position.set(0, 0.085, -1.35);
-      const shroudPlateBtm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.024, 1.45), barrelHeatMat);
-      shroudPlateBtm.position.set(0, -0.045, -1.35);
+      const shroudPlateTop = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.022, 1.38), barrelHeatMat);
+      shroudPlateTop.position.set(0, 0.072, -1.36);
+      const shroudPlateBtm = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.022, 1.38), barrelHeatMat);
+      shroudPlateBtm.position.set(0, -0.042, -1.36);
       shroudGroup.add(shroudPlateTop, shroudPlateBtm);
 
-      // Left Side: 7 authentic elongated horizontal cooling vent slots showing glowing inner barrel
-      for (let slot = 0; slot < 7; slot++) {
-        const ventDivider = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.12, 0.08), barrelHeatMat);
-        ventDivider.position.set(-0.07, 0.02, -0.72 - slot * 0.19);
+      // Top Spine: 5 oval cooling apertures along top ridge
+      for (let h = 0; h < 5; h++) {
+        const topVent = new THREE.Mesh(new THREE.BoxGeometry(0.042, 0.026, 0.09), new THREE.MeshBasicMaterial({ color: 0x111315 }));
+        topVent.position.set(0, 0.073, -0.85 - h * 0.22);
+        shroudGroup.add(topVent);
+      }
+
+      // Left Side: 5 authentic elongated horizontal cooling vent slots showing glowing inner barrel
+      for (let slot = 0; slot < 5; slot++) {
+        const ventDivider = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.092, 0.07), barrelHeatMat);
+        ventDivider.position.set(-0.065, 0.015, -0.74 - slot * 0.22);
         shroudGroup.add(ventDivider);
       }
 
-      // Right Side: Quick-change barrel hatch door with hinge rod & locking lever
-      const barrelHatchDoor = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.13, 0.95), barrelHeatMat);
-      barrelHatchDoor.position.set(0.07, 0.02, -1.25);
-      const hatchHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.95, 8), gunMetal);
+      // Right Side: Quick-change barrel hatch door with hinge rod & locking lever (matching photo!)
+      const barrelHatchDoor = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.095, 0.92), barrelHeatMat);
+      barrelHatchDoor.position.set(0.065, 0.015, -1.25);
+      const hatchHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.92, 8), gunMetal);
       hatchHinge.rotateX(Math.PI / 2);
-      hatchHinge.position.set(0.08, 0.08, -1.25);
-      const hatchLever = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.09, 0.05), gunMetal);
-      hatchLever.position.set(0.085, 0.02, -0.75);
+      hatchHinge.position.set(0.074, 0.068, -1.25);
+      const hatchLever = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.08, 0.045), gunMetal);
+      hatchLever.position.set(0.078, 0.015, -0.78);
       shroudGroup.add(barrelHatchDoor, hatchHinge, hatchLever);
 
-      // 8. THE ICONIC SPIDERWEB ANTI-AIRCRAFT SIGHT (Fliegervisier 42 - Key Reference Feature!)
-      const spiderwebSightGroup = new THREE.Group();
-      spiderwebSightGroup.position.set(0, 0.085, -1.42);
+      // 8. Authentic Tangent Leaf Rear Sight (Schiebevisier - Matching Reference Photo!)
+      const rearSightGroup = new THREE.Group();
+      const rearSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.05, 0.22), gunMetal);
+      rearSightBase.position.set(0, 0.105, -0.54);
+      const leafRamp = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.016, 0.20), gunMetal);
+      leafRamp.position.set(0, 0.128, -0.54);
+      leafRamp.rotation.x = -0.10; // Raked slightly up towards shooter
+      const leafSlider = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.032, 0.04), gunMetal);
+      leafSlider.position.set(0, 0.138, -0.52);
+      const rearNotch = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.035, 0.012), gunMetal);
+      rearNotch.position.set(0, 0.145, -0.45);
+      rearSightGroup.add(rearSightBase, leafRamp, leafSlider, rearNotch);
 
-      // Vertical mounting post clamped to cooling shroud
-      const sightClamp = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.045, 0.08), gunMetal);
-      sightClamp.position.set(0, 0.02, 0);
-      const sightPost = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.28, 8), gunMetal);
-      sightPost.position.set(0, 0.16, 0);
-      spiderwebSightGroup.add(sightClamp, sightPost);
+      // 9. Authentic Hooded Front Post Sight with Protective Wing Ears (Matching Reference Photo!)
+      const frontSightGroup = new THREE.Group();
+      frontSightGroup.position.set(0, 0.072, -2.02);
+      const frontSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.035, 0.06), gunMetal);
+      frontSightBase.position.set(0, 0.01, 0);
+      const frontPost = new THREE.Mesh(new THREE.BoxGeometry(0.009, 0.055, 0.012), gunMetal);
+      frontPost.position.set(0, 0.045, 0);
+      // Protective left and right wings (Kornschutzbacken) matching reference photo!
+      const leftWing = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.055, 0.045), gunMetal);
+      leftWing.position.set(-0.024, 0.045, 0);
+      const rightWing = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.055, 0.045), gunMetal);
+      rightWing.position.set(0.024, 0.045, 0);
+      frontSightGroup.add(frontSightBase, frontPost, leftWing, rightWing);
 
-      // Reticle Center at y = 0.32 above shroud (in direct line of sight)
-      const reticleCenterY = 0.32;
-      const centerBead = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 8), sightWireMat);
-      centerBead.position.set(0, reticleCenterY, 0);
-      spiderwebSightGroup.add(centerBead);
+      // 10. Muzzle Booster & Conical Flash Hider with Annular Recoil Rings (Matching Reference Photo!)
+      const boosterGroup = new THREE.Group();
+      boosterGroup.position.set(0, 0.015, -2.14);
+      const boosterBody = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.064, 0.22, 16), gunMetal);
+      boosterBody.rotateX(Math.PI / 2);
+      boosterGroup.add(boosterBody);
+      // Machined annular recoil booster rings
+      for (let ring = 0; ring < 3; ring++) {
+        const boosterRing = new THREE.Mesh(new THREE.TorusGeometry(0.064, 0.010, 6, 16), gunMetal);
+        boosterRing.position.set(0, 0, 0.06 - ring * 0.055);
+        boosterGroup.add(boosterRing);
+      }
+      // Trumpet / funnel conical flash suppressor cone expanding outward at front tip
+      const hiderGeo = new THREE.ConeGeometry(0.095, 0.24, 16, 1, true);
+      hiderGeo.rotateX(-Math.PI / 2);
+      const hider = new THREE.Mesh(hiderGeo, gunMetal);
+      hider.position.set(0, 0.015, -2.36);
+      const hiderBore = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 12), new THREE.MeshBasicMaterial({ color: 0x111315 }));
+      hiderBore.rotateX(Math.PI / 2);
+      hiderBore.position.set(0, 0.015, -2.26);
 
-      // 3 Concentric Wire Rings (Outer, Middle, Inner) matching reference photo
-      const ringRadii = [0.18, 0.12, 0.06];
-      ringRadii.forEach(r => {
-        const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(r, 0.006, 8, 36), sightWireMat);
-        ringMesh.position.set(0, reticleCenterY, 0);
-        spiderwebSightGroup.add(ringMesh);
-      });
-
-      // 8 Radial Wire Spokes (Crosshairs + Diagonals forming the spiderweb!)
-      // Vertical crosshair wire
-      const vertWire = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.36, 6), sightWireMat);
-      vertWire.position.set(0, reticleCenterY, 0);
-      // Horizontal crosshair wire
-      const horizWire = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.36, 6), sightWireMat);
-      horizWire.rotateZ(Math.PI / 2);
-      horizWire.position.set(0, reticleCenterY, 0);
-      // Diagonal spoke 1 (45 degrees)
-      const diag1 = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.36, 6), sightWireMat);
-      diag1.rotateZ(Math.PI / 4);
-      diag1.position.set(0, reticleCenterY, 0);
-      // Diagonal spoke 2 (-45 degrees)
-      const diag2 = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.36, 6), sightWireMat);
-      diag2.rotateZ(-Math.PI / 4);
-      diag2.position.set(0, reticleCenterY, 0);
-      spiderwebSightGroup.add(vertWire, horizWire, diag1, diag2);
-
-      // 9. HEAVY FRONT BIPOD (Zweibein 42 - Clamped to Front of Shroud matching Reference Photo!)
+      // 11. HEAVY FRONT BIPOD (Zweibein 42 - Clamped to Front of Shroud matching Reference Photo!)
       const bipodGroup = new THREE.Group();
-      bipodGroup.position.set(0, 0.02, -1.96);
-
-      // Clamping collar around shroud
-      const bipodCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.082, 0.082, 0.065, 14, 1, true), bipodMat);
+      bipodGroup.position.set(0, 0.015, -1.95);
+      const bipodCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.076, 0.076, 0.06, 14, 1, true), bipodMat);
       bipodCollar.rotateX(Math.PI / 2);
-      // Tightening spindle clamp screw & knurled knob underneath
-      const bipodScrew = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.08, 8), bipodMat);
-      bipodScrew.position.set(0, -0.08, 0);
-      const bipodKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.035, 10), bipodMat);
-      bipodKnob.position.set(0, -0.12, 0);
-      // Central pivot yoke
-      const bipodYoke = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.045, 0.06), bipodMat);
-      bipodYoke.position.set(0, -0.06, 0);
-      bipodGroup.add(bipodCollar, bipodScrew, bipodKnob, bipodYoke);
+      const bipodKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.05, 10), bipodMat);
+      bipodKnob.position.set(0, -0.09, 0);
+      const bipodYoke = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.042, 0.055), bipodMat);
+      bipodYoke.position.set(0, -0.055, 0);
+      bipodGroup.add(bipodCollar, bipodKnob, bipodYoke);
 
-      // Left & Right Articulated Bipod Legs with Trench Ski/Spade Feet
+      // Left & Right Articulated Bipod Legs with authentic curved ski/spade feet
       for (let s = -1; s <= 1; s += 2) {
         const legPivot = new THREE.Group();
-        legPivot.position.set(s * 0.055, -0.06, 0);
-        // Splay outward by ~20 degrees
-        legPivot.rotation.z = s * 0.34;
-        legPivot.rotation.x = -0.06; // slight forward rake
-
+        legPivot.position.set(s * 0.055, -0.055, 0);
+        legPivot.rotation.z = s * 0.35; // Splay outward in authentic A-frame stance
+        legPivot.rotation.x = -0.06; // Rake slightly forward
         // Stamped U-channel leg body
-        const legBody = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.52, 0.034), bipodMat);
-        legBody.position.set(0, -0.26, 0);
-
+        const legBody = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.54, 0.032), bipodMat);
+        legBody.position.set(0, -0.27, 0);
         // Center adjustment slot along leg
-        const legSlot = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.38, 0.038), gunMetal);
-        legSlot.position.set(0, -0.26, 0);
-
+        const legSlot = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.40, 0.036), gunMetal);
+        legSlot.position.set(0, -0.27, 0);
+        // Adjustment clamp collar
+        const legClamp = new THREE.Mesh(new THREE.BoxGeometry(0.044, 0.045, 0.038), bipodMat);
+        legClamp.position.set(0, -0.42, 0);
         // Curved trench spade pad / ski foot at bottom (resting on bunker parapet)
-        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.018, 0.13), bipodMat);
-        foot.position.set(0, -0.52, 0.02);
+        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.072, 0.018, 0.13), bipodMat);
+        foot.position.set(0, -0.54, 0.02);
         foot.rotation.x = 0.06;
-
-        legPivot.add(legBody, legSlot, foot);
+        legPivot.add(legBody, legSlot, legClamp, foot);
         bipodGroup.add(legPivot);
       }
 
-      // 10. Muzzle Booster & Conical Flash Hider with 4 Machined Annular Recoil Rings
-      const boosterGroup = new THREE.Group();
-      boosterGroup.position.set(0, 0.02, -2.12);
+      // 12. Ergonomic Pistol Grip with Wood/Bakelite Scales & Screw Rivet (Matching Reference Photo!)
+      const gripGroup = new THREE.Group();
+      gripGroup.position.set(0, -0.16, 0.18);
+      gripGroup.rotation.x = -0.34;
+      const gripFrame = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.32, 0.13), gunMetal);
+      // Left and right dark wood / ribbed bakelite grip panels (Griffschalen)
+      const leftGripScale = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.28, 0.115), gripPanelMat);
+      leftGripScale.position.set(-0.035, 0, 0);
+      const rightGripScale = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.28, 0.115), gripPanelMat);
+      rightGripScale.position.set(0.035, 0, 0);
+      // Central screw rivet head visible through both grip scales
+      const gripScrew = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.096, 8), gunMetal);
+      gripScrew.rotateZ(Math.PI / 2);
+      gripScrew.position.set(0, 0.02, 0);
+      gripGroup.add(gripFrame, leftGripScale, rightGripScale, gripScrew);
 
-      // Booster cylinder body
-      const boosterBody = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.068, 0.25, 16), gunMetal);
-      boosterBody.rotateX(Math.PI / 2);
-      boosterGroup.add(boosterBody);
-
-      // 4 Machined Annular Recoil Booster Rings (matching the heavily finned booster in the photo!)
-      for (let ring = 0; ring < 4; ring++) {
-        const boosterRing = new THREE.Mesh(new THREE.TorusGeometry(0.068, 0.012, 6, 16), gunMetal);
-        boosterRing.position.set(0, 0, 0.08 - ring * 0.055);
-        boosterGroup.add(boosterRing);
-      }
-      // Radial gas relief ports
-      for (let p = 0; p < 4; p++) {
-        const port = new THREE.Mesh(new THREE.SphereGeometry(0.014, 6, 6), new THREE.MeshBasicMaterial({ color: 0x111315 }));
-        const angle = (p * Math.PI) / 2;
-        port.position.set(Math.cos(angle) * 0.062, Math.sin(angle) * 0.062, -0.06);
-        boosterGroup.add(port);
-      }
-
-      // Conical funnel flash hider cone
-      const hiderGeo = new THREE.ConeGeometry(0.10, 0.26, 16, 1, true);
-      hiderGeo.rotateX(-Math.PI / 2);
-      const hider = new THREE.Mesh(hiderGeo, gunMetal);
-      hider.position.set(0, 0.02, -2.35);
-
-      // 11. Authentic Tangent Leaf Rear Sight & Front Blade
-      const rearSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.08, 0.20), gunMetal);
-      rearSightBase.position.set(0, 0.14, -0.55);
-      const rearNotch = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.045, 0.015), gunMetal);
-      rearNotch.position.set(0, 0.20, -0.62);
-      const leafRamp = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.016, 0.18), gunMetal);
-      leafRamp.position.set(0, 0.16, -0.55);
-      leafRamp.rotation.x = -0.15;
-
-      const frontPost = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.06, 0.018), gunMetal);
-      frontPost.position.set(0, 0.16, -2.04);
-
-      // 12. Ergonomic Ribbed Bakelite Grip & Trigger Assembly
-      const grip = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.34, 0.16), bakeliteMat);
-      grip.position.set(0, -0.18, 0.20);
-      grip.rotation.x = -0.38;
-      const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.012, 6, 14), gunMetal);
-      triggerGuard.position.set(0, -0.12, 0.12);
+      const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.052, 0.011, 6, 16), gunMetal);
+      triggerGuard.position.set(0, -0.11, 0.11);
+      const trigger = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.055, 0.022), gunMetal);
+      trigger.position.set(0, -0.09, 0.10);
+      trigger.rotation.x = 0.22;
+      const safetyButton = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.08, 8), gunMetal);
+      safetyButton.rotateZ(Math.PI / 2);
+      safetyButton.position.set(0, -0.065, 0.17);
 
       // 13. Contoured Walnut Wood "Fish-Tail" Buttstock (Kolben 42 - Matching Reference Photo!)
       const stockGroup = new THREE.Group();
-      // Steel buffer collar entering receiver
-      const bufferCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.075, 0.18, 12), gunMetal);
+      // Stamped steel buffer collar entering receiver socket
+      const bufferCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.074, 0.16, 12), gunMetal);
       bufferCollar.rotateX(Math.PI / 2);
-      bufferCollar.position.set(0, -0.04, 0.38);
+      bufferCollar.position.set(0, -0.038, 0.38);
+      const bufferPin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 8), gunMetal);
+      bufferPin.rotateZ(Math.PI / 2);
+      bufferPin.position.set(0, -0.038, 0.36);
 
-      // Contoured walnut wrist / neck
-      const stockWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.070, 0.092, 0.24, 12), walnutWoodMat);
+      // Contoured walnut neck / wrist
+      const stockWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.088, 0.22, 12), walnutWoodMat);
       stockWrist.rotateX(Math.PI / 2);
-      stockWrist.position.set(0, -0.06, 0.52);
+      stockWrist.position.set(0, -0.055, 0.53);
 
-      // Downward-swept fish-tail walnut body
-      const stockBody = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.24, 0.34), walnutWoodMat);
-      stockBody.position.set(0, -0.08, 0.74);
-      stockBody.rotation.x = -0.12;
+      // Flared fish-tail walnut body
+      const stockBody = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.21, 0.28), walnutWoodMat);
+      stockBody.position.set(0, -0.075, 0.73);
+      stockBody.rotation.x = -0.10;
 
-      // Steel buttplate with vertical serrations & lower sling loop
-      const stockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, 0.035), gunMetal);
-      stockPlate.position.set(0, -0.09, 0.90);
-      stockPlate.rotation.x = -0.12;
-      const slingSwivel = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.008, 6, 12), gunMetal);
-      slingSwivel.position.set(0, -0.18, 0.88);
-      stockGroup.add(bufferCollar, stockWrist, stockBody, stockPlate, slingSwivel);
+      // Upper crest lobe (curved upper cheek rest)
+      const topLobe = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.068, 0.22, 12), walnutWoodMat);
+      topLobe.rotateX(Math.PI / 2);
+      topLobe.position.set(0, 0.015, 0.77);
+      topLobe.rotation.x = 0.08;
+
+      // Lower lobe (downward curved fish-tail lobe)
+      const btmLobe = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.078, 0.22, 12), walnutWoodMat);
+      btmLobe.rotateX(Math.PI / 2);
+      btmLobe.position.set(0, -0.155, 0.77);
+      btmLobe.rotation.x = -0.16;
+
+      // Rear flared fish-tail end
+      const stockFlaredEnd = new THREE.Mesh(new THREE.BoxGeometry(0.134, 0.275, 0.12), walnutWoodMat);
+      stockFlaredEnd.position.set(0, -0.075, 0.86);
+      stockFlaredEnd.rotation.x = -0.10;
+
+      // Steel buttplate cap wrapping around the rear curved contour (matching photo!)
+      const stockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.140, 0.285, 0.028), buttPlateMat);
+      stockPlate.position.set(0, -0.075, 0.92);
+      stockPlate.rotation.x = -0.10;
+      const buttPlateTopLip = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.03, 12), buttPlateMat);
+      buttPlateTopLip.rotateZ(Math.PI / 2);
+      buttPlateTopLip.position.set(0, 0.06, 0.92);
+
+      const slingSwivel = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.007, 6, 12), gunMetal);
+      slingSwivel.position.set(0, -0.185, 0.86);
+
+      stockGroup.add(bufferCollar, bufferPin, stockWrist, stockBody, topLobe, btmLobe, stockFlaredEnd, stockPlate, buttPlateTopLip, slingSwivel);
 
       // 14. Lafette 42 Fortress Mount & Elevation Handwheel
       const mountPivot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.38), mountMat);
       mountPivot.position.set(0, -0.22, -0.18);
 
+      const bufferCyls = [];
       for (let side = -1; side <= 1; side += 2) {
         const bufferCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.55, 10), mountMat);
         bufferCyl.rotateX(Math.PI / 2);
         bufferCyl.position.set(side * 0.11, -0.12, -0.20);
-        gunBarrelGroup.add(bufferCyl);
+        bufferCyls.push(bufferCyl);
       }
 
       const elevWheel = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 18), brassMat);
@@ -10956,16 +10929,18 @@
       flashGeo.rotateX(-Math.PI / 2);
       const flashMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0 });
       muzzleFlashMesh = new THREE.Mesh(flashGeo, flashMat);
-      muzzleFlashMesh.position.set(0, 0.02, -2.65);
+      muzzleFlashMesh.position.set(0, 0.015, -2.52);
 
-      // 16. Assemble MG-42 Specific Parts
+      // 16. Assemble MG-42 Specific Parts (Directly Matching User Reference Photo!)
       mg42Group = new THREE.Group();
       mg42Group.add(
-        receiver, topCover, coverCenterRib, coverLatch, trunnionHinge,
-        cockingTrack, cockingArm, cockingHandle, feedTray, drumGroup,
-        beltGroup, innerBarrel, shroudGroup, spiderwebSightGroup,
-        bipodGroup, boosterGroup, hider, rearSightBase, rearNotch,
-        leafRamp, frontPost, grip, triggerGuard, stockGroup
+        receiver, ...chamfers, ...sideRibs,
+        topCover, coverCenterRib, coverLatch, trunnionHinge,
+        cockingGroup, feedGroup, innerBarrel, shroudGroup,
+        rearSightGroup, frontSightGroup,
+        bipodGroup, boosterGroup, hider, hiderBore,
+        gripGroup, triggerGuard, trigger, safetyButton,
+        stockGroup, ...bufferCyls
       );
 
       // 17. 75mm PaK 40 Anti-Tank Cannon 3D Viewmodel Attachment
