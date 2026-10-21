@@ -9470,7 +9470,7 @@
     scene.background = new THREE.Color(0x6288a5); // Deep coastal maritime blue
     scene.fog = new THREE.Fog(0x688ea8, 160, 780); // Linear atmospheric sea haze (crisp fleet visibility)
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.02, 950);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 950);
     // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.5, 42) looking out toward -Z (the ocean)
     camera.position.set(0, 8.5, 42);
     camera.lookAt(0, 3, -30);
@@ -10180,7 +10180,8 @@
         roughness: 0.16,
         metalness: 0.32,
         transparent: true,
-        opacity: 0.85
+        opacity: 0.85,
+        depthWrite: false
       });
       const wetMesh = new THREE.Mesh(wetGeo, wetMat);
       wetMesh.position.set(0, 0.04, -8);
@@ -10962,19 +10963,39 @@
       const elevWheel = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 18), brassMat);
       elevWheel.position.set(-0.16, -0.22, -0.18);
 
-      // 15. Muzzle Flash Star (Additive blending, zero depth-write occlusion)
-      const flashGeo = new THREE.ConeGeometry(0.32, 1.2, 6);
-      flashGeo.rotateX(-Math.PI / 2);
+      // 15. Photorealistic Muzzle Flash Glow (Multi-plane cross star with soft radial falloff)
+      const flashCanvas = document.createElement('canvas');
+      flashCanvas.width = flashCanvas.height = 128;
+      const fCtx = flashCanvas.getContext('2d');
+      const fGrad = fCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      fGrad.addColorStop(0.0, 'rgba(255, 255, 240, 1.0)');
+      fGrad.addColorStop(0.18, 'rgba(255, 215, 80, 0.95)');
+      fGrad.addColorStop(0.45, 'rgba(255, 130, 25, 0.55)');
+      fGrad.addColorStop(0.75, 'rgba(255, 60, 10, 0.15)');
+      fGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      fCtx.fillStyle = fGrad;
+      fCtx.fillRect(0, 0, 128, 128);
+      const flashTex = new THREE.CanvasTexture(flashCanvas);
+
       const flashMat = new THREE.MeshBasicMaterial({
-        color: 0xffe066,
+        map: flashTex,
+        color: 0xffe088,
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
       });
-      muzzleFlashMesh = new THREE.Mesh(flashGeo, flashMat);
+      muzzleFlashMesh = new THREE.Group();
+      const fp1 = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.85), flashMat);
+      const fp2 = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.85), flashMat);
+      fp2.rotation.z = Math.PI / 3;
+      const fp3 = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.85), flashMat);
+      fp3.rotation.z = -Math.PI / 3;
+      muzzleFlashMesh.add(fp1, fp2, fp3);
       muzzleFlashMesh.position.set(0, 0.015, -2.52);
       muzzleFlashMesh.visible = false;
+      muzzleFlashMesh.material = flashMat;
 
       // 16. Assemble MG-42 Specific Parts (Directly Matching User Reference Photo!)
       mg42Group = new THREE.Group();
@@ -11068,8 +11089,8 @@
         roughness: 0.38,
         metalness: 0.82
       }),
-      hpBg: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15 }),
-      hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 })
+      hpBg: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15, depthWrite: false }),
+      hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
 
     function createFloatingHPBar(width = 1.8) {
@@ -11077,7 +11098,7 @@
       // Sleek, thin tactical bar that stays hidden until damaged (eliminates cartoon clutter!)
       const bg = new THREE.Mesh(new THREE.PlaneGeometry(width, 0.08), unitMaterials.hpBg);
       const fillGeo = new THREE.PlaneGeometry(width - 0.04, 0.05);
-      const fillMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 });
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false });
       const fill = new THREE.Mesh(fillGeo, fillMat);
       fill.position.z = 0.01;
       group.add(bg, fill);
@@ -11107,7 +11128,7 @@
     function createSmokeColumn(x, y, z) {
       const smokeParticles = [];
       const smokeGeo = new THREE.SphereGeometry(1.2, 6, 6);
-      const smokeMat = new THREE.MeshBasicMaterial({ color: 0x181a17, transparent: true, opacity: 0.38 });
+      const smokeMat = new THREE.MeshBasicMaterial({ color: 0x181a17, transparent: true, opacity: 0.38, depthWrite: false });
       for (let i = 0; i < 7; i++) {
         const sm = new THREE.Mesh(smokeGeo, smokeMat);
         sm.position.set(x + (Math.random() - 0.5) * 1.5, y + i * 2.8, z + (Math.random() - 0.5) * 1.5);
@@ -11168,7 +11189,7 @@
       tail.position.set(0, 0.2, -3.8);
       const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.6, 1.4), planeMat);
       rudder.position.set(0, 0.9, -3.8);
-      const propDisc = new THREE.Mesh(new THREE.CircleGeometry(1.6, 12), new THREE.MeshBasicMaterial({ color: 0x1f2324, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+      const propDisc = new THREE.Mesh(new THREE.CircleGeometry(1.6, 12), new THREE.MeshBasicMaterial({ color: 0x1f2324, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
       propDisc.position.set(0, 0, 4.3);
       plane.add(body, wings, stripeL, stripeR, tail, rudder, propDisc);
 
@@ -11508,7 +11529,7 @@
       for (let s = -1; s <= 1; s += 2) {
         const bowWaveGeo = new THREE.PlaneGeometry(1.2, 3.4);
         bowWaveGeo.rotateX(-Math.PI / 2);
-        const bowWaveMat = new THREE.MeshBasicMaterial({ color: 0xe8f6fa, transparent: true, opacity: 0.65 });
+        const bowWaveMat = new THREE.MeshBasicMaterial({ color: 0xe8f6fa, transparent: true, opacity: 0.65, depthWrite: false });
         const bowWave = new THREE.Mesh(bowWaveGeo, bowWaveMat);
         bowWave.position.set(s * (hullW * 0.48), 0.12, hullL * 0.32);
         bowWave.rotation.y = s * 0.35;
@@ -11518,7 +11539,7 @@
       // 9. Twin White Sea Foam Propeller Wake Trails (prominently visible from distant fleet horizon!)
       const wakeGeo = new THREE.PlaneGeometry(2.8, 28.0);
       wakeGeo.rotateX(-Math.PI / 2);
-      const wakeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72 });
+      const wakeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72, depthWrite: false });
       const wakeLeft = new THREE.Mesh(wakeGeo, wakeMat);
       wakeLeft.position.set(-1.45, 0.05, -hullL * 0.5 - 14.0);
       const wakeRight = new THREE.Mesh(wakeGeo, wakeMat);
@@ -12098,12 +12119,12 @@
       const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
       const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
 
-      // Identify shot damage indicators (e.g. -34, CRIT -88, 💥 -540, BLAST -300)
-      const isDamage = /-\d+/.test(text) || text.includes('CRIT') || text.includes('BLAST') || text.includes('HIT -');
+      // Identify combat feedback indicators (e.g. -34, CRIT -88, 💥 -540, BLAST -300, KILLED, ONE-SHOT, PTS)
+      const isCombatText = /-\d+/.test(text) || text.includes('CRIT') || text.includes('BLAST') || text.includes('HIT') || text.includes('KILL') || text.includes('PTS') || text.includes('DESTROYED');
 
       const el = document.createElement('div');
-      if (isDamage) {
-        // Shot damage is 100% transparent: zero black background boxes!
+      if (isCombatText) {
+        // Combat feedback is 100% transparent: zero black background boxes or border rectangles!
         let cleanClass = (colorClass || 'text-amber-300')
           .replace(/\bbg-\S+/g, '')
           .replace(/\bborder-\S+/g, '')
@@ -12124,64 +12145,79 @@
     function flashScreen(colorCss) {
       const el = document.getElementById('screen-flash');
       if (!el) return;
-      el.style.background = colorCss;
+      el.style.background = `radial-gradient(circle at center, transparent 40%, ${colorCss} 100%)`;
       el.style.opacity = '1';
-      setTimeout(() => { el.style.opacity = '0'; }, 160);
+      setTimeout(() => { el.style.opacity = '0'; }, 110);
     }
 
     function createTracerBeam(startPos, endPos, isCrit = false) {
       if (!startPos || !endPos) return;
-      const points = [startPos.clone(), endPos.clone()];
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const mat = new THREE.LineBasicMaterial({
-        color: isCrit ? 0xff4422 : 0xffe066,
+      const dir = new THREE.Vector3().subVectors(endPos, startPos);
+      const dist = dir.length();
+      if (dist < 0.2) return;
+      const mid = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+
+      const geo = new THREE.CylinderGeometry(0.024, 0.024, dist, 6);
+      geo.rotateX(Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({
+        color: isCrit ? 0xff3b10 : 0xffe066,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.95,
         depthWrite: false,
         blending: THREE.AdditiveBlending
       });
-      const line = new THREE.Line(geo, mat);
-      scene.add(line);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(mid);
+      mesh.lookAt(endPos);
+      scene.add(mesh);
       state.particles.push({
-        type: 'line',
-        mesh: line,
-        life: 0.085,
-        maxLife: 0.085
+        type: 'tracer',
+        mesh,
+        life: 0.09,
+        maxLife: 0.09
       });
     }
 
     function createEnemyTracerBeam(startPos, endPos, isCannon = false) {
       if (!startPos || !endPos) return;
-      const points = [startPos.clone(), endPos.clone()];
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const mat = new THREE.LineBasicMaterial({
+      const dir = new THREE.Vector3().subVectors(endPos, startPos);
+      const dist = dir.length();
+      if (dist < 0.2) return;
+      const mid = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+
+      const geo = new THREE.CylinderGeometry(isCannon ? 0.06 : 0.022, isCannon ? 0.06 : 0.022, dist, 6);
+      geo.rotateX(Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({
         color: isCannon ? 0xff5500 : 0xffcc33,
         transparent: true,
         opacity: isCannon ? 1.0 : 0.85,
         depthWrite: false,
         blending: THREE.AdditiveBlending
       });
-      const line = new THREE.Line(geo, mat);
-      scene.add(line);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(mid);
+      mesh.lookAt(endPos);
+      scene.add(mesh);
       state.particles.push({
-        type: 'line',
-        mesh: line,
+        type: 'tracer',
+        mesh,
         life: isCannon ? 0.16 : 0.08,
         maxLife: isCannon ? 0.16 : 0.08
       });
     }
 
+    const sparkGeo = new THREE.SphereGeometry(0.045, 6, 5);
     function spawnBurstParticles(pos, colorHex, count = 12, speedScale = 8) {
       if (!pos) return;
-      const geo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
       for (let i = 0; i < count; i++) {
         const mat = new THREE.MeshBasicMaterial({
           color: colorHex,
           transparent: true,
           opacity: 1,
-          depthWrite: false
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
         });
-        const mesh = new THREE.Mesh(geo, mat);
+        const mesh = new THREE.Mesh(sparkGeo, mat);
         mesh.position.copy(pos);
         const vel = new THREE.Vector3(
           (Math.random() - 0.5) * speedScale,
@@ -12193,8 +12229,8 @@
           type: 'spark',
           mesh,
           vel,
-          life: 0.45 + Math.random() * 0.35,
-          maxLife: 0.75
+          life: 0.40 + Math.random() * 0.30,
+          maxLife: 0.70
         });
       }
     }
@@ -12761,7 +12797,14 @@
 
       // Expanding 3D shockwave sphere
       const shockGeo = new THREE.SphereGeometry(1, 16, 12);
-      const shockMat = new THREE.MeshBasicMaterial({ color: 0xfb923c, transparent: true, opacity: 0.7, wireframe: false });
+      const shockMat = new THREE.MeshBasicMaterial({
+        color: 0xfb923c,
+        transparent: true,
+        opacity: 0.7,
+        wireframe: false,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
       const shockMesh = new THREE.Mesh(shockGeo, shockMat);
       shockMesh.position.copy(pos);
       scene.add(shockMesh);
@@ -14244,7 +14287,7 @@
         p.life -= dt;
         if (p.life <= 0) {
           scene.remove(p.mesh);
-          if (p.mesh.geometry) p.mesh.geometry.dispose();
+          if (p.mesh.geometry && p.mesh.geometry !== sparkGeo) p.mesh.geometry.dispose();
           if (p.mesh.material) p.mesh.material.dispose();
           state.particles.splice(i, 1);
           continue;
@@ -14254,6 +14297,8 @@
           p.mesh.position.addScaledVector(p.vel, dt);
           p.vel.y -= 18 * dt;
           p.mesh.material.opacity = ratio;
+          const s = Math.max(0.01, ratio);
+          p.mesh.scale.set(s, s, s);
         } else if (p.type === 'line' || p.type === 'tracer') {
           p.mesh.material.opacity = ratio;
         } else if (p.type === 'shockwave') {
