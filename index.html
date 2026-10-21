@@ -12496,25 +12496,83 @@
     // --- 7. PARACHUTE HEALTH / REPAIR SUPPLY CRATES ---
     function spawnParachuteHealthCrate() {
       const group = new THREE.Group();
-      // Medical / Armor Repair Supply Crate (Olive green with red cross markings)
-      const crateMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.55 });
+      // Medical / Armor Repair Supply Crate: Bold Emergency Medical Red Crate
+      const crateMat = new THREE.MeshStandardMaterial({
+        color: 0xd32f2f, // Bold emergency medical red
+        roughness: 0.42,
+        metalness: 0.08
+      });
       const crateMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), crateMat);
       crateMesh.castShadow = true;
+      crateMesh.receiveShadow = true;
       group.add(crateMesh);
 
-      // Medical red cross insignia on crate
-      const crossMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
-      const barH = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.38, 1.85), crossMat);
-      const barV = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.2, 1.85), crossMat);
-      group.add(barH);
-      group.add(barV);
+      // Dark steel corner reinforcement edge brackets
+      const metalMat = new THREE.MeshStandardMaterial({
+        color: 0x334155,
+        roughness: 0.45,
+        metalness: 0.75
+      });
+      const edgeTopZ1 = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.07, 0.07), metalMat);
+      edgeTopZ1.position.set(0, 0.88, 0.88);
+      const edgeTopZ2 = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.07, 0.07), metalMat);
+      edgeTopZ2.position.set(0, 0.88, -0.88);
+      const edgeBotZ1 = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.07, 0.07), metalMat);
+      edgeBotZ1.position.set(0, -0.88, 0.88);
+      const edgeBotZ2 = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.07, 0.07), metalMat);
+      edgeBotZ2.position.set(0, -0.88, -0.88);
+      group.add(edgeTopZ1, edgeTopZ2, edgeBotZ1, edgeBotZ2);
 
-      // Parachute canopy: bright clean medical white/cream canopy
-      const canopyGeo = new THREE.SphereGeometry(2.4, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+      // Medical white cross insignia visible on all 6 faces of the crate
+      const crossMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.22,
+        metalness: 0.02
+      });
+
+      // Front & Back faces (Z-axis)
+      const barFrontBackH = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.38, 1.83), crossMat);
+      const barFrontBackV = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.18, 1.83), crossMat);
+      // Left & Right faces (X-axis)
+      const barLeftRightH = new THREE.Mesh(new THREE.BoxGeometry(1.83, 0.38, 1.18), crossMat);
+      const barLeftRightV = new THREE.Mesh(new THREE.BoxGeometry(1.83, 1.18, 0.38), crossMat);
+      // Top & Bottom faces (Y-axis)
+      const barTopBottomH = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.83, 0.38), crossMat);
+      const barTopBottomV = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.83, 1.18), crossMat);
+
+      const crossMeshes = [
+        barFrontBackH, barFrontBackV,
+        barLeftRightH, barLeftRightV,
+        barTopBottomH, barTopBottomV
+      ];
+      crossMeshes.forEach(mesh => group.add(mesh));
+
+      // Parachute canopy: bright medical cream/white canopy with emergency red rim
+      const canopyGeo = new THREE.SphereGeometry(2.4, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
       const canopyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, side: THREE.DoubleSide });
       const canopy = new THREE.Mesh(canopyGeo, canopyMat);
       canopy.position.y = 3.3;
       group.add(canopy);
+
+      const canopyRimGeo = new THREE.TorusGeometry(2.38, 0.05, 6, 24);
+      const canopyRimMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.4 });
+      const canopyRim = new THREE.Mesh(canopyRimGeo, canopyRimMat);
+      canopyRim.rotation.x = Math.PI / 2;
+      canopyRim.position.y = 3.3;
+      group.add(canopyRim);
+
+      // Suspension rigging lines from crate corners up to canopy apex
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.85 });
+      const lineGeo = new THREE.BufferGeometry();
+      const lineCoords = new Float32Array([
+        -0.82, 0.88, -0.82,  0, 3.25, 0,
+         0.82, 0.88, -0.82,  0, 3.25, 0,
+        -0.82, 0.88,  0.82,  0, 3.25, 0,
+         0.82, 0.88,  0.82,  0, 3.25, 0
+      ]);
+      lineGeo.setAttribute('position', new THREE.BufferAttribute(lineCoords, 3));
+      const suspensionLines = new THREE.LineSegments(lineGeo, lineMat);
+      group.add(suspensionLines);
 
       const x = (Math.random() - 0.5) * 56;
       const z = -25 + Math.random() * 35;
@@ -12525,11 +12583,15 @@
         group,
         crateMesh,
         canopy,
+        canopyRim,
+        suspensionLines,
+        hitboxes: [crateMesh, canopy, ...crossMeshes],
         active: true,
         healthBonus: 25 // Adds +25% Bunker Health! (Does NOT add wave time)
       };
-      crateMesh.userData.supplyDropRef = dropObj;
-      canopy.userData.supplyDropRef = dropObj;
+      dropObj.hitboxes.forEach(m => {
+        m.userData.supplyDropRef = dropObj;
+      });
       state.supplyDrops.push(dropObj);
     }
     // Backward compatibility alias
@@ -12793,7 +12855,12 @@
       const targetMeshes = [];
       state.enemies.forEach(e => { if (!e.dead) targetMeshes.push(...e.hitboxes); });
       state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) targetMeshes.push(...b.hitboxes); });
-      state.supplyDrops.forEach(d => { if (d.active) targetMeshes.push(d.crateMesh, d.canopy); });
+      state.supplyDrops.forEach(d => {
+        if (d.active) {
+          if (d.hitboxes) targetMeshes.push(...d.hitboxes);
+          else targetMeshes.push(d.crateMesh, d.canopy);
+        }
+      });
 
       const hits = raycaster.intersectObjects(targetMeshes, false);
       const envHits = raycaster.intersectObjects(environmentTargets, false);
@@ -12981,7 +13048,10 @@
         if (!e.dead) targetMeshes.push(...e.hitboxes);
       });
       state.supplyDrops.forEach(d => {
-        if (d.active) targetMeshes.push(d.crateMesh, d.canopy);
+        if (d.active) {
+          if (d.hitboxes) targetMeshes.push(...d.hitboxes);
+          else targetMeshes.push(d.crateMesh, d.canopy);
+        }
       });
       state.boats.forEach(b => {
         if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) {
@@ -13045,8 +13115,9 @@
             else sfx.playTimeBoost();
 
             flashScreen('rgba(34, 197, 94, 0.28)');
-            spawnBurstParticles(hitPoint, 0x22c55e, 24, 14);
-            spawnBurstParticles(hitPoint, 0xf8fafc, 16, 10);
+            spawnBurstParticles(hitPoint, 0x22c55e, 24, 14); // healing aura
+            spawnBurstParticles(hitPoint, 0xd32f2f, 16, 12); // medical red crate fragments
+            spawnBurstParticles(hitPoint, 0xffffff, 16, 10); // white cross sparkle
             spawnFloatingCallout(
               hitPoint,
               `❤️ REPAIR CRATE! +${healAmount}% HEALTH (${state.bunkerHealth}% HP)`,
@@ -14447,6 +14518,8 @@
             drop.group.position.x += Math.sin(nowSec * 2) * dt * 0.8;
           } else {
             drop.canopy.visible = false;
+            if (drop.canopyRim) drop.canopyRim.visible = false;
+            if (drop.suspensionLines) drop.suspensionLines.visible = false;
           }
         });
 
