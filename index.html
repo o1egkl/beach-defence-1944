@@ -11077,6 +11077,17 @@
       stormCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, color: 0x8a9088, roughness: 0.82 }),
       skin: new THREE.MeshStandardMaterial({ color: 0xdca882, roughness: 0.68 }),
       helmet: new THREE.MeshStandardMaterial({ map: textures.helmetNet, normalMap: textures.fabricNormal, roughness: 0.52, metalness: 0.4 }),
+      scrimKhaki: new THREE.MeshStandardMaterial({ color: 0x6e624c, roughness: 0.95 }),
+      scrimGreen: new THREE.MeshStandardMaterial({ color: 0x3d4b32, roughness: 0.95 }),
+      leatherBoot: new THREE.MeshStandardMaterial({ color: 0x2b1e14, roughness: 0.78, metalness: 0.15 }),
+      canvasGaiter: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x9a8f74, roughness: 0.92 }),
+      tireRubber: new THREE.MeshStandardMaterial({ color: 0x1a1c1a, roughness: 0.88, metalness: 0.12 }),
+      darkMetal: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x22262a, roughness: 0.40, metalness: 0.82 }),
+      brassAmmo: new THREE.MeshStandardMaterial({ color: 0xd8a33a, roughness: 0.28, metalness: 0.92 }),
+      starInsignia: new THREE.MeshBasicMaterial({ color: 0xf3f4f6 }),
+      canvasCover: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x565c4c, roughness: 0.94 }),
+      jerryCanMat: new THREE.MeshStandardMaterial({ color: 0x3d4432, roughness: 0.65, metalness: 0.4 }),
+      searchlightLens: new THREE.MeshBasicMaterial({ color: 0xfffae0 }),
       lightArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, roughness: 0.52, metalness: 0.55 }),
       medArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, color: 0x828c7c, roughness: 0.5, metalness: 0.62 }),
       heavyArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, roughness: 0.45, metalness: 0.72 }),
@@ -11569,9 +11580,10 @@
       let maxHp = Math.round(45 * waveScale);
       let speed = 3.2 + Math.random() * 0.5;
       let points = 100;
-      let hpBarY = 2.65;
+      let hpBarY = 2.85;
       let legs = [];
       let arms = [];
+      let wheels = [];
       let tankTurret = null;
       let helmetMesh = null;
       let torsoMesh = null;
@@ -11589,10 +11601,10 @@
         hpBarY = 2.85;
 
         const uniformMat = isStorm ? unitMaterials.stormCoat : unitMaterials.infantryCoat;
-        const leggingsMat = unitMaterials.sandbag;
-        const bootMat = new THREE.MeshStandardMaterial({ color: 0x2b2116, roughness: 0.85 });
+        const leggingsMat = unitMaterials.canvasGaiter;
+        const bootMat = unitMaterials.leatherBoot;
 
-        // 1. Torso: M1941 Field Jacket with authentic collar, waist cinch, chest pockets
+        // 1. Torso: M1941 Field Jacket with collar lapels, pockets, belt, web suspenders, canteen, haversack
         const torsoGroup = new THREE.Group();
         const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.36, 1.15, 8), uniformMat);
         chest.position.y = 1.35;
@@ -11603,86 +11615,162 @@
         hitboxes.push(chest);
         torsoMesh = torsoGroup;
 
-        // Collar lapels
-        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.14, 0.18), uniformMat);
-        collar.position.set(0, 1.95, 0.18);
-        torsoGroup.add(collar);
+        // Folded collar lapels
+        const collarL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.14), uniformMat);
+        collarL.position.set(-0.16, 1.94, 0.18);
+        collarL.rotation.set(-0.2, 0, 0.25);
+        const collarR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.14), uniformMat);
+        collarR.position.set(0.16, 1.94, 0.18);
+        collarR.rotation.set(-0.2, 0, -0.25);
+        // V-neck undershirt glimpse
+        const vNeck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.08), unitMaterials.canvasGaiter);
+        vNeck.position.set(0, 1.90, 0.16);
+        torsoGroup.add(collarL, collarR, vNeck);
+
+        // Breast bellow pockets with button flaps
+        for (let s = -1; s <= 1; s += 2) {
+          const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.20, 0.08), uniformMat);
+          pocket.position.set(s * 0.24, 1.55, 0.28);
+          const pFlap = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.07, 0.09), uniformMat);
+          pFlap.position.set(s * 0.24, 1.66, 0.29);
+          const pButton = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.02), unitMaterials.brassAmmo);
+          pButton.position.set(s * 0.24, 1.63, 0.34);
+          torsoGroup.add(pocket, pFlap, pButton);
+        }
+
+        // M1936 Web Suspenders crossing shoulders down to cartridge belt
+        for (let s = -1; s <= 1; s += 2) {
+          const suspenderFront = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.85, 0.04), unitMaterials.canvasGaiter);
+          suspenderFront.position.set(s * 0.25, 1.35, 0.26);
+          const suspenderBack = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.85, 0.04), unitMaterials.canvasGaiter);
+          suspenderBack.position.set(s * 0.22, 1.35, -0.26);
+          torsoGroup.add(suspenderFront, suspenderBack);
+        }
 
         // 10-Pocket M1 Cartridge Webbing Belt around waist
-        const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.18, 10), new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x5a4e37, roughness: 0.9 }));
+        const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.18, 10), unitMaterials.canvasGaiter);
         belt.scale.set(1.1, 1.0, 0.7);
         belt.position.y = 0.88;
-        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), new THREE.MeshStandardMaterial({ color: 0xd4a238, metalness: 0.8 }));
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), unitMaterials.brassAmmo);
         buckle.position.set(0, 0.88, 0.28);
         torsoGroup.add(belt, buckle);
 
         for (let p = -2; p <= 2; p++) {
           if (p === 0) continue;
-          const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.11), new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x483e2a }));
+          const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.11), unitMaterials.canvasGaiter);
           pouch.position.set(p * 0.17, 0.88, 0.28);
           torsoGroup.add(pouch);
         }
 
         // Canteen on right hip
-        const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 8), new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x544933 }));
+        const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 8), unitMaterials.canvasGaiter);
         canteen.position.set(0.44, 0.88, 0);
-        torsoGroup.add(canteen);
+        const canteenCap = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 6), unitMaterials.darkMetal);
+        canteenCap.position.set(0.44, 1.0, 0);
+        // First aid pouch on left hip
+        const aidPouch = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.09), unitMaterials.canvasGaiter);
+        aidPouch.position.set(-0.44, 0.88, 0);
+        torsoGroup.add(canteen, canteenCap, aidPouch);
 
-        // M1928 Haversack Backpack on shoulders with rolled bedroll and entrenching shovel
-        const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.75, 0.28), new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x584c35, roughness: 0.92 }));
+        // M1928 Haversack Backpack on back with rolled wool bedroll & entrenching shovel
+        const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.75, 0.28), unitMaterials.canvasGaiter);
         backpack.position.set(0, 1.45, -0.34);
-        const bedroll = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.65, 8), new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x48523c }));
+        const bedroll = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.65, 8), unitMaterials.scrimGreen);
         bedroll.rotateZ(Math.PI / 2);
         bedroll.position.set(0, 1.88, -0.34);
         const shovelHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.52, 6), unitMaterials.woodRifle);
         shovelHandle.position.set(0.12, 1.62, -0.46);
         shovelHandle.rotation.z = -0.25;
-        torsoGroup.add(backpack, bedroll, shovelHandle);
+        const shovelBlade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.20, 0.04), unitMaterials.darkMetal);
+        shovelBlade.position.set(0.06, 1.40, -0.47);
+        torsoGroup.add(backpack, bedroll, shovelHandle, shovelBlade);
 
         group.add(torsoGroup);
 
-        // 2. Neck and Head with Skin Tone
-        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.22, 8), unitMaterials.skin);
-        neck.position.y = 1.95;
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 10), unitMaterials.skin);
-        head.position.y = 2.12;
-        head.userData = { isWeakSpot: true }; // Headshot bonus
-        group.add(neck, head);
-        hitboxes.push(head);
+        // 2. Sculpted Head & Facial Anatomy (Brow ridge, nose, jawline, ears)
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 2.12, 0);
 
-        // 3. Authentic WW2 M1 Steel Helmet with curved brim & netting
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.22, 8), unitMaterials.skin);
+        neck.position.y = -0.17;
+        headGroup.add(neck);
+
+        const cranium = new THREE.Mesh(new THREE.SphereGeometry(0.30, 12, 10), unitMaterials.skin);
+        cranium.scale.set(0.95, 1.05, 1.0);
+        cranium.userData = { isWeakSpot: true };
+        headGroup.add(cranium);
+        hitboxes.push(cranium);
+
+        // Facial brow ridge
+        const brow = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.12), unitMaterials.skin);
+        brow.position.set(0, 0.06, 0.24);
+        // Nose bridge & tip
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.12, 4), unitMaterials.skin);
+        nose.rotation.x = -Math.PI / 2;
+        nose.position.set(0, -0.02, 0.32);
+        // Defined jawline and chin
+        const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.18), unitMaterials.skin);
+        jaw.position.set(0, -0.14, 0.14);
+        // Left & right ear lobes
+        const earL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.10, 0.06), unitMaterials.skin);
+        earL.position.set(-0.29, 0, 0.02);
+        const earR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.10, 0.06), unitMaterials.skin);
+        earR.position.set(0.29, 0, 0.02);
+        headGroup.add(brow, nose, jaw, earL, earR);
+
+        group.add(headGroup);
+
+        // 3. Authentic WW2 M1 Steel Helmet with Camo Netting & Scrim
         const helmetGroup = new THREE.Group();
         helmetGroup.position.set(0, 2.18, 0);
         const helmetDome = new THREE.Mesh(
-          new THREE.SphereGeometry(0.40, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
+          new THREE.SphereGeometry(0.39, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
           unitMaterials.helmet
         );
+        helmetDome.scale.set(0.98, 1.0, 1.08); // Authentic front-to-back elongation
         helmetDome.castShadow = true;
+        helmetDome.userData = { isWeakSpot: true };
+        hitboxes.push(helmetDome);
+
         const helmetRim = new THREE.Mesh(
-          new THREE.TorusGeometry(0.40, 0.026, 6, 18),
+          new THREE.TorusGeometry(0.39, 0.026, 6, 18),
           unitMaterials.helmet
         );
         helmetRim.rotation.x = Math.PI / 2;
+        helmetRim.scale.set(0.98, 1.08, 1.0);
         helmetRim.position.y = 0.02;
+
         const chinstrap = new THREE.Mesh(
-          new THREE.TorusGeometry(0.32, 0.016, 4, 12, Math.PI),
-          new THREE.MeshStandardMaterial({ color: 0x3d3020 })
+          new THREE.TorusGeometry(0.31, 0.016, 4, 12, Math.PI),
+          unitMaterials.leatherBoot
         );
         chinstrap.rotation.z = Math.PI;
         chinstrap.position.set(0, -0.12, 0.08);
 
+        // Burlap camouflage scrim strips tucked under helmet netting
+        const scrimTabs = [
+          { x: -0.28, y: 0.10, z: 0.22, rot: 0.3, mat: unitMaterials.scrimKhaki },
+          { x: 0.26, y: 0.12, z: 0.18, rot: -0.4, mat: unitMaterials.scrimGreen },
+          { x: -0.12, y: 0.18, z: -0.32, rot: 0.2, mat: unitMaterials.scrimGreen },
+          { x: 0.18, y: 0.15, z: -0.28, rot: -0.3, mat: unitMaterials.scrimKhaki }
+        ];
+        scrimTabs.forEach(s => {
+          const tab = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), s.mat);
+          tab.position.set(s.x, s.y, s.z);
+          tab.rotation.z = s.rot;
+          helmetGroup.add(tab);
+        });
+
         helmetMesh = helmetDome;
-        helmetDome.userData = { isWeakSpot: true };
         helmetGroup.add(helmetDome, helmetRim, chinstrap);
         group.add(helmetGroup);
-        hitboxes.push(helmetDome);
 
-        // 4. Articulated Legs: Wool trousers, canvas M1938 leggings, leather service boots with Knee Joints
+        // 4. Articulated Legs: Wool trousers, Canvas M1938 Gaiters, Contoured Leather Boots with Heels
         for (let l = -1; l <= 1; l += 2) {
           const hipGroup = new THREE.Group();
           hipGroup.position.set(l * 0.24, 0.88, 0);
 
-          const upperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 0.58, 8), uniformMat);
+          const upperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.58, 8), uniformMat);
           upperLeg.position.y = -0.29;
           upperLeg.castShadow = true;
           hipGroup.add(upperLeg);
@@ -11690,83 +11778,137 @@
           const kneeGroup = new THREE.Group();
           kneeGroup.position.set(0, -0.56, 0);
 
-          // Canvas gaiters/leggings laced around shins
-          const leggings = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.10, 0.48, 8), leggingsMat);
+          // Canvas gaiters/leggings laced around shins with lace seam
+          const leggings = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.48, 8), leggingsMat);
           leggings.position.y = -0.22;
           leggings.castShadow = true;
+          // Legging lace seam rib
+          const laceSeam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.44, 0.04), unitMaterials.scrimKhaki);
+          laceSeam.position.set(l * 0.11, -0.22, 0.02);
 
-          // Leather combat service boot
-          const boot = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.42), bootMat);
-          boot.position.set(0, -0.46, 0.08);
-          boot.castShadow = true;
+          // Contoured combat service boot: heel, ankle, and toe
+          const bootGroup = new THREE.Group();
+          bootGroup.position.set(0, -0.46, 0.06);
+          // Main boot body
+          const bootMain = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.36), bootMat);
+          bootMain.castShadow = true;
+          // Raised heel block
+          const bootHeel = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.08, 0.14), unitMaterials.darkMetal);
+          bootHeel.position.set(0, -0.07, -0.10);
+          // Rounded toe cap
+          const bootToe = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.12, 0.14), bootMat);
+          bootToe.position.set(0, -0.03, 0.20);
+          bootGroup.add(bootMain, bootHeel, bootToe);
 
-          kneeGroup.add(leggings, boot);
+          kneeGroup.add(leggings, laceSeam, bootGroup);
           hipGroup.add(kneeGroup);
           group.add(hipGroup);
           legs.push({ hip: hipGroup, knee: kneeGroup });
         }
 
-        // 5. Articulated Arms holding weapon in two-handed assault ready position
+        // 5. Articulated Arms holding weapon in two-handed assault ready position with sculpted hands
         const armLeftGroup = new THREE.Group();
         armLeftGroup.position.set(-0.48, 1.72, 0);
-        const lUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.09, 0.52, 8), uniformMat);
+        const lUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.52, 8), uniformMat);
         lUpperArm.position.set(0, -0.22, 0.12);
         lUpperArm.rotation.x = -0.45;
-        const lForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.48, 8), uniformMat);
+        const lForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.48, 8), uniformMat);
         lForearm.position.set(0.18, -0.42, 0.42);
         lForearm.rotation.set(-0.85, 0.35, -0.3);
-        const lHand = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), unitMaterials.skin);
-        lHand.position.set(0.25, -0.48, 0.58);
-        armLeftGroup.add(lUpperArm, lForearm, lHand);
+        // Sculpted hand gripping gun fore-end (palm + thumb + fingers)
+        const lHandGrp = new THREE.Group();
+        lHandGrp.position.set(0.25, -0.48, 0.58);
+        const lPalm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.10), unitMaterials.skin);
+        const lThumb = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 0.06), unitMaterials.skin);
+        lThumb.position.set(-0.04, 0.03, 0);
+        lHandGrp.add(lPalm, lThumb);
+        armLeftGroup.add(lUpperArm, lForearm, lHandGrp);
         group.add(armLeftGroup);
         arms.push(armLeftGroup);
 
         const armRightGroup = new THREE.Group();
         armRightGroup.position.set(0.48, 1.72, 0);
-        const rUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.09, 0.52, 8), uniformMat);
+        const rUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.52, 8), uniformMat);
         rUpperArm.position.set(0, -0.22, 0.08);
         rUpperArm.rotation.x = -0.35;
-        const rForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.48, 8), uniformMat);
+        const rForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.48, 8), uniformMat);
         rForearm.position.set(-0.14, -0.42, 0.35);
         rForearm.rotation.set(-0.75, -0.25, 0.2);
-        const rHand = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), unitMaterials.skin);
-        rHand.position.set(-0.16, -0.46, 0.48);
-        armRightGroup.add(rUpperArm, rForearm, rHand);
+        // Sculpted right hand gripping trigger & wrist
+        const rHandGrp = new THREE.Group();
+        rHandGrp.position.set(-0.16, -0.46, 0.48);
+        const rPalm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.10), unitMaterials.skin);
+        const rThumb = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 0.06), unitMaterials.skin);
+        rThumb.position.set(0.04, 0.03, 0);
+        rHandGrp.add(rPalm, rThumb);
+        armRightGroup.add(rUpperArm, rForearm, rHandGrp);
         group.add(armRightGroup);
         arms.push(armRightGroup);
 
-        // 6. Authentic WW2 Weapon: M1 Garand or Thompson SMG
+        // 6. Authentic WW2 Weapons (M1 Garand Rifle / Thompson M1A1 SMG)
         const weaponGroup = new THREE.Group();
         weaponGroup.position.set(0.16, 1.25, 0.35);
         weaponGroup.rotation.set(0.25, -0.15, 0);
 
         if (!isStorm) {
-          // M1 Garand Rifle with Walnut Stock & Steel Receiver
-          const stock = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.16, 1.35), unitMaterials.woodRifle);
+          // M1 Garand Rifle
+          const stock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 1.35), unitMaterials.woodRifle);
           stock.position.z = 0.22;
-          const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.10, 0.45), unitMaterials.heavyArmor);
+          const buttPlate = new THREE.Mesh(new THREE.BoxGeometry(0.082, 0.17, 0.04), unitMaterials.darkMetal);
+          buttPlate.position.set(0, 0, -0.46);
+          const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.11, 0.45), unitMaterials.darkMetal);
           receiver.position.set(0, 0.06, 0.15);
-          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.75, 8), unitMaterials.heavyArmor);
+          const rearPeepSight = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), unitMaterials.darkMetal);
+          rearPeepSight.position.set(0, 0.12, 0.02);
+          const handguardUpper = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.07, 0.55), unitMaterials.woodRifle);
+          handguardUpper.position.set(0, 0.07, 0.62);
+          const barrelBand = new THREE.Mesh(new THREE.BoxGeometry(0.072, 0.10, 0.04), unitMaterials.darkMetal);
+          barrelBand.position.set(0, 0.06, 0.75);
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.75, 8), unitMaterials.darkMetal);
           barrel.rotateX(Math.PI / 2);
           barrel.position.set(0, 0.06, 0.95);
-          const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.02), unitMaterials.heavyArmor);
-          frontSight.position.set(0, 0.10, 1.28);
-          weaponGroup.add(stock, receiver, barrel, frontSight);
+          const gasCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.40, 8), unitMaterials.darkMetal);
+          gasCylinder.rotateX(Math.PI / 2);
+          gasCylinder.position.set(0, 0.02, 1.05);
+          // Front sight with dual protective ear wings
+          const frontSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.04, 0.04), unitMaterials.darkMetal);
+          frontSightBase.position.set(0, 0.09, 1.28);
+          const frontWingL = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.03), unitMaterials.darkMetal);
+          frontWingL.position.set(-0.018, 0.11, 1.28);
+          const frontWingR = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.03), unitMaterials.darkMetal);
+          frontWingR.position.set(0.018, 0.11, 1.28);
+          // Leather sling
+          const sling = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.015, 0.65), unitMaterials.leatherBoot);
+          sling.position.set(0, -0.06, 0.55);
+          sling.rotation.x = -0.08;
+          weaponGroup.add(stock, buttPlate, receiver, rearPeepSight, handguardUpper, barrelBand, barrel, gasCylinder, frontSightBase, frontWingL, frontWingR, sling);
         } else {
           // Thompson M1A1 Submachine Gun
-          const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.18, 0.45), unitMaterials.woodRifle);
+          const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.45), unitMaterials.woodRifle);
           tStock.position.z = -0.22;
-          const tReceiver = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.16, 0.65), unitMaterials.heavyArmor);
+          const tReceiver = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.16, 0.65), unitMaterials.darkMetal);
           tReceiver.position.set(0, 0.04, 0.22);
-          const tForegrip = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.30), unitMaterials.woodRifle);
+          const tRearSight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.06), unitMaterials.darkMetal);
+          tRearSight.position.set(0, 0.13, 0.05);
+          const tForegrip = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.14, 0.30), unitMaterials.woodRifle);
           tForegrip.position.set(0, -0.06, 0.45);
-          const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.45, 8), unitMaterials.heavyArmor);
+          const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.45, 8), unitMaterials.darkMetal);
           tBarrel.rotateX(Math.PI / 2);
           tBarrel.position.set(0, 0.04, 0.75);
-          const tMag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.14), unitMaterials.heavyArmor);
+          // Finned cooling rings on barrel
+          for (let r = 0; r < 4; r++) {
+            const fin = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.008, 4, 10), unitMaterials.darkMetal);
+            fin.position.set(0, 0.04, 0.60 + r * 0.05);
+            weaponGroup.add(fin);
+          }
+          // Cutts compensator muzzle
+          const tComp = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.034, 0.12, 8), unitMaterials.darkMetal);
+          tComp.rotateX(Math.PI / 2);
+          tComp.position.set(0, 0.04, 0.96);
+          const tMag = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.38, 0.14), unitMaterials.darkMetal);
           tMag.position.set(0, -0.18, 0.25);
           tMag.rotation.x = -0.15;
-          weaponGroup.add(tStock, tReceiver, tForegrip, tBarrel, tMag);
+          weaponGroup.add(tStock, tReceiver, tRearSight, tForegrip, tBarrel, tComp, tMag);
         }
         group.add(weaponGroup);
         weaponMesh = weaponGroup;
@@ -11778,8 +11920,9 @@
         maxHp = Math.round(275 * waveScale);
         speed = 4.8;
         points = 280;
-        hpBarY = 3.2;
+        hpBarY = 3.3;
 
+        // Base Chassis Hitbox (Preserves exact gameplay collision & damage)
         const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.35, 4.4), unitMaterials.lightArmor);
         chassis.position.y = 1.05;
         chassis.castShadow = true;
@@ -11787,16 +11930,125 @@
         group.add(chassis);
         hitboxes.push(chassis);
 
+        // Visual Realistic M3A1 Scout Car Architecture:
+        // Sloped armored radiator hood
+        const hood = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.8), unitMaterials.lightArmor);
+        hood.position.set(0, 1.32, 1.15);
+        hood.rotation.x = 0.10;
+        // Front armored radiator shutter louvers
+        const radShutter = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.72, 0.15), unitMaterials.darkMetal);
+        radShutter.position.set(0, 0.98, 2.15);
+        for (let l = 0; l < 5; l++) {
+          const louver = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 0.08), unitMaterials.lightArmor);
+          louver.position.set(0, 0.78 + l * 0.11, 2.22);
+          louver.rotation.x = 0.35;
+          group.add(louver);
+        }
+
+        // Heavy Cylindrical Front Unditching Roller Bumper (Famous M3A1 feature!)
+        const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 2.3, 14), unitMaterials.darkMetal);
+        roller.rotateZ(Math.PI / 2);
+        roller.position.set(0, 0.58, 2.52);
+        roller.castShadow = true;
+        const rollerMountL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.65), unitMaterials.lightArmor);
+        rollerMountL.position.set(-1.12, 0.65, 2.25);
+        const rollerMountR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.65), unitMaterials.lightArmor);
+        rollerMountR.position.set(1.12, 0.65, 2.25);
+        group.add(hood, radShutter, roller, rollerMountL, rollerMountR);
+
+        // Armored Windshield Visor with driver & passenger vision slit flaps
+        const visorShield = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.65, 0.16), unitMaterials.lightArmor);
+        visorShield.position.set(0, 1.82, 0.25);
+        visorShield.rotation.x = -0.22;
+        for (let v = -1; v <= 1; v += 2) {
+          const visionFlap = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.32, 0.08), unitMaterials.darkMetal);
+          visionFlap.position.set(v * 0.62, 1.82, 0.34);
+          const visionSlit = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.06, 0.04), unitMaterials.weakSpot);
+          visionSlit.position.set(v * 0.62, 1.82, 0.38);
+          group.add(visionFlap, visionSlit);
+        }
+        group.add(visorShield);
+
+        // Open Crew Compartment Side Blast Armor & Grab Rails
+        for (let s = -1; s <= 1; s += 2) {
+          const sideArmor = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.72, 2.6), unitMaterials.lightArmor);
+          sideArmor.position.set(s * 1.25, 1.72, -1.05);
+          // Exterior running board / step
+          const runningBoard = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.06, 1.8), unitMaterials.darkMetal);
+          runningBoard.position.set(s * 1.35, 0.52, -0.15);
+          // Curved front mudguard/fender
+          const fender = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.12, 1.35), unitMaterials.lightArmor);
+          fender.position.set(s * 1.26, 1.05, 1.45);
+          group.add(sideArmor, runningBoard, fender);
+        }
+        // Rear armor tailgate
+        const rearArmor = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.72, 0.14), unitMaterials.lightArmor);
+        rearArmor.position.set(0, 1.72, -2.35);
+        group.add(rearArmor);
+
+        // 4 Military Off-road Combat Tires with Steel Hubs & Lug Nuts
         for (let wx = -1; wx <= 1; wx += 2) {
           for (let wz = -1; wz <= 1; wz += 2) {
-            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.38, 12), unitMaterials.heavyArmor);
-            wheel.rotateZ(Math.PI / 2);
-            wheel.position.set(wx * 1.35, 0.48, wz * 1.5);
-            wheel.castShadow = true;
-            group.add(wheel);
+            const wheelGroup = new THREE.Group();
+            wheelGroup.position.set(wx * 1.35, 0.48, wz * 1.5);
+
+            const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.38, 14), unitMaterials.tireRubber);
+            tire.rotateZ(Math.PI / 2);
+            tire.castShadow = true;
+            const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.40, 10), unitMaterials.lightArmor);
+            rim.rotateZ(Math.PI / 2);
+            const hubCap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.44, 8), unitMaterials.darkMetal);
+            hubCap.rotateZ(Math.PI / 2);
+            wheelGroup.add(tire, rim, hubCap);
+            group.add(wheelGroup);
+            wheels.push(wheelGroup);
           }
         }
 
+        // Side-mounted spare combat tire & Jerry cans
+        const spareWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.32, 12), unitMaterials.tireRubber);
+        spareWheel.position.set(-1.42, 1.25, -0.85);
+        spareWheel.rotateY(Math.PI / 2);
+        for (let j = 0; j < 2; j++) {
+          const jerryCan = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.36, 0.28), unitMaterials.jerryCanMat);
+          jerryCan.position.set(1.38, 1.15, -0.7 - j * 0.34);
+          group.add(jerryCan);
+        }
+        group.add(spareWheel);
+
+        // Perimeter continuous skate rail with Browning M2HB .50 cal gun mount
+        const skateRail = new THREE.Mesh(new THREE.TorusGeometry(1.22, 0.03, 6, 20), unitMaterials.darkMetal);
+        skateRail.rotation.x = Math.PI / 2;
+        skateRail.scale.set(0.95, 1.45, 1.0);
+        skateRail.position.set(0, 2.15, -1.0);
+        // Pintle M2HB heavy machine gun station
+        const gunMount = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.45, 8), unitMaterials.darkMetal);
+        gunMount.position.set(0, 2.35, 0.15);
+        const m2Receiver = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.55), unitMaterials.darkMetal);
+        m2Receiver.position.set(0, 2.58, 0.15);
+        const m2Barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.15, 8), unitMaterials.darkMetal);
+        m2Barrel.rotateX(Math.PI / 2);
+        m2Barrel.position.set(0, 2.58, 0.85);
+        // Steel gun shield
+        const gunShield = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.55, 0.03), unitMaterials.lightArmor);
+        gunShield.position.set(0, 2.65, 0.48);
+        // Olive ammo box on tray
+        const m2AmmoCan = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.26), unitMaterials.jerryCanMat);
+        m2AmmoCan.position.set(0.24, 2.58, 0.18);
+        // Helmeted gunner silhouette
+        const gunnerTorso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.65, 0.35), unitMaterials.infantryCoat);
+        gunnerTorso.position.set(0, 1.95, -0.32);
+        const gunnerHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), unitMaterials.helmet);
+        gunnerHelmet.position.set(0, 2.45, -0.32);
+        group.add(skateRail, gunMount, m2Receiver, m2Barrel, gunShield, m2AmmoCan, gunnerTorso, gunnerHelmet);
+
+        // Allied Star Hood Emblem Decal
+        const starDecal = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.75), unitMaterials.starInsignia);
+        starDecal.rotateX(-Math.PI / 2 + 0.10);
+        starDecal.position.set(0, 1.62, 1.15);
+        group.add(starDecal);
+
+        // Weak Spot: Radiator Core & Driver Vision Slit (x2 Damage)
         const weakMesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.65, 0.4), unitMaterials.weakSpot);
         weakMesh.position.set(0, 1.35, 2.15);
         weakMesh.userData = { isWeakSpot: true };
@@ -11810,8 +12062,9 @@
         maxHp = Math.round(510 * waveScale);
         speed = 3.4;
         points = 450;
-        hpBarY = 3.6;
+        hpBarY = 3.7;
 
+        // Base Hull Hitbox (Preserves exact gameplay collision & damage)
         const hull = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.85, 5.8), unitMaterials.medArmor);
         hull.position.y = 1.35;
         hull.castShadow = true;
@@ -11819,15 +12072,123 @@
         group.add(hull);
         hitboxes.push(hull);
 
+        // Visual Realistic Hexagonal Sloped Armored Hull Architecture:
+        // Sloped upper side armor panels (deflects incoming projectiles)
         for (let s = -1; s <= 1; s += 2) {
-          const frontWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.4, 12), unitMaterials.heavyArmor);
-          frontWheel.rotateZ(Math.PI / 2);
-          frontWheel.position.set(s * 1.65, 0.5, 2.1);
-          const trackBox = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.85, 3.4), unitMaterials.heavyArmor);
-          trackBox.position.set(s * 1.65, 0.45, -0.9);
-          group.add(frontWheel, trackBox);
+          const upperSlope = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.85, 3.8), unitMaterials.medArmor);
+          upperSlope.position.set(s * 1.55, 2.25, -0.75);
+          upperSlope.rotation.z = -s * 0.28; // Inward slope
+          group.add(upperSlope);
+
+          // Exterior storage lockers & pioneer tools
+          const locker = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.45, 1.4), unitMaterials.medArmor);
+          locker.position.set(s * 1.68, 1.35, -1.2);
+          group.add(locker);
         }
 
+        // Sloped Engine Bonnet with louvered cooling vents
+        const bonnet = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.68, 2.2), unitMaterials.medArmor);
+        bonnet.position.set(0, 1.65, 1.75);
+        bonnet.rotation.x = 0.12;
+        // Heavy front unditching roller bumper & radiator guard
+        const frontBumper = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.35, 0.35), unitMaterials.darkMetal);
+        frontBumper.position.set(0, 0.72, 2.95);
+        const frontRoller = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.20, 2.2, 12), unitMaterials.darkMetal);
+        frontRoller.rotateZ(Math.PI / 2);
+        frontRoller.position.set(0, 0.72, 3.15);
+        group.add(bonnet, frontBumper, frontRoller);
+
+        // Armored Windshield Visor with dual periscope slit flaps
+        const htVisor = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.72, 0.18), unitMaterials.medArmor);
+        htVisor.position.set(0, 2.22, 0.75);
+        htVisor.rotation.x = -0.25;
+        for (let v = -1; v <= 1; v += 2) {
+          const flap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.36, 0.08), unitMaterials.darkMetal);
+          flap.position.set(v * 0.65, 2.22, 0.85);
+          const slit = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.08, 0.04), unitMaterials.weakSpot);
+          slit.position.set(v * 0.65, 2.22, 0.90);
+          group.add(flap, slit);
+        }
+        group.add(htVisor);
+
+        // Front Steerable Axle with Heavy Lug Tires & Leaf Springs
+        for (let s = -1; s <= 1; s += 2) {
+          const wheelGroup = new THREE.Group();
+          wheelGroup.position.set(s * 1.65, 0.5, 2.1);
+          const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.50, 0.50, 0.40, 14), unitMaterials.tireRubber);
+          tire.rotateZ(Math.PI / 2);
+          tire.castShadow = true;
+          const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.30, 0.42, 10), unitMaterials.medArmor);
+          rim.rotateZ(Math.PI / 2);
+          wheelGroup.add(tire, rim);
+          group.add(wheelGroup);
+          wheels.push(wheelGroup);
+
+          // Leaf spring suspension arch
+          const leafSpring = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.95), unitMaterials.darkMetal);
+          leafSpring.position.set(s * 1.45, 0.75, 2.1);
+          // Curved front mudguard
+          const mudguard = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.12, 1.4), unitMaterials.medArmor);
+          mudguard.position.set(s * 1.58, 1.15, 2.1);
+          group.add(leafSpring, mudguard);
+        }
+
+        // Rear Continuous Track Running Gear Assembly (Both Sides)
+        for (let s = -1; s <= 1; s += 2) {
+          // Track rubber loop
+          const trackLoop = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.92, 3.6), unitMaterials.darkMetal);
+          trackLoop.position.set(s * 1.65, 0.48, -0.9);
+          trackLoop.castShadow = true;
+          group.add(trackLoop);
+
+          // Drive sprocket (front of track)
+          const sprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.42, 12), unitMaterials.darkMetal);
+          sprocket.rotateZ(Math.PI / 2);
+          sprocket.position.set(s * 1.65, 0.55, 0.75);
+          // Rear idler wheel
+          const idler = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.42, 12), unitMaterials.darkMetal);
+          idler.rotateZ(Math.PI / 2);
+          idler.position.set(s * 1.65, 0.55, -2.55);
+          group.add(sprocket, idler);
+
+          // 6 Overlapping Stamped Road Wheels per side
+          for (let w = 0; w < 6; w++) {
+            const wheelGroup = new THREE.Group();
+            wheelGroup.position.set(s * (1.62 + (w % 2) * 0.08), 0.42, -2.1 + w * 0.52);
+            const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.18, 12), unitMaterials.medArmor);
+            rWheel.rotateZ(Math.PI / 2);
+            const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.22, 8), unitMaterials.darkMetal);
+            hub.rotateZ(Math.PI / 2);
+            wheelGroup.add(rWheel, hub);
+            group.add(wheelGroup);
+            wheels.push(wheelGroup);
+          }
+        }
+
+        // Forward Armored Gun Shield (Schutzschild) & Machine Gun Station
+        const gunShield = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.65, 0.04), unitMaterials.medArmor);
+        gunShield.position.set(0, 2.75, 0.45);
+        gunShield.rotation.x = -0.15;
+        const htMG = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.25, 8), unitMaterials.darkMetal);
+        htMG.rotateX(Math.PI / 2);
+        htMG.position.set(0, 2.75, 0.95);
+        const htAmmoCan = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.26), unitMaterials.jerryCanMat);
+        htAmmoCan.position.set(0.24, 2.75, 0.45);
+        // Helmeted gunner silhouette
+        const htGunnerTorso = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.68, 0.36), unitMaterials.stormCoat);
+        htGunnerTorso.position.set(0, 2.15, 0.05);
+        const htGunnerHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.33, 10, 8), unitMaterials.helmet);
+        htGunnerHelmet.position.set(0, 2.65, 0.05);
+        group.add(gunShield, htMG, htAmmoCan, htGunnerTorso, htGunnerHelmet);
+
+        // Rear double escape doors with latches
+        const rearDoors = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 0.12), unitMaterials.medArmor);
+        rearDoors.position.set(0, 1.55, -2.92);
+        const doorSeam = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.15, 0.14), unitMaterials.darkMetal);
+        doorSeam.position.set(0, 1.55, -2.92);
+        group.add(rearDoors, doorSeam);
+
+        // Weak Spot: Front Radiator Core & Driver Visor Port (x2 Damage)
         const weakMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.65, 0.45), unitMaterials.weakSpot);
         weakMesh.position.set(0, 1.75, 2.85);
         weakMesh.userData = { isWeakSpot: true };
@@ -11842,13 +12203,13 @@
         maxHp = Math.round((isBoss ? 5200 : 940) * (isBoss ? 1.45 : waveScale));
         speed = isBoss ? 1.6 : 2.4;
         points = isBoss ? 5000 : 750;
-        hpBarY = isBoss ? 6.8 : 4.8;
+        hpBarY = isBoss ? 7.2 : 5.0;
 
         if (isBoss) {
           group.scale.set(1.42, 1.42, 1.42);
         }
 
-        // 1. Lower Hull & Sloped Glacis Plate (47° angle)
+        // 1. Lower Hull Hitbox (Preserves exact gameplay collision & damage)
         const lowerHull = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.45, 6.8), unitMaterials.heavyArmor);
         lowerHull.position.y = 1.15;
         lowerHull.castShadow = true;
@@ -11856,7 +12217,14 @@
         group.add(lowerHull);
         hitboxes.push(lowerHull);
 
-        const glacis = new THREE.Mesh(new THREE.BoxGeometry(3.9, 0.28, 2.4), unitMaterials.heavyArmor);
+        // Rounded Cast Differential Transmission Cover (Famous rounded nose of the Sherman!)
+        const diffCover = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 3.8, 14), unitMaterials.heavyArmor);
+        diffCover.rotateZ(Math.PI / 2);
+        diffCover.position.set(0, 0.95, 3.42);
+        group.add(diffCover);
+
+        // 47° Sloped Welded Glacis Plate
+        const glacis = new THREE.Mesh(new THREE.BoxGeometry(3.9, 0.28, 2.5), unitMaterials.heavyArmor);
         glacis.position.set(0, 1.95, 2.2);
         glacis.rotation.x = 0.78; // 45-degree sloped front armor
         group.add(glacis);
@@ -11870,80 +12238,110 @@
         // Bow .30 cal machine gun ball mount
         const bowMG = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), unitMaterials.heavyArmor);
         bowMG.position.set(0.95, 1.85, 3.1);
-        const bowMGBbl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 6), unitMaterials.heavyArmor);
+        const bowMGBbl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 6), unitMaterials.darkMetal);
         bowMGBbl.rotateX(Math.PI / 2);
         bowMGBbl.position.set(0.95, 1.85, 3.35);
         group.add(bowMG, bowMGBbl);
 
-        // 2. Collapsible Waterproof Canvas Flotation Screen Skirt (Iconic Sherman DD)
-        const skirtMat = new THREE.MeshStandardMaterial({
-          map: textures.sandbag,
-          color: 0x545c48,
-          roughness: 0.95
-        });
-        const skirtBorder = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.55, 7.2), skirtMat);
-        skirtBorder.position.y = 2.25;
-        group.add(skirtBorder);
-        // Vertical rubber buoyancy pillars and metal scissor struts around skirt
-        for (let s = -1; s <= 1; s += 2) {
-          for (let p = 0; p < 5; p++) {
-            const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.52, 8), skirtMat);
-            pillar.position.set(s * 2.22, 2.25, -2.8 + p * 1.4);
-            group.add(pillar);
+        if (!isBoss) {
+          // 2. Collapsible Waterproof Canvas Flotation Screen Skirt (Iconic Sherman DD)
+          const skirtBorder = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.55, 7.2), unitMaterials.canvasCover);
+          skirtBorder.position.y = 2.25;
+          group.add(skirtBorder);
+          // Vertical rubber buoyancy pillars and metal scissor struts around skirt
+          for (let s = -1; s <= 1; s += 2) {
+            for (let p = 0; p < 5; p++) {
+              const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.52, 8), unitMaterials.canvasCover);
+              pillar.position.set(s * 2.22, 2.25, -2.8 + p * 1.4);
+              group.add(pillar);
+            }
+          }
+          // Exterior field gear stowage on hull: sandbags & crates
+          for (let sb = -1; sb <= 1; sb += 2) {
+            const sandbagApplique = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.35, 0.55), unitMaterials.sandbag);
+            sandbagApplique.position.set(sb * 1.1, 1.85, 2.6);
+            sandbagApplique.rotation.x = 0.78;
+            group.add(sandbagApplique);
+          }
+          const rearCrate = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.45, 0.75), unitMaterials.woodRifle);
+          rearCrate.position.set(-1.0, 2.15, -2.5);
+          const rearTarp = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 1.4, 8), unitMaterials.canvasCover);
+          rearTarp.rotateZ(Math.PI / 2);
+          rearTarp.position.set(0.6, 2.20, -2.7);
+          group.add(rearCrate, rearTarp);
+
+        } else {
+          // Boss: Massive Spaced Armor Skirts (Schürzen) & Mine Clearing Teeth
+          for (let s = -1; s <= 1; s += 2) {
+            const spacedSkirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.35, 7.6), unitMaterials.heavyArmor);
+            spacedSkirt.position.set(s * 2.65, 0.95, 0);
+            group.add(spacedSkirt);
+            // Armored skirt hanging brackets
+            for (let b = 0; b < 4; b++) {
+              const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.18), unitMaterials.darkMetal);
+              bracket.position.set(s * 2.52, 1.55, -2.7 + b * 1.8);
+              group.add(bracket);
+            }
+          }
+          // Heavy triangular obstacle clearing ramming teeth at front
+          for (let t = -3; t <= 3; t += 2) {
+            const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.95, 4), unitMaterials.darkMetal);
+            tooth.rotation.x = Math.PI / 2;
+            tooth.position.set(t * 0.55, 0.55, 3.85);
+            group.add(tooth);
           }
         }
 
         // 3. VVSS Suspension: 3 Bogies per side with dual rubber-rimmed road wheels (12 road wheels total!)
-        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2220, roughness: 0.85 });
-        const rimMat = new THREE.MeshStandardMaterial({ map: textures.tankHull, roughness: 0.5, metalness: 0.6 });
         for (let s = -1; s <= 1; s += 2) {
           // Track loop
-          const track = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.98, 7.2), new THREE.MeshStandardMaterial({ map: textures.camoArmor, roughness: 0.72, metalness: 0.65 }));
+          const track = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.98, 7.2), unitMaterials.darkMetal);
           track.position.set(s * 2.15, 0.52, 0);
           track.castShadow = true;
           group.add(track);
 
           // 6 Road Wheels per side (3 pairs)
           for (let w = 0; w < 6; w++) {
-            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.35, 12), wheelMat);
+            const wheelGroup = new THREE.Group();
+            wheelGroup.position.set(s * 2.15, 0.44, -2.5 + w * 1.0);
+            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.35, 12), unitMaterials.tireRubber);
             wheel.rotateZ(Math.PI / 2);
-            wheel.position.set(s * 2.15, 0.44, -2.5 + w * 1.0);
-            const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.38, 8), rimMat);
+            const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.38, 8), unitMaterials.heavyArmor);
             hub.rotateZ(Math.PI / 2);
-            hub.position.copy(wheel.position);
-            group.add(wheel, hub);
+            wheelGroup.add(wheel, hub);
+            group.add(wheelGroup);
+            wheels.push(wheelGroup);
           }
 
           // Front drive sprocket with teeth
-          const sprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.50, 0.50, 0.35, 14), rimMat);
+          const sprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.50, 0.50, 0.35, 14), unitMaterials.heavyArmor);
           sprocket.rotateZ(Math.PI / 2);
           sprocket.position.set(s * 2.15, 0.65, 3.35);
           // Rear idler wheel
-          const idler = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.35, 12), rimMat);
+          const idler = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.35, 12), unitMaterials.heavyArmor);
           idler.rotateZ(Math.PI / 2);
           idler.position.set(s * 2.15, 0.65, -3.35);
           group.add(sprocket, idler);
         }
 
         // 4. Twin Marine Propulsion Brass Propellers (Screws) & Rudders for swimming!
-        const propMat = new THREE.MeshStandardMaterial({ color: 0xd4a238, metalness: 0.9, roughness: 0.28 });
         for (let p = -1; p <= 1; p += 2) {
-          const propShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.65, 8), unitMaterials.heavyArmor);
+          const propShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.65, 8), unitMaterials.darkMetal);
           propShaft.rotateX(Math.PI / 2);
           propShaft.position.set(p * 1.25, 0.45, -3.65);
-          const screw = new THREE.Mesh(new THREE.SphereGeometry(0.24, 6, 6), propMat);
+          const screw = new THREE.Mesh(new THREE.SphereGeometry(0.24, 6, 6), unitMaterials.brassAmmo);
           screw.scale.set(1.4, 1.4, 0.35);
           screw.position.set(p * 1.25, 0.45, -3.95);
-          const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.45), unitMaterials.heavyArmor);
+          const rudder = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.45), unitMaterials.darkMetal);
           rudder.position.set(p * 1.25, 0.45, -4.25);
           group.add(propShaft, screw, rudder);
         }
 
-        // 5. Rounded Cast Turret (D50878) with Dynamic LookAt tracking Bunker
+        // 5. Rounded Cast Turret with Dynamic LookAt tracking Bunker
         tankTurret = new THREE.Group();
         tankTurret.position.set(0, 2.55, -0.2);
 
-        // Rounded cast turret body
+        // Cast turret body hitbox
         const turretBody = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.65, 1.25, 16), unitMaterials.heavyArmor);
         turretBody.castShadow = true;
         turretBody.userData = { isWeakSpot: false };
@@ -11953,56 +12351,91 @@
         // Rear radio bustle box with antenna
         const bustle = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.95, 1.2), unitMaterials.heavyArmor);
         bustle.position.set(0, 0.12, -1.55);
-        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.4, 6), unitMaterials.heavyArmor);
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.4, 6), unitMaterials.darkMetal);
         antenna.position.set(0.65, 1.45, -1.8);
         antenna.rotation.x = -0.15;
         tankTurret.add(bustle, antenna);
 
-        // Curved Gun Rotor Shield Mantlet
+        // Curved Gun Rotor Shield Mantlet with Accordion Canvas Dust Cover!
         const mantlet = new THREE.Mesh(new THREE.SphereGeometry(isBoss ? 1.15 : 0.85, 12, 10, 0, Math.PI, 0, Math.PI), unitMaterials.heavyArmor);
         mantlet.rotation.x = Math.PI / 2;
         mantlet.position.set(0, 0, 1.6);
-        tankTurret.add(mantlet);
+        const mantletCanvas = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.65, 0.65, 10), unitMaterials.canvasCover);
+        mantletCanvas.rotateX(Math.PI / 2);
+        mantletCanvas.position.set(0, 0, 1.95);
+        tankTurret.add(mantlet, mantletCanvas);
 
         if (isBoss) {
-          // Twin 90mm Heavy Naval Guns with Muzzle Brakes
+          // Boss: Twin 90mm Heavy Naval Siege Cannons with Double-Baffle Muzzle Brakes
           for (let b = -1; b <= 1; b += 2) {
-            const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 5.4, 14), unitMaterials.heavyArmor);
+            const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 5.4, 14), unitMaterials.darkMetal);
             cannon.rotateX(Math.PI / 2);
             cannon.position.set(b * 0.45, 0, 4.3);
             cannon.castShadow = true;
             tankTurret.add(cannon);
-            const muzzleBrake = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.55), unitMaterials.heavyArmor);
+            const muzzleBrake = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.55), unitMaterials.darkMetal);
             muzzleBrake.position.set(b * 0.45, 0, 7.0);
             tankTurret.add(muzzleBrake);
           }
+          // High-powered optical searchlight with protective cage
+          const searchlightBody = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.45, 12), unitMaterials.darkMetal);
+          searchlightBody.rotateX(Math.PI / 2);
+          searchlightBody.position.set(-0.75, 1.15, 0.2);
+          const searchlightLens = new THREE.Mesh(new THREE.CircleGeometry(0.34, 12), unitMaterials.searchlightLens);
+          searchlightLens.position.set(-0.75, 1.15, 0.43);
+          tankTurret.add(searchlightBody, searchlightLens);
+
+          // Quad smoke discharger banks on turret cheeks
+          for (let s = -1; s <= 1; s += 2) {
+            for (let d = 0; d < 4; d++) {
+              const discharger = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.35, 6), unitMaterials.darkMetal);
+              discharger.position.set(s * 1.55, 0.35 + (d % 2) * 0.22, 0.4 + Math.floor(d / 2) * 0.4);
+              discharger.rotation.set(0.35, s * 0.65, 0);
+              tankTurret.add(discharger);
+            }
+          }
+
           // Supreme Commander Guidon Flag
-          const flagGeo = new THREE.PlaneGeometry(1.2, 0.75);
+          const flagGeo = new THREE.PlaneGeometry(1.4, 0.85);
           const flagMat = new THREE.MeshBasicMaterial({ color: 0xb91c1c, side: THREE.DoubleSide });
           const flag = new THREE.Mesh(flagGeo, flagMat);
-          flag.position.set(1.25, 2.3, -1.8);
+          flag.position.set(1.25, 2.5, -1.8);
           flag.rotation.y = Math.PI / 2;
           tankTurret.add(flag);
         } else {
+          // Standard Sherman: 75mm M3 rifled cannon with coaxial .30 cal MG
           const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 4.6, 14), unitMaterials.heavyArmor);
           cannon.rotateX(Math.PI / 2);
           cannon.position.set(0, 0, 3.9);
           cannon.castShadow = true;
-          tankTurret.add(cannon);
+          // Coaxial MG port next to cannon
+          const coaxMG = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.55, 6), unitMaterials.darkMetal);
+          coaxMG.rotateX(Math.PI / 2);
+          coaxMG.position.set(-0.45, 0, 2.2);
+          tankTurret.add(cannon, coaxMG);
+
+          // Welded spare track links on turret sides for improvised armor
+          for (let s = -1; s <= 1; s += 2) {
+            for (let t = 0; t < 3; t++) {
+              const spareLink = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.22, 0.38), unitMaterials.darkMetal);
+              spareLink.position.set(s * 1.52, 0.15, -0.6 + t * 0.45);
+              tankTurret.add(spareLink);
+            }
+          }
         }
 
-        // Commander's Cupola with Vision Blocks & Hatch
+        // Commander's Cupola with Vision Blocks, Split Hatch & Pintle M2HB .50 cal
         const cupola = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.38, 12), unitMaterials.heavyArmor);
         cupola.position.set(0.65, 0.82, -0.45);
         const hatchLid = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.08, 12), unitMaterials.heavyArmor);
         hatchLid.position.set(0.65, 1.02, -0.45);
         // Pintle-mounted .50 cal Browning M2HB Heavy Machine Gun
-        const cal50Bbl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), unitMaterials.heavyArmor);
+        const cal50Bbl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), unitMaterials.darkMetal);
         cal50Bbl.rotateX(Math.PI / 2);
         cal50Bbl.position.set(0.65, 1.25, -0.2);
-        const cal50Receiver = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.55), unitMaterials.heavyArmor);
+        const cal50Receiver = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.55), unitMaterials.darkMetal);
         cal50Receiver.position.set(0.65, 1.25, -0.6);
-        const ammoCan = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.28), unitMaterials.medArmor);
+        const ammoCan = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.28), unitMaterials.jerryCanMat);
         ammoCan.position.set(0.82, 1.25, -0.55);
         tankTurret.add(cupola, hatchLid, cal50Bbl, cal50Receiver, ammoCan);
 
@@ -12040,6 +12473,7 @@
         hpBar,
         legs,
         arms,
+        wheels,
         torso: torsoMesh,
         weapon: weaponMesh,
         tankTurret,
@@ -14161,6 +14595,13 @@
             }
             if (enemy.weapon) {
               enemy.weapon.rotation.x = 0.25 + Math.sin(enemy.stridePhase * 2) * 0.06;
+            }
+          }
+
+          // Rolling vehicle wheels
+          if (enemy.wheels && enemy.wheels.length > 0) {
+            for (let w = 0; w < enemy.wheels.length; w++) {
+              enemy.wheels[w].rotation.x += enemy.speed * dt * 2.2;
             }
           }
 
