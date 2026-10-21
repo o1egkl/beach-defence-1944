@@ -9831,26 +9831,26 @@
       const cUni = document.createElement('canvas');
       cUni.width = cUni.height = 512;
       const ctxU = cUni.getContext('2d');
-      ctxU.fillStyle = '#46503c';
+      ctxU.fillStyle = '#3a6628';
       ctxU.fillRect(0, 0, 512, 512);
-      ctxU.strokeStyle = 'rgba(38, 45, 30, 0.45)';
+      ctxU.strokeStyle = 'rgba(32, 60, 20, 0.50)';
       ctxU.lineWidth = 1;
       for (let i = -512; i < 1024; i += 4) {
         ctxU.beginPath(); ctxU.moveTo(i, 0); ctxU.lineTo(i + 512, 512); ctxU.stroke();
       }
-      ctxU.fillStyle = 'rgba(28, 34, 22, 0.35)';
+      ctxU.fillStyle = 'rgba(22, 44, 14, 0.40)';
       for (let i = 0; i < 1500; i++) {
         ctxU.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
       }
       // Pockets & pocket flap seams
-      ctxU.strokeStyle = 'rgba(26, 32, 20, 0.75)';
+      ctxU.strokeStyle = 'rgba(20, 42, 12, 0.80)';
       ctxU.lineWidth = 3;
       ctxU.strokeRect(60, 180, 150, 160);
       ctxU.strokeRect(300, 180, 150, 160);
-      ctxU.fillStyle = '#3c4532';
+      ctxU.fillStyle = '#2f561f';
       ctxU.fillRect(55, 170, 160, 40);
       ctxU.fillRect(295, 170, 160, 40);
-      ctxU.fillStyle = '#1c2215';
+      ctxU.fillStyle = '#14260d';
       ctxU.beginPath(); ctxU.arc(135, 192, 6, 0, Math.PI * 2); ctxU.fill();
       ctxU.beginPath(); ctxU.arc(375, 192, 6, 0, Math.PI * 2); ctxU.fill();
       // 29th Infantry Division Blue & Gray Shoulder Patch
@@ -9870,15 +9870,15 @@
       const cNet = document.createElement('canvas');
       cNet.width = cNet.height = 256;
       const ctxN = cNet.getContext('2d');
-      ctxN.fillStyle = '#343e2e';
+      ctxN.fillStyle = '#2e5520';
       ctxN.fillRect(0, 0, 256, 256);
-      ctxN.strokeStyle = 'rgba(20, 26, 16, 0.72)';
+      ctxN.strokeStyle = 'rgba(16, 36, 12, 0.75)';
       ctxN.lineWidth = 2.2;
       for (let i = -256; i < 512; i += 22) {
         ctxN.beginPath(); ctxN.moveTo(i, 0); ctxN.lineTo(i + 256, 256); ctxN.stroke();
         ctxN.beginPath(); ctxN.moveTo(i + 256, 0); ctxN.lineTo(i, 256); ctxN.stroke();
       }
-      ctxN.fillStyle = '#12170e';
+      ctxN.fillStyle = '#10240c';
       for (let y = 0; y < 256; y += 22) {
         for (let x = 0; x < 256; x += 22) {
           ctxN.beginPath(); ctxN.arc(x, y, 3, 0, Math.PI * 2); ctxN.fill();
@@ -9910,14 +9910,14 @@
       const cTank = document.createElement('canvas');
       cTank.width = cTank.height = 512;
       const ctxT = cTank.getContext('2d');
-      ctxT.fillStyle = '#384230';
+      ctxT.fillStyle = '#335824';
       ctxT.fillRect(0, 0, 512, 512);
-      ctxT.fillStyle = 'rgba(22, 28, 18, 0.4)';
+      ctxT.fillStyle = 'rgba(18, 38, 12, 0.45)';
       for (let i = 0; i < 3500; i++) {
         ctxT.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 2, 2);
       }
       // Weld seams
-      ctxT.fillStyle = '#262f20';
+      ctxT.fillStyle = '#203d16';
       for (let y = 8; y < 512; y += 12) {
         ctxT.beginPath(); ctxT.arc(12, y, 4.5, 0, Math.PI * 2); ctxT.fill();
         ctxT.beginPath(); ctxT.arc(500, y, 4.5, 0, Math.PI * 2); ctxT.fill();
@@ -11073,24 +11073,24 @@
     const unitMaterials = {
       boatWood: new THREE.MeshStandardMaterial({ map: textures.boatHull, normalMap: textures.boatNormal, color: 0x6e482b, roughness: 0.74, metalness: 0.12 }),
       boatSteel: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x48423c, roughness: 0.48, metalness: 0.68 }),
-      infantryCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, roughness: 0.86 }),
-      stormCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, color: 0x8a9088, roughness: 0.82 }),
+      infantryCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, color: 0x4e7c38, roughness: 0.86 }),
+      stormCoat: new THREE.MeshStandardMaterial({ map: textures.infantryUniform, normalMap: textures.fabricNormal, color: 0x2d5c22, roughness: 0.82 }),
       skin: new THREE.MeshStandardMaterial({ color: 0xdca882, roughness: 0.68 }),
-      helmet: new THREE.MeshStandardMaterial({ map: textures.helmetNet, normalMap: textures.fabricNormal, roughness: 0.52, metalness: 0.4 }),
-      scrimKhaki: new THREE.MeshStandardMaterial({ color: 0x6e624c, roughness: 0.95 }),
-      scrimGreen: new THREE.MeshStandardMaterial({ color: 0x3d4b32, roughness: 0.95 }),
-      leatherBoot: new THREE.MeshStandardMaterial({ color: 0x2b1e14, roughness: 0.78, metalness: 0.15 }),
-      canvasGaiter: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x9a8f74, roughness: 0.92 }),
-      tireRubber: new THREE.MeshStandardMaterial({ color: 0x1a1c1a, roughness: 0.88, metalness: 0.12 }),
-      darkMetal: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x22262a, roughness: 0.40, metalness: 0.82 }),
+      helmet: new THREE.MeshStandardMaterial({ map: textures.helmetNet, normalMap: textures.fabricNormal, color: 0x3d682a, roughness: 0.52, metalness: 0.4 }),
+      scrimKhaki: new THREE.MeshStandardMaterial({ color: 0x5a7a3a, roughness: 0.95 }),
+      scrimGreen: new THREE.MeshStandardMaterial({ color: 0x22521a, roughness: 0.95 }),
+      leatherBoot: new THREE.MeshStandardMaterial({ color: 0x203018, roughness: 0.78, metalness: 0.15 }),
+      canvasGaiter: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x5a7844, roughness: 0.92 }),
+      tireRubber: new THREE.MeshStandardMaterial({ color: 0x161c14, roughness: 0.88, metalness: 0.12 }),
+      darkMetal: new THREE.MeshStandardMaterial({ map: textures.metal, normalMap: textures.metalNormal, color: 0x203020, roughness: 0.40, metalness: 0.82 }),
       brassAmmo: new THREE.MeshStandardMaterial({ color: 0xd8a33a, roughness: 0.28, metalness: 0.92 }),
       starInsignia: new THREE.MeshBasicMaterial({ color: 0xf3f4f6 }),
-      canvasCover: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x565c4c, roughness: 0.94 }),
-      jerryCanMat: new THREE.MeshStandardMaterial({ color: 0x3d4432, roughness: 0.65, metalness: 0.4 }),
+      canvasCover: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, color: 0x3d602a, roughness: 0.94 }),
+      jerryCanMat: new THREE.MeshStandardMaterial({ color: 0x325822, roughness: 0.65, metalness: 0.4 }),
       searchlightLens: new THREE.MeshBasicMaterial({ color: 0xfffae0 }),
-      lightArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, roughness: 0.52, metalness: 0.55 }),
-      medArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, color: 0x828c7c, roughness: 0.5, metalness: 0.62 }),
-      heavyArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, roughness: 0.45, metalness: 0.72 }),
+      lightArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, color: 0x4a7a34, roughness: 0.52, metalness: 0.55 }),
+      medArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, color: 0x3a6628, roughness: 0.5, metalness: 0.62 }),
+      heavyArmor: new THREE.MeshStandardMaterial({ map: textures.tankHull, normalMap: textures.armorNormal, color: 0x2e5420, roughness: 0.45, metalness: 0.72 }),
       woodRifle: new THREE.MeshStandardMaterial({ map: textures.wood, normalMap: textures.woodNormal, roughness: 0.55 }),
       sandbag: new THREE.MeshStandardMaterial({ map: textures.sandbag, normalMap: textures.fabricNormal, roughness: 0.92 }),
       weakSpot: new THREE.MeshStandardMaterial({
