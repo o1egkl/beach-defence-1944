@@ -183,10 +183,28 @@
         </div>
 
         <!-- Center: Mission Countdown Clock (Lose if not cleared in time) -->
-        <div id="hud-timer-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/70 rounded-xl px-4 py-2 text-center shadow-2xl min-w-[155px]">
-          <div class="text-[10px] uppercase tracking-widest text-stone-400 font-bold">HOLD BEACH TIMER</div>
-          <div id="hud-timer-text" class="font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">04:00.0</div>
-          <div class="text-[10px] text-stone-400">Eliminate all before 00:00</div>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Bunker Integrity Gauge -->
+          <div id="hud-health-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-emerald-500/80 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200">
+            <div class="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold">
+              <span class="text-stone-300">🛡️ BUNKER INTEGRITY</span>
+              <span id="hud-health-text" class="font-mono-tac text-emerald-400 text-sm font-extrabold">100% HP</span>
+            </div>
+            <div class="w-full h-2.5 bg-stone-900 rounded-full overflow-hidden border border-stone-700 mt-1 p-0.5">
+              <div id="hud-health-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+            </div>
+            <div class="text-[9.5px] text-stone-400 mt-0.5 flex justify-between font-mono-tac">
+              <span>Damage: <strong id="hud-damage-pct" class="text-stone-200">0%</strong></span>
+              <span class="text-red-400 font-bold">Defeat at 100%</span>
+            </div>
+          </div>
+
+          <!-- Mission Countdown Clock -->
+          <div id="hud-timer-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/70 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[140px] sm:min-w-[160px]">
+            <div class="text-[10px] uppercase tracking-widest text-stone-400 font-bold">WAVE TIMER</div>
+            <div id="hud-timer-text" class="font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">03:00.0</div>
+            <div class="text-[9.5px] text-stone-400 font-mono-tac">Hold Sector Omaha</div>
+          </div>
         </div>
 
         <!-- Right: Score, Accuracy & Audio/Pause Controls -->
@@ -329,14 +347,14 @@
           </button>
 
           <!-- Time Booster Button (T) -->
-          <button id="btn-use-timeboost" type="button" class="bg-stone-950/90 hover:bg-sky-950/80 active:scale-95 border-2 border-sky-400/70 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[135px]">
+          <button id="btn-use-timeboost" type="button" class="bg-stone-950/90 hover:bg-emerald-950/80 active:scale-95 border-2 border-emerald-400/70 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[135px]" title="Field Repair Kit (Hotkey: T)">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-sky-300">⏱️ TIME BOOST</span>
-              <span class="text-[10px] font-mono-tac bg-sky-500/20 border border-sky-500/40 text-sky-200 px-1.5 py-0.5 rounded">KEY [T]</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">❤️ REPAIR KIT</span>
+              <span class="text-[10px] font-mono-tac bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 px-1.5 py-0.5 rounded">KEY [T]</span>
             </div>
             <div class="flex items-baseline justify-between mt-1">
-              <span id="hud-timeboost-count" class="font-mono-tac text-2xl font-extrabold text-stone-100">2</span>
-              <span class="text-[10px] text-sky-300 font-semibold">+12s Clock</span>
+              <span id="hud-timeboost-count" class="font-mono-tac text-2xl font-extrabold text-stone-100">3</span>
+              <span class="text-[10px] text-emerald-300 font-semibold">+25% Health</span>
             </div>
           </button>
 
@@ -521,7 +539,7 @@
             <strong id="pause-grenades" class="text-red-400 font-bold">5</strong>
           </div>
           <div class="flex items-center justify-between px-2">
-            <span>⏱️ TIME BOOSTERS:</span>
+            <span>❤️ REPAIR KITS:</span>
             <strong id="pause-boosters" class="text-sky-400 font-bold">4</strong>
           </div>
         </div>
@@ -656,7 +674,7 @@
                   <span id="intel-grenades" class="font-mono-tac font-bold text-red-400">3</span>
                 </div>
                 <div class="bg-stone-950/80 border border-stone-800 rounded-lg p-2 flex items-center justify-between">
-                  <span class="text-stone-300">⏱️ Time Boosters</span>
+                  <span class="text-stone-300">❤️ Repair Kits</span>
                   <span id="intel-timeboosts" class="font-mono-tac font-bold text-sky-400">2 (+2 Drops)</span>
                 </div>
               </div>
@@ -668,7 +686,7 @@
               <div>• <strong>Aim & Fire:</strong> Move Mouse (or Drag on touch) to aim the 3D Machine Gun; hold <strong>Left-Click</strong> or <strong>Space</strong> to fire tracer bursts.</div>
               <div>• <strong>Limited Shots & Cooldown:</strong> When your ammo belt runs out, the barrel overheats for a few seconds. Press <strong>[R]</strong> to cool/reload early during lulls.</div>
               <div>• <strong>One-Shot Kill = +1 Grenade:</strong> Killing an uninjured soldier in a single shot (Headshot or high-caliber AP round) immediately adds <strong>+1 Grenade</strong>!</div>
-              <div>• <strong>Grenades & Time Boosters:</strong> Press <strong>[G] / Right-Click</strong> to lob an anti-armor grenade; press <strong>[T]</strong> or shoot floating Parachute Clocks for bonus time.</div>
+              <div>• <strong>Grenades & Repair Supplies:</strong> Press <strong>[G] / Right-Click</strong> to lob an anti-armor grenade; press <strong>[T]</strong> or shoot floating Parachute Crates to restore Bunker Health (+25%). Enemies that reach the bunker perimeter without being killed diminish health by 10% for basic infantry, up to 35% for tanks, and 50% for dreadnoughts. Round ends in defeat if received damage reaches 100%!</div>
             </div>
           </div>
 
@@ -761,7 +779,7 @@
             <ul class="list-disc pl-4 space-y-1">
               <li><strong>Score Formula:</strong> Combines <em>Remaining Time</em> + <em>Shot Accuracy %</em> + <em>Time × Accuracy Synergy</em>.</li>
               <li><strong>Progressive Upgrades:</strong> Available before every level; higher waves unlock stronger upgrade tiers and higher per-tier stat scaling.</li>
-              <li><strong>Consumables & One-Shot Reward:</strong> Limited Time Boosters (key <code>T</code> + shootable parachute crates) and Grenades (key <code>G</code> / RMB) per level, plus <strong>+1 Grenade on every One-Shot Kill</strong>!</li>
+              <li><strong>Bunker Health & Consumables:</strong> Shoot floating Parachute Crates to restore Bunker Health (+25%). Enemies that reach the bunker perimeter without being killed diminish health (10% basic rifleman, up to 35% tank, 50% dreadnought). Round ends in defeat if received damage reaches 100%! Use key <code>T</code> for emergency repair kits, plus <strong>+1 Grenade on every One-Shot Kill</strong>!</li>
             </ul>
           </div>
         </div>
@@ -1174,6 +1192,43 @@
           osc.start(now + idx * 0.05);
           osc.stop(now + idx * 0.05 + 0.22);
         });
+      }
+
+      playHealthRestore() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.32);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.35);
+        });
+      }
+
+      playBunkerBreach() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(75, now + 0.28);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.32);
       }
 
       playArmorPing() {
@@ -9306,7 +9361,11 @@
       },
       weapon: null,
       // Level runtime metrics
-      timeRemaining: 240,
+      bunkerHealth: 100,
+      damageReceived: 0,
+      repairKits: 3,
+      enemiesPassedInWave: 0,
+      timeRemaining: 180,
       grenades: 5,
       timeBoosters: 4,
       shotsFired: 0,
@@ -11997,20 +12056,27 @@
       state.enemies.push(enemyObj);
     }
 
-    // --- 7. PARACHUTE TIME BOOSTER SUPPLY CRATES ---
-    function spawnParachuteTimeCrate() {
+    // --- 7. PARACHUTE HEALTH / REPAIR SUPPLY CRATES ---
+    function spawnParachuteHealthCrate() {
       const group = new THREE.Group();
-      // Crate box
-      const crateMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5 });
-      const crateMesh = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), crateMat);
+      // Medical / Armor Repair Supply Crate (Olive green with red cross markings)
+      const crateMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.55 });
+      const crateMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), crateMat);
       crateMesh.castShadow = true;
       group.add(crateMesh);
 
-      // Parachute canopy
-      const canopyGeo = new THREE.SphereGeometry(2.3, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
-      const canopyMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, side: THREE.DoubleSide });
+      // Medical red cross insignia on crate
+      const crossMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
+      const barH = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.38, 1.85), crossMat);
+      const barV = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.2, 1.85), crossMat);
+      group.add(barH);
+      group.add(barV);
+
+      // Parachute canopy: bright clean medical white/cream canopy
+      const canopyGeo = new THREE.SphereGeometry(2.4, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+      const canopyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, side: THREE.DoubleSide });
       const canopy = new THREE.Mesh(canopyGeo, canopyMat);
-      canopy.position.y = 3.2;
+      canopy.position.y = 3.3;
       group.add(canopy);
 
       const x = (Math.random() - 0.5) * 56;
@@ -12023,11 +12089,15 @@
         crateMesh,
         canopy,
         active: true,
-        bonusSeconds: 10
+        healthBonus: 25 // Adds +25% Bunker Health! (Does NOT add wave time)
       };
       crateMesh.userData.supplyDropRef = dropObj;
       canopy.userData.supplyDropRef = dropObj;
       state.supplyDrops.push(dropObj);
+    }
+    // Backward compatibility alias
+    function spawnParachuteTimeCrate() {
+      spawnParachuteHealthCrate();
     }
 
     // --- 8. PARTICLES, TRACERS & FLOATING UI CALLOUTS ---
@@ -12463,17 +12533,30 @@
           return;
         }
 
-        // Check if player hit a Parachute Time Booster Crate!
+        // Check if player hit a Parachute Health / Repair Supply Crate!
         if (hit.object.userData.supplyDropRef) {
           const drop = hit.object.userData.supplyDropRef;
           if (drop.active) {
             drop.active = false;
             scene.remove(drop.group);
             state.shotsHit++;
-            state.timeRemaining += drop.bonusSeconds;
-            sfx.playTimeBoost();
-            spawnBurstParticles(hitPoint, 0x38bdf8, 18, 12);
-            spawnFloatingCallout(hitPoint, `⏱️ SUPPLY DROP! +${drop.bonusSeconds}s TIME`, 'text-sky-200 border-sky-400 bg-sky-950/90');
+
+            // Adds Health to the Bunker — does NOT increase wave time!
+            const healAmount = drop.healthBonus || 25;
+            state.bunkerHealth = Math.min(100, (state.bunkerHealth !== undefined ? state.bunkerHealth : 100) + healAmount);
+            state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+
+            if (sfx.playHealthRestore) sfx.playHealthRestore();
+            else sfx.playTimeBoost();
+
+            flashScreen('rgba(34, 197, 94, 0.28)');
+            spawnBurstParticles(hitPoint, 0x22c55e, 24, 14);
+            spawnBurstParticles(hitPoint, 0xf8fafc, 16, 10);
+            spawnFloatingCallout(
+              hitPoint,
+              `❤️ REPAIR CRATE! +${healAmount}% HEALTH (${state.bunkerHealth}% HP)`,
+              'text-emerald-200 border-emerald-400 bg-emerald-950/95 font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+            );
             createTracerBeam(muzzleWorld, hitPoint, false);
             updateHUD();
           }
@@ -12705,18 +12788,34 @@
     }
 
     // Use Limited Level Time Booster
-    function useTimeBooster() {
+    function useRepairKit() {
       if (state.mode !== 'PLAYING') return;
-      if (state.timeBoosters <= 0) {
-        spawnFloatingCallout(state.aimWorldPoint, 'NO TIME BOOSTERS REMAINING!', 'text-sky-300 border-sky-500 bg-sky-950/90');
+      const count = state.repairKits !== undefined ? state.repairKits : state.timeBoosters;
+      if (count <= 0) {
+        spawnFloatingCallout(state.aimWorldPoint, 'NO REPAIR KITS REMAINING!', 'text-emerald-300 border-emerald-500 bg-stone-950/90');
         return;
       }
-      state.timeBoosters--;
-      state.timeRemaining += 12;
-      sfx.playTimeBoost();
-      flashScreen('rgba(56, 189, 248, 0.22)');
-      spawnFloatingCallout(state.aimWorldPoint, '⏱️ TIME BOOSTER ACTIVATED! +12.0 SECONDS', 'text-sky-200 border-sky-400 bg-sky-950/95');
+      if (state.bunkerHealth >= 100) {
+        spawnFloatingCallout(state.aimWorldPoint, 'BUNKER ALREADY AT 100% INTEGRITY!', 'text-emerald-300 border-emerald-500 bg-stone-950/90');
+        return;
+      }
+      if (state.repairKits !== undefined) state.repairKits--;
+      else state.timeBoosters--;
+
+      // Restores +25% Bunker Health!
+      state.bunkerHealth = Math.min(100, (state.bunkerHealth || 0) + 25);
+      state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+
+      if (sfx.playHealthRestore) sfx.playHealthRestore();
+      else sfx.playTimeBoost();
+
+      flashScreen('rgba(34, 197, 94, 0.28)');
+      spawnFloatingCallout(state.aimWorldPoint, `❤️ FIELD REPAIR! +25% HEALTH (${state.bunkerHealth}% HP)`, 'text-emerald-200 border-emerald-400 bg-emerald-950/95 font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]');
       updateHUD();
+    }
+    // Backward compatibility alias
+    function useTimeBooster() {
+      useRepairKit();
     }
 
     // --- 10. WAVE LIFECYCLE, SCORING & ARMORY UI ---
@@ -12753,9 +12852,13 @@
       state.weapon = state.weapons[state.selectedWeapon || 1];
       updateWeaponViewmodel();
 
+      state.bunkerHealth = 100;
+      state.damageReceived = 0;
+      state.enemiesPassedInWave = 0;
+      state.repairKits = cfg.timeBoosters || 3;
       state.timeRemaining = cfg.timeLimit;
       state.grenades = cfg.grenades;
-      state.timeBoosters = cfg.timeBoosters;
+      state.timeBoosters = state.repairKits;
       state.shotsFired = 0;
       state.shotsHit = 0;
       state.oneShotKills = 0;
@@ -12808,10 +12911,27 @@
       return Math.min(100, +((state.shotsHit / state.shotsFired) * 100).toFixed(1));
     }
 
+    function getUnitBreachDamage(unitType) {
+      switch (unitType) {
+        case 'rifle': return 10;      // Basic unit: 10% damage
+        case 'storm': return 15;      // Assault stormtrooper: 15% damage
+        case 'scout_car': return 20;  // Armored scout car: 20% damage
+        case 'halftrack': return 25;  // Mechanized half-track: 25% damage
+        case 'tank': return 35;       // M4 Sherman DD Tank: 35% damage
+        case 'boss_tank': return 50;  // Supreme Colossus Dreadnought: 50% damage
+        default: return 10;
+      }
+    }
+
     function checkWaveVictory() {
       if (state.mode !== 'PLAYING') return;
-      if (state.enemiesKilledInWave >= state.totalEnemiesInWave && state.totalEnemiesInWave > 0) {
-        completeWave(true);
+      const resolved = state.enemiesKilledInWave + (state.enemiesPassedInWave || 0);
+      if (resolved >= state.totalEnemiesInWave && state.totalEnemiesInWave > 0) {
+        if ((state.damageReceived || 0) < 100 && (state.bunkerHealth || 0) > 0) {
+          completeWave(true);
+        } else {
+          completeWave(false, 'BUNKER DEFENSE OVERRUN — 100% DAMAGE SUSTAINED!');
+        }
       }
     }
 
@@ -12906,7 +13026,7 @@
 
         // Populate Defeat Modal
         document.getElementById('defeat-title').textContent = `WAVE ${state.waveIndex + 1} OVERRUN`;
-        document.getElementById('defeat-reason').textContent = defeatReason || `WAVE ${state.waveIndex + 1} FAILED — TIME EXPIRED BEFORE ALL HOSTILES WERE ELIMINATED!`;
+        document.getElementById('defeat-reason').textContent = defeatReason || `WAVE ${state.waveIndex + 1} FAILED — BUNKER DEFENSE OVERRUN (100% DAMAGE SUSTAINED)!`;
         const defTime = document.getElementById('def-time-survived');
         if (defTime) defTime.textContent = timeFormatted;
         document.getElementById('def-kills').textContent = `${state.enemiesKilledInWave} / ${state.totalEnemiesInWave}`;
@@ -13105,11 +13225,35 @@
       document.getElementById('hud-wave-num').textContent = state.waveIndex + 1;
       document.getElementById('hud-wave-title').textContent = cfg.name;
 
-      const remaining = Math.max(0, state.totalEnemiesInWave - state.enemiesKilledInWave);
+      const remaining = Math.max(0, state.totalEnemiesInWave - state.enemiesKilledInWave - (state.enemiesPassedInWave || 0));
       document.getElementById('hud-enemies-left').textContent = remaining;
       document.getElementById('hud-enemies-total').textContent = state.totalEnemiesInWave;
       const pctLeft = state.totalEnemiesInWave > 0 ? (remaining / state.totalEnemiesInWave) * 100 : 0;
       document.getElementById('hud-enemies-bar').style.width = `${pctLeft}%`;
+
+      // Update Bunker Health & Structural Integrity Display
+      const hp = Math.max(0, Math.min(100, Math.round(state.bunkerHealth !== undefined ? state.bunkerHealth : 100)));
+      const dmg = Math.max(0, Math.min(100, 100 - hp));
+      const hpTextEl = document.getElementById('hud-health-text');
+      const hpBarEl = document.getElementById('hud-health-bar');
+      const hpBoxEl = document.getElementById('hud-health-box');
+      const dmgPctEl = document.getElementById('hud-damage-pct');
+
+      if (hpTextEl) hpTextEl.textContent = `${hp}% HP`;
+      if (dmgPctEl) dmgPctEl.textContent = `${dmg}%`;
+      if (hpBarEl) {
+        hpBarEl.style.width = `${hp}%`;
+        if (hp > 55) {
+          hpBarEl.className = 'h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-300';
+          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-emerald-500/80 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200';
+        } else if (hp > 25) {
+          hpBarEl.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-300';
+          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/90 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200';
+        } else {
+          hpBarEl.className = 'h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-300 animate-pulse';
+          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-red-500 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] animate-pulse ring-2 ring-red-500/50 transition-all duration-200';
+        }
+      }
 
       // Format Mission Timer
       const t = Math.max(0, state.timeRemaining);
@@ -13198,7 +13342,7 @@
       }
 
       document.getElementById('hud-grenades-count').textContent = state.grenades;
-      document.getElementById('hud-timeboost-count').textContent = state.timeBoosters;
+      document.getElementById('hud-timeboost-count').textContent = (state.repairKits !== undefined ? state.repairKits : state.timeBoosters);
     }
 
     // --- 11. INPUT HANDLERS (MOUSE, KEYBOARD & TOUCH) ---
@@ -13975,9 +14119,7 @@
                 spawnBurstParticles(targetPos, 0x94a3b8, 12, 8);
                 state.cameraRecoilPitch = Math.min(0.075, (state.cameraRecoilPitch || 0) + (isBoss ? 0.048 : 0.034));
                 flashScreen('rgba(239, 68, 68, 0.35)');
-                const penalty = isBoss ? 3.0 : 1.5;
-                state.timeRemaining = Math.max(0, state.timeRemaining - penalty);
-                spawnFloatingCallout(new THREE.Vector3(0, 8.2, 38), isBoss ? '💥 COLOSSUS 90mm DIRECT HIT! -3.0s TIME' : '💥 75mm HE SHELL STRIKE! -1.5s TIME', 'text-red-200 border-red-500 bg-red-950/95 font-bold');
+                spawnFloatingCallout(new THREE.Vector3(0, 8.2, 38), isBoss ? '💥 COLOSSUS 90mm DIRECT HIT!' : '💥 75mm HE SHELL STRIKE!', 'text-red-200 border-red-500 bg-red-950/95 font-bold');
                 updateHUD();
 
               } else if (enemy.unitType === 'scout_car' || enemy.unitType === 'halftrack') {
@@ -14009,14 +14151,39 @@
 
           updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
 
-          // If an enemy reaches the bunker perimeter (z >= 35), they penalize time or breach!
+          // If an enemy reaches the bunker perimeter (z >= 35), they passed through without being killed!
           if (enemy.group.position.z >= 35) {
-            const breachPenalty = state.waveIndex === 0 ? 3.0 : Math.min(8.0, 3.5 + state.waveIndex * 0.5);
-            state.timeRemaining = Math.max(0, state.timeRemaining - breachPenalty);
-            flashScreen('rgba(239, 68, 68, 0.40)');
-            spawnFloatingCallout(enemy.group.position, `⚠️ PERIMETER BREACH! -${breachPenalty.toFixed(1)}s TIME`, 'text-red-200 border-red-500 bg-red-950/95');
-            // Push enemy back slightly so player must still eliminate them
-            enemy.group.position.z = 14;
+            enemy.dead = true;
+            enemy.passedThrough = true;
+            scene.remove(enemy.group);
+            state.enemiesPassedInWave = (state.enemiesPassedInWave || 0) + 1;
+
+            // Damage scales according to unit power: basic rifleman = 10%, storm = 15%, scout_car = 20%, halftrack = 25%, tank = 35%, boss = 50%
+            const dmgPercent = getUnitBreachDamage(enemy.unitType);
+            state.damageReceived = Math.min(100, (state.damageReceived || 0) + dmgPercent);
+            state.bunkerHealth = Math.max(0, 100 - state.damageReceived);
+
+            sfx.playExplosion();
+            if (sfx.playBunkerBreach) sfx.playBunkerBreach();
+            flashScreen('rgba(239, 68, 68, 0.55)');
+            state.cameraRecoilPitch = Math.min(0.09, (state.cameraRecoilPitch || 0) + 0.045);
+
+            const unitDisplayName = enemy.unitType === 'rifle' ? 'RIFLEMAN' : enemy.unitType === 'storm' ? 'STORMTROOPER' : enemy.unitType === 'scout_car' ? 'SCOUT CAR' : enemy.unitType === 'halftrack' ? 'HALF-TRACK' : enemy.unitType === 'boss_tank' ? 'COLOSSUS DREADNOUGHT' : 'SHERMAN TANK';
+            spawnFloatingCallout(
+              new THREE.Vector3(enemy.group.position.x, 8.0, 37),
+              `⚠️ ${unitDisplayName} BREACHED! -${dmgPercent}% HP (${state.bunkerHealth}% LEFT)`,
+              'text-red-200 border-red-500 bg-red-950/95 font-bold shadow-[0_0_25px_rgba(239,68,68,0.8)]'
+            );
+
+            updateHUD();
+
+            // Round ends if the received damage reaches 100%!
+            if (state.damageReceived >= 100 || state.bunkerHealth <= 0) {
+              completeWave(false, 'BUNKER DEFENSE OVERRUN — 100% DAMAGE SUSTAINED!');
+              return;
+            }
+
+            checkWaveVictory();
           }
         }
 
