@@ -697,7 +697,7 @@
               <div>• <strong>Aim & Fire:</strong> Move Mouse (or Drag on touch) to aim the 3D Machine Gun; hold <strong>Left-Click</strong> or <strong>Space</strong> to fire tracer bursts.</div>
               <div>• <strong>Limited Shots & Cooldown:</strong> When your ammo belt runs out, the barrel overheats for a few seconds. Press <strong>[R]</strong> to cool/reload early during lulls.</div>
               <div>• <strong>One-Shot Kill = +1 Grenade:</strong> Killing an uninjured soldier in a single shot (Headshot or high-caliber AP round) immediately adds <strong>+1 Grenade</strong>!</div>
-              <div>• <strong>Grenades & Repair Supplies:</strong> Press <strong>[G] / Right-Click</strong> to lob an anti-armor grenade; press <strong>[T]</strong> or shoot floating Parachute Crates to restore Bunker Health (+25%). Enemies that reach the bunker perimeter without being killed diminish health by 10% for basic infantry, up to 35% for tanks, and 50% for dreadnoughts. Round ends in defeat if received damage reaches 100%!</div>
+              <div>• <strong>Grenades & Repair Supplies:</strong> Press <strong>[G] / Right-Click</strong> to lob an anti-armor grenade; shoot floating Parachute Crates (+10% Health) or press <strong>[T]</strong> for Emergency Repair Kits (+25% Health) to maintain Bunker Integrity. Enemies that reach the bunker perimeter without being killed diminish health by 10% for basic infantry, up to 35% for tanks, and 50% for dreadnoughts. Round ends in defeat if received damage reaches 100%!</div>
             </div>
           </div>
 
@@ -790,7 +790,7 @@
             <ul class="list-disc pl-4 space-y-1">
               <li><strong>Score Formula:</strong> Combines <em>Remaining Time</em> + <em>Shot Accuracy %</em> + <em>Time × Accuracy Synergy</em>.</li>
               <li><strong>Progressive Upgrades:</strong> Available before every level; higher waves unlock stronger upgrade tiers and higher per-tier stat scaling.</li>
-              <li><strong>Bunker Health & Consumables:</strong> Shoot floating Parachute Crates to restore Bunker Health (+25%). Enemies that reach the bunker perimeter without being killed diminish health (10% basic rifleman, up to 35% tank, 50% dreadnought). Round ends in defeat if received damage reaches 100%! Use key <code>T</code> for emergency repair kits, plus <strong>+1 Grenade on every One-Shot Kill</strong>!</li>
+              <li><strong>Bunker Health & Consumables:</strong> Shoot floating Parachute Crates to restore Bunker Health (+10%). Use key <code>T</code> for emergency repair kits (+25% Health). Enemies that reach the bunker perimeter without being killed diminish health (10% basic rifleman, up to 35% tank, 50% dreadnought). Round ends in defeat if received damage reaches 100%! Plus <strong>+1 Grenade on every One-Shot Kill</strong>!</li>
             </ul>
           </div>
         </div>
@@ -12587,7 +12587,7 @@
         suspensionLines,
         hitboxes: [crateMesh, canopy, ...crossMeshes],
         active: true,
-        healthBonus: 25 // Adds +25% Bunker Health! (Does NOT add wave time)
+        healthBonus: 10 // Adds +10% Bunker Health! (Does NOT add wave time)
       };
       dropObj.hitboxes.forEach(m => {
         m.userData.supplyDropRef = dropObj;
@@ -12893,6 +12893,26 @@
             updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
             spawnFloatingCallout(hitPoint, `💥 75mm SHELL -${dmg}`, 'text-orange-300 font-black scale-110');
           }
+        } else if (hitObj.userData.supplyDropRef) {
+          const drop = hitObj.userData.supplyDropRef;
+          if (drop.active) {
+            drop.active = false;
+            scene.remove(drop.group);
+            const healAmount = drop.healthBonus || 10;
+            state.bunkerHealth = Math.min(100, (state.bunkerHealth !== undefined ? state.bunkerHealth : 100) + healAmount);
+            state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+            if (sfx.playHealthRestore) sfx.playHealthRestore();
+            else sfx.playTimeBoost();
+            flashScreen('rgba(34, 197, 94, 0.28)');
+            spawnBurstParticles(hitPoint, 0x22c55e, 24, 14);
+            spawnBurstParticles(hitPoint, 0xd32f2f, 16, 12);
+            spawnBurstParticles(hitPoint, 0xffffff, 16, 10);
+            spawnFloatingCallout(
+              hitPoint,
+              `❤️ REPAIR CRATE! +${healAmount}% HEALTH (${state.bunkerHealth}% HP)`,
+              'text-emerald-200 border-emerald-400 bg-emerald-950/95 font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+            );
+          }
         }
       }
 
@@ -13107,7 +13127,7 @@
             state.shotsHit++;
 
             // Adds Health to the Bunker — does NOT increase wave time!
-            const healAmount = drop.healthBonus || 25;
+            const healAmount = drop.healthBonus || 10;
             state.bunkerHealth = Math.min(100, (state.bunkerHealth !== undefined ? state.bunkerHealth : 100) + healAmount);
             state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
 
