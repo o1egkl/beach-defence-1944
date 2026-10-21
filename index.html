@@ -78,6 +78,17 @@
       pointer-events: none;
       z-index: 35;
       animation: floatUpFade 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.9), 1px 1px 2px #000;
+    }
+    .floating-callout.damage-callout {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 6px #000, 0 2px 4px #000, 1px 1px 3px #000, -1px -1px 2px #000 !important;
     }
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
@@ -190,7 +201,7 @@
               <span class="text-stone-300">🛡️ BUNKER INTEGRITY</span>
               <span id="hud-health-text" class="font-mono-tac text-emerald-400 text-sm font-extrabold">100% HP</span>
             </div>
-            <div class="w-full h-2.5 bg-stone-900 rounded-full overflow-hidden border border-stone-700 mt-1 p-0.5">
+            <div class="w-full h-2.5 bg-black/35 rounded-full overflow-hidden border border-stone-700/60 mt-1 p-0.5">
               <div id="hud-health-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
             </div>
             <div class="text-[9.5px] text-stone-400 mt-0.5 flex justify-between font-mono-tac">
@@ -239,7 +250,7 @@
       <div id="target-readout" class="mx-auto bg-stone-950/80 border border-stone-700/80 px-3 py-1 rounded-full text-xs font-mono-tac text-stone-300 hidden items-center gap-2 pointer-events-none">
         <span id="target-name" class="font-bold text-amber-300">Rifleman</span>
         <span id="target-armor-badge" class="px-1.5 py-0.2 rounded text-[10px] bg-stone-800 text-stone-300">Unarmored</span>
-        <div class="w-20 h-2 bg-stone-800 rounded-full overflow-hidden">
+        <div class="w-20 h-2 bg-black/35 rounded-full overflow-hidden border border-stone-600/40">
           <div id="target-hp-bar" class="h-full bg-red-500" style="width:100%"></div>
         </div>
       </div>
@@ -11087,7 +11098,7 @@
         roughness: 0.38,
         metalness: 0.82
       }),
-      hpBg: new THREE.MeshBasicMaterial({ color: 0x0a0c0e, transparent: true, opacity: 0.75 }),
+      hpBg: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15 }),
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 })
     };
 
@@ -12101,14 +12112,28 @@
     }
 
     // --- 8. PARTICLES, TRACERS & FLOATING UI CALLOUTS ---
-    function spawnFloatingCallout(worldPos, text, colorClass = 'text-amber-300 border-amber-400/70 bg-stone-950/90') {
+    function spawnFloatingCallout(worldPos, text, colorClass = '') {
       const screenPos = worldPos.clone().project(camera);
       if (screenPos.z > 1) return;
       const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
       const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
 
+      // Identify shot damage indicators (e.g. -34, CRIT -88, 💥 -540, BLAST -300)
+      const isDamage = /-\d+/.test(text) || text.includes('CRIT') || text.includes('BLAST') || text.includes('HIT -');
+
       const el = document.createElement('div');
-      el.className = `floating-callout px-2.5 py-1 rounded-lg border text-xs font-mono-tac font-extrabold shadow-lg ${colorClass}`;
+      if (isDamage) {
+        // Shot damage is 100% transparent: zero black background boxes!
+        let cleanClass = (colorClass || 'text-amber-300')
+          .replace(/\bbg-\S+/g, '')
+          .replace(/\bborder-\S+/g, '')
+          .replace(/\bborder\b/g, '')
+          .replace(/\bshadow-\S+/g, '')
+          .trim();
+        el.className = `floating-callout damage-callout text-xs sm:text-sm font-mono-tac font-black select-none ${cleanClass}`;
+      } else {
+        el.className = `floating-callout px-2.5 py-1 rounded-lg border text-xs font-mono-tac font-extrabold shadow-lg select-none ${colorClass || 'text-amber-300 border-amber-400/50 bg-black/40 backdrop-blur-sm'}`;
+      }
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
       el.textContent = text;
@@ -12223,7 +12248,7 @@
             killEnemy(enemy, enemy.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), false, true);
           } else {
             updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
-            spawnFloatingCallout(enemy.group.position, `💥 -${dmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90 font-bold');
+            spawnFloatingCallout(enemy.group.position, `💥 -${dmg}`, 'text-orange-400 font-black scale-110');
           }
         }
       });
@@ -12238,7 +12263,7 @@
               destroyLandingBoat(boat, boat.group.position);
             } else if (boat.hpBar) {
               updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
-              spawnFloatingCallout(boat.group.position, `💥 BOAT -${bDmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90 font-bold');
+              spawnFloatingCallout(boat.group.position, `💥 BOAT -${bDmg}`, 'text-orange-400 font-black scale-110');
             }
           }
         }
@@ -12315,7 +12340,7 @@
           const boat = hitObj.userData.boatRef;
           const dmg = Math.round(w.damage * 1.6);
           boat.hp -= dmg;
-          spawnFloatingCallout(hitPoint, `💥 75mm CANNON HIT -${dmg}!`, 'text-orange-300 border-orange-500 bg-stone-950/95 font-bold scale-110');
+          spawnFloatingCallout(hitPoint, `💥 75mm CANNON HIT -${dmg}!`, 'text-orange-400 font-black scale-125');
           if (boat.hp <= 0) destroyLandingBoat(boat, hitPoint);
           else if (boat.hpBar) updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
         } else if (hitObj.userData.enemyRef) {
@@ -12328,7 +12353,7 @@
             killEnemy(enemy, hitPoint, false, true);
           } else {
             updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
-            spawnFloatingCallout(hitPoint, `💥 75mm SHELL -${dmg}`, 'text-orange-200 border-orange-400 bg-stone-950/90 font-bold');
+            spawnFloatingCallout(hitPoint, `💥 75mm SHELL -${dmg}`, 'text-orange-300 font-black scale-110');
           }
         }
       }
@@ -12524,7 +12549,7 @@
               spawnFloatingCallout(
                 hitPoint,
                 isWeakSpot ? `💥 ENGINE CRIT -${dmg}` : `-${dmg}`,
-                isWeakSpot ? 'text-amber-300 border-amber-400 bg-stone-950/90' : 'text-stone-300 border-stone-600 bg-stone-950/80'
+                isWeakSpot ? 'text-amber-300 font-black scale-110' : 'text-stone-200 font-extrabold'
               );
             }
           }
@@ -12603,7 +12628,7 @@
           } else {
             updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
             if (isWeakSpot) {
-              spawnFloatingCallout(hitPoint, `CRIT -${dmg}`, 'text-amber-300 border-amber-400 bg-stone-950/90');
+              spawnFloatingCallout(hitPoint, `CRIT -${dmg}`, 'text-amber-300 font-black scale-115');
             }
           }
         }
@@ -12764,7 +12789,7 @@
             killEnemy(enemy, enemy.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), false, true);
           } else {
             updateFloatingHPBar(enemy.hpBar, enemy.hp / enemy.maxHp);
-            spawnFloatingCallout(enemy.group.position, `💣 BLAST -${dmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90');
+            spawnFloatingCallout(enemy.group.position, `💣 BLAST -${dmg}`, 'text-orange-400 font-black scale-110');
           }
         }
       });
@@ -12780,7 +12805,7 @@
               destroyLandingBoat(boat, boat.group.position);
             } else if (boat.hpBar) {
               updateFloatingHPBar(boat.hpBar, boat.hp / boat.maxHp);
-              spawnFloatingCallout(boat.group.position, `💣 BOAT BLAST -${bDmg}`, 'text-orange-300 border-orange-400 bg-stone-950/90');
+              spawnFloatingCallout(boat.group.position, `💣 BOAT BLAST -${bDmg}`, 'text-orange-400 font-black scale-110');
             }
           }
         }
