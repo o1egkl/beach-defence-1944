@@ -9470,7 +9470,7 @@
     scene.background = new THREE.Color(0x6288a5); // Deep coastal maritime blue
     scene.fog = new THREE.Fog(0x688ea8, 160, 780); // Linear atmospheric sea haze (crisp fleet visibility)
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 950);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.02, 950);
     // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.5, 42) looking out toward -Z (the ocean)
     camera.position.set(0, 8.5, 42);
     camera.lookAt(0, 3, -30);
@@ -10934,55 +10934,18 @@
       safetyButton.rotateZ(Math.PI / 2);
       safetyButton.position.set(0, -0.065, 0.17);
 
-      // 13. Contoured Walnut Wood "Fish-Tail" Buttstock (Kolben 42 - Matching Reference Photo!)
+      // 13. Contoured Walnut Wood Stock Collar (Optimized for first-person clearance to prevent near-plane camera clipping)
       const stockGroup = new THREE.Group();
-      // Stamped steel buffer collar entering receiver socket
-      const bufferCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.074, 0.16, 12), gunMetal);
+      const bufferCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.074, 0.14, 12), gunMetal);
       bufferCollar.rotateX(Math.PI / 2);
-      bufferCollar.position.set(0, -0.038, 0.38);
+      bufferCollar.position.set(0, -0.038, 0.18);
       const bufferPin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 8), gunMetal);
       bufferPin.rotateZ(Math.PI / 2);
-      bufferPin.position.set(0, -0.038, 0.36);
-
-      // Contoured walnut neck / wrist
-      const stockWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.088, 0.22, 12), walnutWoodMat);
+      bufferPin.position.set(0, -0.038, 0.16);
+      const stockWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.078, 0.12, 12), walnutWoodMat);
       stockWrist.rotateX(Math.PI / 2);
-      stockWrist.position.set(0, -0.055, 0.53);
-
-      // Flared fish-tail walnut body
-      const stockBody = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.21, 0.28), walnutWoodMat);
-      stockBody.position.set(0, -0.075, 0.73);
-      stockBody.rotation.x = -0.10;
-
-      // Upper crest lobe (curved upper cheek rest)
-      const topLobe = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.068, 0.22, 12), walnutWoodMat);
-      topLobe.rotateX(Math.PI / 2);
-      topLobe.position.set(0, 0.015, 0.77);
-      topLobe.rotation.x = 0.08;
-
-      // Lower lobe (downward curved fish-tail lobe)
-      const btmLobe = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.078, 0.22, 12), walnutWoodMat);
-      btmLobe.rotateX(Math.PI / 2);
-      btmLobe.position.set(0, -0.155, 0.77);
-      btmLobe.rotation.x = -0.16;
-
-      // Rear flared fish-tail end
-      const stockFlaredEnd = new THREE.Mesh(new THREE.BoxGeometry(0.134, 0.275, 0.12), walnutWoodMat);
-      stockFlaredEnd.position.set(0, -0.075, 0.86);
-      stockFlaredEnd.rotation.x = -0.10;
-
-      // Steel buttplate cap wrapping around the rear curved contour (matching photo!)
-      const stockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.140, 0.285, 0.028), buttPlateMat);
-      stockPlate.position.set(0, -0.075, 0.92);
-      stockPlate.rotation.x = -0.10;
-      const buttPlateTopLip = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.03, 12), buttPlateMat);
-      buttPlateTopLip.rotateZ(Math.PI / 2);
-      buttPlateTopLip.position.set(0, 0.06, 0.92);
-
-      const slingSwivel = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.007, 6, 12), gunMetal);
-      slingSwivel.position.set(0, -0.185, 0.86);
-
-      stockGroup.add(bufferCollar, bufferPin, stockWrist, stockBody, topLobe, btmLobe, stockFlaredEnd, stockPlate, buttPlateTopLip, slingSwivel);
+      stockWrist.position.set(0, -0.048, 0.24);
+      stockGroup.add(bufferCollar, bufferPin, stockWrist);
 
       // 14. Lafette 42 Fortress Mount & Elevation Handwheel
       const mountPivot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.38), mountMat);
@@ -10999,12 +10962,19 @@
       const elevWheel = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 18), brassMat);
       elevWheel.position.set(-0.16, -0.22, -0.18);
 
-      // 15. Muzzle Flash Star
+      // 15. Muzzle Flash Star (Additive blending, zero depth-write occlusion)
       const flashGeo = new THREE.ConeGeometry(0.32, 1.2, 6);
       flashGeo.rotateX(-Math.PI / 2);
-      const flashMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0 });
+      const flashMat = new THREE.MeshBasicMaterial({
+        color: 0xffe066,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
       muzzleFlashMesh = new THREE.Mesh(flashGeo, flashMat);
       muzzleFlashMesh.position.set(0, 0.015, -2.52);
+      muzzleFlashMesh.visible = false;
 
       // 16. Assemble MG-42 Specific Parts (Directly Matching User Reference Photo!)
       mg42Group = new THREE.Group();
@@ -11152,16 +11122,17 @@
     }
 
     function createSpentCasing(origin) {
-      const casingGeo = new THREE.CylinderGeometry(0.016, 0.018, 0.13, 8);
+      const casingGeo = new THREE.CylinderGeometry(0.014, 0.016, 0.11, 8);
       const casingMat = new THREE.MeshStandardMaterial({ color: 0xf5ba42, metalness: 0.95, roughness: 0.18 });
       const mesh = new THREE.Mesh(casingGeo, casingMat);
-      mesh.position.copy(origin).add(new THREE.Vector3(0.12, -0.04, -0.15));
+      // Eject cleanly forward and to the right over the embrasure sill, away from camera
+      mesh.position.copy(origin).add(new THREE.Vector3(0.22, -0.06, -0.45));
       scene.add(mesh);
       return {
         mesh,
-        life: 2.2,
-        vel: new THREE.Vector3(2.2 + Math.random() * 0.9, 1.6 + Math.random() * 0.8, 0.3 + Math.random() * 0.6),
-        rotVel: new THREE.Vector3(Math.random() * 25, Math.random() * 30, Math.random() * 25)
+        life: 1.2,
+        vel: new THREE.Vector3(3.4 + Math.random() * 0.8, 1.2 + Math.random() * 0.6, -1.5 - Math.random() * 0.8),
+        rotVel: new THREE.Vector3(Math.random() * 20, Math.random() * 25, Math.random() * 20)
       };
     }
 
@@ -12113,8 +12084,17 @@
 
     // --- 8. PARTICLES, TRACERS & FLOATING UI CALLOUTS ---
     function spawnFloatingCallout(worldPos, text, colorClass = '') {
+      if (!worldPos) return;
+      // Strict frustum check: never spawn callouts for points behind or too close to the camera
+      const camDir = new THREE.Vector3();
+      camera.getWorldDirection(camDir);
+      const toPos = worldPos.clone().sub(camera.position);
+      if (camDir.dot(toPos) <= 0.5) return;
+
       const screenPos = worldPos.clone().project(camera);
-      if (screenPos.z > 1) return;
+      if (screenPos.z >= 1.0 || screenPos.z <= -1.0) return;
+      if (screenPos.x < -1.1 || screenPos.x > 1.1 || screenPos.y < -1.1 || screenPos.y > 1.1) return;
+
       const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
       const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
 
@@ -12143,18 +12123,22 @@
 
     function flashScreen(colorCss) {
       const el = document.getElementById('screen-flash');
+      if (!el) return;
       el.style.background = colorCss;
       el.style.opacity = '1';
       setTimeout(() => { el.style.opacity = '0'; }, 160);
     }
 
     function createTracerBeam(startPos, endPos, isCrit = false) {
+      if (!startPos || !endPos) return;
       const points = [startPos.clone(), endPos.clone()];
       const geo = new THREE.BufferGeometry().setFromPoints(points);
       const mat = new THREE.LineBasicMaterial({
         color: isCrit ? 0xff4422 : 0xffe066,
         transparent: true,
-        opacity: 0.9
+        opacity: 0.9,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
       });
       const line = new THREE.Line(geo, mat);
       scene.add(line);
@@ -12167,12 +12151,15 @@
     }
 
     function createEnemyTracerBeam(startPos, endPos, isCannon = false) {
+      if (!startPos || !endPos) return;
       const points = [startPos.clone(), endPos.clone()];
       const geo = new THREE.BufferGeometry().setFromPoints(points);
       const mat = new THREE.LineBasicMaterial({
         color: isCannon ? 0xff5500 : 0xffcc33,
         transparent: true,
-        opacity: isCannon ? 1.0 : 0.85
+        opacity: isCannon ? 1.0 : 0.85,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
       });
       const line = new THREE.Line(geo, mat);
       scene.add(line);
@@ -12185,9 +12172,15 @@
     }
 
     function spawnBurstParticles(pos, colorHex, count = 12, speedScale = 8) {
-      const geo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
+      if (!pos) return;
+      const geo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
       for (let i = 0; i < count; i++) {
-        const mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 1 });
+        const mat = new THREE.MeshBasicMaterial({
+          color: colorHex,
+          transparent: true,
+          opacity: 1,
+          depthWrite: false
+        });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.copy(pos);
         const vel = new THREE.Vector3(
@@ -12275,9 +12268,15 @@
       const dist = dir.length();
       const mid = new THREE.Vector3().addVectors(startPt, endPt).multiplyScalar(0.5);
 
-      const geo = new THREE.CylinderGeometry(0.12, 0.12, dist, 8);
+      const geo = new THREE.CylinderGeometry(0.08, 0.08, dist, 8);
       geo.rotateX(Math.PI / 2);
-      const mat = new THREE.MeshBasicMaterial({ color: 0xff9922, transparent: true, opacity: 0.95 });
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0xff9922,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(mid);
       mesh.lookAt(endPt);
@@ -12286,8 +12285,8 @@
       state.particles.push({
         type: 'tracer',
         mesh,
-        life: 0.18,
-        maxLife: 0.18
+        life: 0.14,
+        maxLife: 0.14
       });
     }
 
@@ -12307,13 +12306,15 @@
       state.shotsFired++;
 
       sfx.playCannonShot();
+      muzzleFlashMesh.visible = true;
       muzzleFlashMesh.material.opacity = 1.0;
-      muzzleFlashMesh.scale.set(2.4, 2.4, 2.4);
-      muzzleLight.intensity = 5.5;
-      gunBarrelGroup.position.z = 0.36;
-      state.cameraRecoilPitch = Math.min(0.065, (state.cameraRecoilPitch || 0) + 0.038);
-      flashScreen('rgba(251, 146, 60, 0.35)');
+      muzzleFlashMesh.scale.set(1.5, 1.5, 1.5);
+      muzzleLight.intensity = 4.2;
+      gunBarrelGroup.position.z = 0.18; // Clean recoil kick
+      state.cameraRecoilPitch = Math.min(0.045, (state.cameraRecoilPitch || 0) + 0.024);
+      flashScreen('rgba(251, 146, 60, 0.22)');
 
+      if (gunGroup) gunGroup.updateMatrixWorld(true);
       const muzzleWorld = new THREE.Vector3();
       muzzleFlashMesh.getWorldPosition(muzzleWorld);
       muzzleLight.position.copy(muzzleWorld);
@@ -12329,8 +12330,8 @@
       const hitPoint = (hits.length > 0) ? hits[0].point.clone() : (envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone());
 
       createHeavyCannonTracer(muzzleWorld, hitPoint);
-      spawnBurstParticles(hitPoint, 0xf97316, 32, 20);
-      spawnBurstParticles(hitPoint, 0xfacc15, 20, 14);
+      spawnBurstParticles(hitPoint, 0xf97316, 24, 16);
+      spawnBurstParticles(hitPoint, 0xfacc15, 16, 12);
       sfx.playExplosion();
 
       if (hits.length > 0) {
@@ -12400,9 +12401,10 @@
       state.shotsFired++;
 
       sfx.playRocketLaunch();
-      gunBarrelGroup.position.z = 0.22;
-      state.cameraRecoilPitch = Math.min(0.04, (state.cameraRecoilPitch || 0) + 0.02);
+      gunBarrelGroup.position.z = 0.12; // Clean recoil kick
+      state.cameraRecoilPitch = Math.min(0.03, (state.cameraRecoilPitch || 0) + 0.015);
 
+      if (gunGroup) gunGroup.updateMatrixWorld(true);
       const muzzleWorld = new THREE.Vector3();
       muzzleFlashMesh.getWorldPosition(muzzleWorld);
 
@@ -12416,21 +12418,27 @@
 
     function detonateRocket(pos, damage) {
       sfx.playExplosion();
-      flashScreen('rgba(244, 63, 94, 0.3)');
-      spawnBurstParticles(pos, 0xf43f5e, 36, 22);
-      spawnBurstParticles(pos, 0xfbbf24, 24, 16);
+      flashScreen('rgba(244, 63, 94, 0.20)');
+      spawnBurstParticles(pos, 0xf43f5e, 28, 18);
+      spawnBurstParticles(pos, 0xfbbf24, 20, 14);
 
       const shockGeo = new THREE.SphereGeometry(1, 16, 12);
-      const shockMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.75 });
+      const shockMat = new THREE.MeshBasicMaterial({
+        color: 0xf43f5e,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
       const shockMesh = new THREE.Mesh(shockGeo, shockMat);
       shockMesh.position.copy(pos);
       scene.add(shockMesh);
       state.particles.push({
         type: 'shockwave',
         mesh: shockMesh,
-        life: 0.42,
-        maxLife: 0.42,
-        maxRadius: 15.0
+        life: 0.35,
+        maxLife: 0.35,
+        maxRadius: 13.0
       });
 
       applyExplosionDamage(pos, 14.0, damage, 580);
@@ -12471,30 +12479,22 @@
 
       // Sound & Muzzle Flash
       sfx.playMachineGunShot(state.upgrades.damage);
+      muzzleFlashMesh.visible = true;
+      muzzleFlashMesh.scale.set(1.0, 1.0, 1.0);
       muzzleFlashMesh.material.opacity = 0.95;
       muzzleFlashMesh.rotation.z = Math.random() * Math.PI;
-      muzzleLight.intensity = 2.6;
-      gunBarrelGroup.position.z = 0.14; // Recoil kick
-      state.cameraRecoilPitch = Math.min(0.024, (state.cameraRecoilPitch || 0) + 0.0055);
+      muzzleLight.intensity = 2.4;
+      gunBarrelGroup.position.z = 0.08; // Clean recoil kick
+      state.cameraRecoilPitch = Math.min(0.020, (state.cameraRecoilPitch || 0) + 0.0045);
       state.barrelHeat = Math.min(1.0, state.barrelHeat + 0.04);
 
-      // Snappy concentric shot bloom feedback
-      const shotBloom = document.getElementById('reticle-shot-bloom');
-      if (shotBloom) {
-        shotBloom.style.opacity = '0.85';
-        shotBloom.style.transform = 'scale(1.22)';
-        setTimeout(() => {
-          shotBloom.style.opacity = '0';
-          shotBloom.style.transform = 'scale(1.0)';
-        }, 65);
-      }
-
+      if (gunGroup) gunGroup.updateMatrixWorld(true);
       // Compute Muzzle World Origin
       const muzzleWorld = new THREE.Vector3();
       muzzleFlashMesh.getWorldPosition(muzzleWorld);
       muzzleLight.position.copy(muzzleWorld);
 
-      // Eject spent brass casing from receiver ejection port
+      // Eject spent brass casing cleanly forward-right over embrasure sill
       if (gunGroup) {
         const receiverWorld = new THREE.Vector3();
         gunGroup.getWorldPosition(receiverWorld);
@@ -13804,8 +13804,8 @@
         const gunSwayY = Math.sin(nowSec * 1.8) * 0.003;
         const gunSwayX = Math.cos(nowSec * 1.2) * 0.002;
 
-        // Viewmodel position anchored to camera yaw so gun remains in view when aiming left or right
-        const viewOffset = new THREE.Vector3(0.32, -0.92, -1.30);
+        // Viewmodel position anchored to camera yaw with comfortable clearance from camera near-plane
+        const viewOffset = new THREE.Vector3(0.30, -0.94, -1.45);
         viewOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), camera.rotation.y);
         gunGroup.position.copy(camera.position).add(viewOffset);
         gunGroup.position.x += gunSwayX;
@@ -13813,10 +13813,15 @@
 
         gunGroup.lookAt(state.aimWorldPoint);
         // Decay recoil & muzzle flash
-        gunBarrelGroup.position.z += (0 - gunBarrelGroup.position.z) * 0.25;
+        gunBarrelGroup.position.z += (0 - gunBarrelGroup.position.z) * 0.28;
         if (muzzleFlashMesh.material.opacity > 0) {
-          muzzleFlashMesh.material.opacity = Math.max(0, muzzleFlashMesh.material.opacity - dt * 18);
+          muzzleFlashMesh.material.opacity = Math.max(0, muzzleFlashMesh.material.opacity - dt * 20);
           muzzleLight.intensity = Math.max(0, muzzleLight.intensity - dt * 35);
+          if (muzzleFlashMesh.material.opacity <= 0.01) {
+            muzzleFlashMesh.material.opacity = 0;
+            muzzleFlashMesh.visible = false;
+            muzzleFlashMesh.scale.set(1, 1, 1);
+          }
         }
         // Barrel heat dissipation & emissive glow
         if (barrelHeatMat) {
@@ -13836,6 +13841,8 @@
         c.life -= dt;
         if (c.life <= 0) {
           scene.remove(c.mesh);
+          if (c.mesh.geometry) c.mesh.geometry.dispose();
+          if (c.mesh.material) c.mesh.material.dispose();
           state.spentCasings.splice(i, 1);
           continue;
         }
@@ -13845,7 +13852,7 @@
         c.mesh.rotation.y += c.rotVel.y * dt;
         c.mesh.rotation.z += c.rotVel.z * dt;
         if (c.mesh.position.y < 6.72 && c.vel.y < 0) {
-          c.vel.y = -c.vel.y * 0.42;
+          c.vel.y = -c.vel.y * 0.35;
           c.vel.x *= 0.55;
           c.vel.z *= 0.55;
         }
@@ -14237,15 +14244,17 @@
         p.life -= dt;
         if (p.life <= 0) {
           scene.remove(p.mesh);
+          if (p.mesh.geometry) p.mesh.geometry.dispose();
+          if (p.mesh.material) p.mesh.material.dispose();
           state.particles.splice(i, 1);
           continue;
         }
-        const ratio = p.life / p.maxLife;
+        const ratio = Math.max(0, p.life / p.maxLife);
         if (p.type === 'spark') {
           p.mesh.position.addScaledVector(p.vel, dt);
           p.vel.y -= 18 * dt;
           p.mesh.material.opacity = ratio;
-        } else if (p.type === 'line') {
+        } else if (p.type === 'line' || p.type === 'tracer') {
           p.mesh.material.opacity = ratio;
         } else if (p.type === 'shockwave') {
           const s = (1 - ratio) * p.maxRadius;
