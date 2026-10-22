@@ -9407,6 +9407,8 @@
       aircraft: [],
       navalFleet: [],
       smokePlumes: [],
+      zeppelins: [],
+      lastZeppelinSpawnTime: 0,
       barrelHeat: 0,
       lastFlybyTime: 0,
       // Input & aiming
@@ -10548,19 +10550,6 @@
         muzzleFlash.position.set(48, 11, 0);
         ship.add(muzzleFlash);
 
-        // Tethered Barrage Balloon overhead
-        const balloonGrp = new THREE.Group();
-        const balloon = new THREE.Mesh(new THREE.SphereGeometry(4.8, 14, 12), balloonMat);
-        balloon.scale.set(1.7, 1.0, 1.0);
-        const fin1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.2, 2.2), balloonMat);
-        fin1.position.set(-5.5, 0, 0);
-        balloon.add(fin1);
-        const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 48), navalGunMat);
-        cable.position.set(0, -24, 0);
-        balloonGrp.add(balloon, cable);
-        balloonGrp.position.set(cfg.x + 12, 54 + idx * 5, cfg.z);
-        scene.add(balloonGrp);
-
         scene.add(ship);
         state.navalFleet.push({
           group: ship,
@@ -10568,11 +10557,13 @@
           baseY: 2.4,
           phase: idx * 1.9,
           muzzleFlash,
-          balloon: balloonGrp,
           balloonBaseX: cfg.x + 12,
           lastSalvoTime: idx * 5.0 + 3.0
         });
       });
+
+      // Spawn interactive 5-HP tethered fleet zeppelins
+      ensureFleetZeppelins();
 
       // 7. Shoreline Burning Wreckage & Animated Smoke Plumes
       const wreckMat = new THREE.MeshStandardMaterial({
@@ -12778,6 +12769,311 @@
       }
     }
 
+    // --- 8.5 INTERACTIVE ALLIED ZEPPELIN AIRSHIP SYSTEM ---
+    function createZeppelinEntity(cfg) {
+      const zepGroup = new THREE.Group();
+      const zepMat = new THREE.MeshStandardMaterial({
+        color: 0x9ca3af,
+        roughness: 0.58,
+        metalness: 0.25
+      });
+      const darkMat = new THREE.MeshStandardMaterial({
+        color: 0x374151,
+        roughness: 0.42,
+        metalness: 0.75
+      });
+      const windowMat = new THREE.MeshBasicMaterial({
+        color: 0xfef08a
+      });
+      const propMat = new THREE.MeshBasicMaterial({
+        color: 0x1f2937,
+        transparent: true,
+        opacity: 0.55
+      });
+
+      // 1. Elongated Rigid Gasbag Envelope (Length ~24m, Diameter ~9m)
+      const envelopeGeo = new THREE.SphereGeometry(4.2, 16, 14);
+      const envelope = new THREE.Mesh(envelopeGeo, zepMat);
+      envelope.scale.set(2.8, 1.05, 1.05);
+      envelope.castShadow = true;
+      zepGroup.add(envelope);
+
+      // Reinforcement nose cone cap
+      const noseGeo = new THREE.ConeGeometry(2.1, 3.2, 12);
+      noseGeo.rotateZ(-Math.PI / 2);
+      const nose = new THREE.Mesh(noseGeo, darkMat);
+      nose.position.set(10.2, 0, 0);
+      zepGroup.add(nose);
+
+      // 2. Four Cruciform Tail Fins (Dorsal, Ventral, Port, Starboard)
+      const fins = [];
+      const vFinGeo = new THREE.BoxGeometry(3.6, 3.2, 0.28);
+      const dorsalFin = new THREE.Mesh(vFinGeo, zepMat);
+      dorsalFin.position.set(-9.5, 2.5, 0);
+      const ventralFin = new THREE.Mesh(vFinGeo, zepMat);
+      ventralFin.position.set(-9.5, -2.5, 0);
+
+      const hFinGeo = new THREE.BoxGeometry(3.6, 0.28, 3.2);
+      const portFin = new THREE.Mesh(hFinGeo, zepMat);
+      portFin.position.set(-9.5, 0, 2.5);
+      const stbdFin = new THREE.Mesh(hFinGeo, zepMat);
+      stbdFin.position.set(-9.5, 0, -2.5);
+
+      zepGroup.add(dorsalFin, ventralFin, portFin, stbdFin);
+      fins.push(dorsalFin, ventralFin, portFin, stbdFin);
+
+      // 3. Underside Commander Control Gondola Cabin
+      const gondola = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.2, 1.4), darkMat);
+      gondola.position.set(1.5, -4.5, 0);
+      const windows = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.35, 1.44), windowMat);
+      windows.position.set(1.5, -4.3, 0);
+      zepGroup.add(gondola, windows);
+
+      // 4. Twin Lateral Engine Nacelles with Spinning Propellers
+      const props = [];
+      for (let s = -1; s <= 1; s += 2) {
+        const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 2.2, 8), darkMat);
+        pod.rotateZ(Math.PI / 2);
+        pod.position.set(-2.5, -3.2, s * 3.2);
+        const pDisc = new THREE.Mesh(new THREE.CircleGeometry(1.1, 8), propMat);
+        pDisc.rotateY(Math.PI / 2);
+        pDisc.position.set(-3.7, -3.2, s * 3.2);
+        zepGroup.add(pod, pDisc);
+        props.push(pDisc);
+      }
+
+      // 5. Mooring Cable (for tethered fleet zeppelins)
+      let cableMesh = null;
+      if (cfg.tethered) {
+        const cableGeo = new THREE.CylinderGeometry(0.04, 0.04, 52, 6);
+        cableMesh = new THREE.Mesh(cableGeo, darkMat);
+        cableMesh.position.set(0, -28, 0);
+        zepGroup.add(cableMesh);
+      }
+
+      // 6. Floating Tactical Health Bar (5 Hits to destroy)
+      const hpBar = createFloatingHPBar(7.5);
+      hpBar.position.set(0, 5.8, 0);
+      zepGroup.add(hpBar);
+
+      // Position & Orientation
+      zepGroup.position.set(cfg.x, cfg.y, cfg.z);
+      if (cfg.rotY !== undefined) zepGroup.rotation.y = cfg.rotY;
+
+      scene.add(zepGroup);
+
+      const zepEntity = {
+        group: zepGroup,
+        hpBar,
+        props,
+        cableMesh,
+        type: cfg.type || 'fleet',
+        tethered: !!cfg.tethered,
+        baseX: cfg.x,
+        baseY: cfg.y,
+        baseZ: cfg.z,
+        phase: cfg.phase || Math.random() * 6.28,
+        vel: cfg.vel || new THREE.Vector3(0, 0, 0),
+        hp: 5,
+        maxHp: 5,
+        dead: false,
+        falling: false,
+        fallTimer: 0,
+        fallVelY: 0,
+        fallRollVel: 0,
+        fallPitchVel: 0,
+        lastHitTime: 0,
+        hitboxes: [envelope, nose, gondola, dorsalFin, ventralFin, portFin, stbdFin]
+      };
+
+      // Set userData references for raycasting
+      zepEntity.hitboxes.forEach(m => {
+        m.userData = { zeppelinRef: zepEntity };
+      });
+
+      if (!state.zeppelins) state.zeppelins = [];
+      state.zeppelins.push(zepEntity);
+      return zepEntity;
+    }
+
+    function damageZeppelin(zep, dmgHits = 1, hitPoint = null) {
+      if (!zep || zep.dead || zep.falling) return;
+      const nowSec = performance.now() * 0.001;
+      // Debounce rapid continuous fire so player must land 5 distinct deliberate shots/bursts
+      if (nowSec - zep.lastHitTime < 0.24) return;
+      zep.lastHitTime = nowSec;
+
+      zep.hp -= dmgHits;
+      sfx.playArmorPing();
+
+      const pt = hitPoint || zep.group.position.clone();
+      spawnBurstParticles(pt, 0xfacc15, 14, 10);
+      spawnBurstParticles(pt, 0x94a3b8, 8, 6);
+
+      if (zep.hpBar) updateFloatingHPBar(zep.hpBar, zep.hp / zep.maxHp);
+
+      const hitsLanded = 5 - Math.max(0, zep.hp);
+      if (zep.hp <= 0) {
+        killZeppelin(zep, pt);
+      } else {
+        spawnFloatingCallout(
+          pt,
+          `🎯 ZEPPELIN HIT [${hitsLanded}/5]!`,
+          'text-yellow-300 border-yellow-500 bg-stone-950/95 font-bold scale-110'
+        );
+      }
+    }
+
+    function killZeppelin(zep, hitPoint = null) {
+      if (!zep || zep.dead) return;
+      zep.dead = true;
+      zep.falling = true;
+      zep.fallVelY = -4.5;
+      zep.fallRollVel = (Math.random() > 0.5 ? 1 : -1) * (0.35 + Math.random() * 0.25);
+      zep.fallPitchVel = 0.26;
+      if (zep.hpBar) zep.hpBar.visible = false;
+      if (zep.cableMesh) zep.cableMesh.visible = false;
+
+      // User reward: +5% Bunker Health & +2 Grenades!
+      const prevHealth = state.bunkerHealth !== undefined ? state.bunkerHealth : 100;
+      state.bunkerHealth = Math.min(100, prevHealth + 5);
+      state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+      state.grenades = (state.grenades || 0) + 2;
+
+      const pts = 850;
+      state.score += pts;
+      state.waveCombatPoints += pts;
+
+      sfx.playExplosion();
+      if (sfx.playHealthRestore) sfx.playHealthRestore();
+      if (sfx.playOneShotBonus) sfx.playOneShotBonus();
+      flashScreen('rgba(34, 197, 94, 0.32)');
+
+      const pt = hitPoint || zep.group.position.clone();
+      spawnBurstParticles(pt, 0xf97316, 45, 22);
+      spawnBurstParticles(pt, 0xfacc15, 28, 16);
+      spawnBurstParticles(pt, 0x22c55e, 26, 14); // health green aura
+      createSmokeColumn(pt.x, Math.max(2, pt.y - 4), pt.z);
+
+      spawnFloatingCallout(
+        pt,
+        `💥 ZEPPELIN DOWN! +5% BUNKER HEALTH & +2 GRENADES! [+${pts} PTS] 🛡️💣`,
+        'text-amber-200 border-amber-400 bg-red-950/95 font-extrabold scale-125 shadow-[0_0_25px_rgba(251,191,36,0.8)]'
+      );
+
+      updateHUD();
+    }
+
+    function ensureFleetZeppelins() {
+      if (!state.zeppelins) state.zeppelins = [];
+      const FLEET_CONFIGS = [
+        { x: -40 + 12, y: 56, z: -195, phase: 0 },
+        { x: 30 + 12, y: 61, z: -235, phase: 1.9 },
+        { x: 154 + 12, y: 66, z: -275, phase: 3.8 }
+      ];
+
+      FLEET_CONFIGS.forEach(cfg => {
+        const exists = state.zeppelins.some(z => z.type === 'fleet' && !z.dead && Math.abs(z.baseX - cfg.x) < 8);
+        if (!exists) {
+          createZeppelinEntity({
+            type: 'fleet',
+            tethered: true,
+            x: cfg.x,
+            y: cfg.y,
+            z: cfg.z,
+            phase: cfg.phase
+          });
+        }
+      });
+    }
+
+    function spawnPatrolZeppelin() {
+      const flyRight = Math.random() > 0.5;
+      const startX = flyRight ? -220 : 220;
+      const vx = flyRight ? 18 : -18;
+      const rotY = flyRight ? 0 : Math.PI;
+      const startY = 46 + Math.random() * 18;
+      const startZ = -130 + Math.random() * 55;
+
+      createZeppelinEntity({
+        type: 'patrol',
+        tethered: false,
+        x: startX,
+        y: startY,
+        z: startZ,
+        rotY,
+        vel: new THREE.Vector3(vx, 0, 0),
+        phase: Math.random() * 6.28
+      });
+
+      spawnFloatingCallout(
+        new THREE.Vector3(0, 32, -40),
+        '⚠️ HOSTILE AIRSHIP DETECTED! SHOOT DOWN FOR +5% HEALTH & +2 GRENADES! 🎈',
+        'text-amber-300 border-amber-500 bg-stone-950/95 font-bold'
+      );
+    }
+
+    function updateZeppelins(dt, nowSec) {
+      if (!state.zeppelins) return;
+
+      for (let i = state.zeppelins.length - 1; i >= 0; i--) {
+        const zep = state.zeppelins[i];
+
+        if (zep.falling) {
+          zep.fallTimer += dt;
+          zep.fallVelY -= 14.0 * dt;
+          zep.group.position.y += zep.fallVelY * dt;
+          zep.group.rotation.z += zep.fallRollVel * dt;
+          zep.group.rotation.x += zep.fallPitchVel * dt;
+          zep.group.position.addScaledVector(zep.vel, dt * 0.5);
+
+          // Trailing fire & smoke plume while falling
+          if (Math.random() < 0.45) {
+            spawnBurstParticles(zep.group.position, 0xf97316, 3, 2);
+          }
+          if (Math.random() < 0.45) {
+            spawnBurstParticles(zep.group.position, 0x1f2937, 3, 2);
+          }
+
+          // Catastrophic ocean splashdown impact
+          if (zep.group.position.y <= 1.2 || zep.fallTimer > 6.0) {
+            sfx.playWaterSplash();
+            sfx.playExplosion();
+            spawnBurstParticles(zep.group.position, 0x38bdf8, 38, 18);
+            spawnBurstParticles(zep.group.position, 0xf97316, 25, 14);
+            createSmokeColumn(zep.group.position.x, 1.2, zep.group.position.z);
+            scene.remove(zep.group);
+            state.zeppelins.splice(i, 1);
+          }
+          continue;
+        }
+
+        // Alive Zeppelin animation
+        if (zep.tethered) {
+          zep.group.position.x = zep.baseX + Math.sin(nowSec * 0.75 + zep.phase) * 3.8;
+          zep.group.position.y = zep.baseY + Math.sin(nowSec * 0.55 + zep.phase) * 1.5;
+          zep.group.rotation.z = Math.sin(nowSec * 0.6 + zep.phase) * 0.08;
+        } else if (zep.type === 'patrol') {
+          zep.group.position.addScaledVector(zep.vel, dt);
+          zep.group.position.y = zep.baseY + Math.sin(nowSec * 0.5 + zep.phase) * 1.2;
+          zep.group.rotation.z = Math.sin(nowSec * 0.4 + zep.phase) * 0.03;
+
+          if (Math.abs(zep.group.position.x) > 260) {
+            scene.remove(zep.group);
+            state.zeppelins.splice(i, 1);
+            continue;
+          }
+        }
+
+        // Spin propellers
+        if (zep.props) {
+          zep.props.forEach(p => { p.rotation.z += dt * 32; });
+        }
+
+        if (zep.hpBar) updateFloatingHPBar(zep.hpBar, zep.hp / zep.maxHp);
+      }
+    }
+
     // --- 9. TACTICAL WEAPON ARSENAL & COMBAT LOGIC ---
     function updateWeaponViewmodel() {
       if (mg42Group) mg42Group.visible = (state.selectedWeapon === 1);
@@ -12840,6 +13136,17 @@
           }
         }
       });
+
+      if (state.zeppelins) {
+        state.zeppelins.forEach(zep => {
+          if (!zep.dead && !zep.falling) {
+            const dist = zep.group.position.distanceTo(center);
+            if (dist <= radius * 1.4) {
+              damageZeppelin(zep, 2, zep.group.position);
+            }
+          }
+        });
+      }
     }
 
     function createHeavyCannonTracer(startPt, endPt) {
@@ -12902,6 +13209,11 @@
       const targetMeshes = [];
       state.enemies.forEach(e => { if (!e.dead) targetMeshes.push(...e.hitboxes); });
       state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) targetMeshes.push(...b.hitboxes); });
+      if (state.zeppelins) {
+        state.zeppelins.forEach(z => {
+          if (!z.dead && !z.falling) targetMeshes.push(...z.hitboxes);
+        });
+      }
       state.supplyDrops.forEach(d => {
         if (d.active) {
           if (d.hitboxes) targetMeshes.push(...d.hitboxes);
@@ -12921,7 +13233,10 @@
       if (hits.length > 0) {
         state.shotsHit++;
         const hitObj = hits[0].object;
-        if (hitObj.userData.boatRef) {
+        if (hitObj.userData.zeppelinRef) {
+          const zep = hitObj.userData.zeppelinRef;
+          damageZeppelin(zep, 1, hitPoint);
+        } else if (hitObj.userData.boatRef) {
           const boat = hitObj.userData.boatRef;
           const dmg = Math.round(w.damage * 1.6);
           boat.hp -= dmg;
@@ -13013,7 +13328,13 @@
       muzzleFlashMesh.getWorldPosition(muzzleWorld);
 
       raycaster.setFromCamera(state.mouseNDC, camera);
-      const envHits = raycaster.intersectObjects(environmentTargets, false);
+      const rocketTargets = [...environmentTargets];
+      if (state.zeppelins) {
+        state.zeppelins.forEach(z => {
+          if (!z.dead && !z.falling) rocketTargets.push(...z.hitboxes);
+        });
+      }
+      const envHits = raycaster.intersectObjects(rocketTargets, false);
       const targetPt = envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone();
 
       createRocketProjectile(muzzleWorld, targetPt, w.damage);
@@ -13125,12 +13446,30 @@
           targetMeshes.push(...b.hitboxes);
         }
       });
+      if (state.zeppelins) {
+        state.zeppelins.forEach(z => {
+          if (!z.dead && !z.falling) targetMeshes.push(...z.hitboxes);
+        });
+      }
 
       const hits = raycaster.intersectObjects(targetMeshes, false);
 
       if (hits.length > 0) {
         const hit = hits[0];
         const hitPoint = hit.point;
+
+        // Check if player hit a Zeppelin / Barrage Airship!
+        if (hit.object.userData.zeppelinRef) {
+          const zep = hit.object.userData.zeppelinRef;
+          if (zep && !zep.dead && !zep.falling) {
+            state.shotsHit++;
+            createTracerBeam(muzzleWorld, hitPoint, false);
+            damageZeppelin(zep, 1, hitPoint);
+          }
+          if (state.weapon.curAmmo <= 0) startGunCooldown();
+          updateHUD();
+          return;
+        }
 
         // Check if player hit an amphibious Landing Craft Boat!
         if (hit.object.userData.boatRef) {
@@ -13469,6 +13808,12 @@
       state.particles.forEach(p => scene.remove(p.mesh));
       state.supplyDrops.forEach(d => scene.remove(d.group));
       state.rockets.forEach(r => scene.remove(r.mesh));
+      if (state.zeppelins) {
+        state.zeppelins.forEach(z => {
+          if (z.isPatrol && z.group) scene.remove(z.group);
+        });
+        state.zeppelins = state.zeppelins.filter(z => !z.isPatrol);
+      }
       state.boats = [];
       state.enemies = [];
       state.grenadeObjs = [];
@@ -13479,6 +13824,7 @@
 
     function startWave(waveIdx) {
       clearBattlefieldEntities();
+      ensureFleetZeppelins();
       state.waveIndex = waveIdx;
       const cfg = WAVE_CONFIGS[Math.min(waveIdx, WAVE_CONFIGS.length - 1)];
 
@@ -14385,12 +14731,6 @@
           ship.group.position.y = ship.baseY + Math.sin(nowSec * 1.4 + ship.phase) * 0.22;
           ship.group.rotation.z = Math.sin(nowSec * 1.1 + ship.phase) * 0.015;
 
-          // Tethered Barrage Balloon swaying in sea breeze
-          if (ship.balloon) {
-            ship.balloon.position.x = ship.balloonBaseX + Math.sin(nowSec * 0.8 + ship.phase) * 3.5;
-            ship.balloon.rotation.z = Math.sin(nowSec * 0.6 + ship.phase) * 0.08;
-          }
-
           // Periodic Shore Bombardment Firing from Capital Battleships
           if (ship.type === 'battleship' && ship.muzzleFlash) {
             if (ship.muzzleFlash.material.opacity > 0) {
@@ -14509,6 +14849,16 @@
           state.aircraft.splice(i, 1);
         }
       }
+
+      // Update Zeppelin / Barrage Airships (Cruising, swaying & falling physics)
+      if (state.mode === 'PLAYING') {
+        if (!state.lastZeppelinSpawnTime) state.lastZeppelinSpawnTime = nowSec;
+        if (nowSec - state.lastZeppelinSpawnTime > 42.0) {
+          state.lastZeppelinSpawnTime = nowSec;
+          spawnPatrolZeppelin();
+        }
+      }
+      updateZeppelins(dt, nowSec);
 
       // 3. Active Gameplay Updates
       if (state.mode === 'PLAYING') {
