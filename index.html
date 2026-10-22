@@ -11020,7 +11020,7 @@
           // Align with first-person perspective, iron sights & bunker embrasure
           const S = 2.1;
           model.scale.set(S, S, S);
-          model.rotation.set(0, -Math.PI / 2, 0);
+          model.rotation.set(0, Math.PI / 2, 0);
           model.position.set(0, 0.015, -1.08);
 
           model.traverse((child) => {
@@ -11031,6 +11031,8 @@
                 loadedMg42Material = child.material;
                 child.material.roughness = Math.min(1.0, (child.material.roughness || 0.45));
                 child.material.metalness = Math.min(1.0, (child.material.metalness || 0.85));
+                child.material.depthTest = true;
+                child.material.depthWrite = true;
                 child.material.needsUpdate = true;
               }
             }
