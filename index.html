@@ -12632,6 +12632,8 @@
         suspensionLines,
         hitboxes: [crateMesh, canopy, ...crossMeshes],
         active: true,
+        landed: false,
+        landedTimer: 0,
         healthBonus: 10 // Adds +10% Bunker Health! (Does NOT add wave time)
       };
       dropObj.hitboxes.forEach(m => {
@@ -14579,19 +14581,49 @@
           });
         }
 
-        // Update Parachute Supply Crates
-        state.supplyDrops.forEach(drop => {
-          if (!drop.active) return;
+        // Update Parachute Supply Crates (despawn after 10 sec since landing)
+        for (let sIdx = state.supplyDrops.length - 1; sIdx >= 0; sIdx--) {
+          const drop = state.supplyDrops[sIdx];
+          if (!drop.active) {
+            scene.remove(drop.group);
+            state.supplyDrops.splice(sIdx, 1);
+            continue;
+          }
           const groundY = getBeachHeightAt(drop.group.position.x, drop.group.position.z) + 0.85;
           if (drop.group.position.y > groundY) {
             drop.group.position.y -= dt * 2.4;
             drop.group.position.x += Math.sin(nowSec * 2) * dt * 0.8;
           } else {
+            drop.group.position.y = groundY;
             drop.canopy.visible = false;
             if (drop.canopyRim) drop.canopyRim.visible = false;
             if (drop.suspensionLines) drop.suspensionLines.visible = false;
+
+            if (!drop.landed) {
+              drop.landed = true;
+              drop.landedTimer = 0;
+            } else {
+              drop.landedTimer += dt;
+            }
+
+            // Warning pulsing when approaching despawn (last 3 seconds: 7.0s - 10.0s)
+            if (drop.landedTimer >= 7.0) {
+              const warningPulse = Math.sin((drop.landedTimer - 7.0) * 16) > 0;
+              if (drop.crateMesh && drop.crateMesh.material) {
+                drop.crateMesh.material.emissive.setHex(warningPulse ? 0xff4422 : 0x000000);
+                drop.crateMesh.material.emissiveIntensity = warningPulse ? 0.75 : 0;
+              }
+            }
+
+            // Disappear after 10 seconds since landing
+            if (drop.landedTimer >= 10.0) {
+              drop.active = false;
+              scene.remove(drop.group);
+              spawnBurstParticles(drop.group.position, 0x94a3b8, 10, 2.5);
+              state.supplyDrops.splice(sIdx, 1);
+            }
           }
-        });
+        }
 
         // Update Landing Craft Boats
         for (let bIdx = state.boats.length - 1; bIdx >= 0; bIdx--) {
