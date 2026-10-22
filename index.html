@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Beach Defence — 1944 WW2 3D First-Person Coastal Defense</title>
+  <title>Beach Defence</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -129,7 +129,7 @@
   <!-- 3D Viewport Container -->
   <div id="game-canvas-container"></div>
 
-  <!-- WW2 Bunker Viewport Framing Overlay -->
+  <!-- Bunker Viewport Framing Overlay -->
   <div class="bunker-frame"></div>
 
   <!-- Dynamic Crosshair & Reticle Overlay (Pixel-Perfect Concentric Alignment) -->
@@ -179,7 +179,7 @@
         <div class="bg-stone-950/85 backdrop-blur-md border border-stone-700/80 rounded-xl px-3.5 py-2.5 shadow-xl min-w-[210px] sm:min-w-[260px]">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <div class="text-[10px] uppercase tracking-widest text-amber-400/90 font-bold">Sector Omaha-44</div>
+              <div class="text-[10px] uppercase tracking-widest text-amber-400/90 font-bold">Sector Shore-Alpha</div>
               <div class="font-military text-lg sm:text-xl text-stone-100 flex items-center gap-2">
                 <span>WAVE <span id="hud-wave-num">1</span>/20</span>
                 <span id="hud-wave-title" class="text-xs font-sans font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">Recon Patrol</span>
@@ -219,7 +219,7 @@
           <div id="hud-timer-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/70 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[140px] sm:min-w-[160px]">
             <div class="text-[10px] uppercase tracking-widest text-stone-400 font-bold">WAVE TIMER</div>
             <div id="hud-timer-text" class="font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">03:00.0</div>
-            <div class="text-[9.5px] text-stone-400 font-mono-tac">Hold Sector Omaha</div>
+            <div class="text-[9.5px] text-stone-400 font-mono-tac">Hold Coastal Perimeter</div>
           </div>
         </div>
 
@@ -270,7 +270,7 @@
           <!-- Weapon 1: MG-42 Machine Gun -->
           <button id="weapon-slot-1" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border-2 border-amber-500 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1 py-0.2 rounded">[1] MG-42</span>
+              <span class="text-[10px] font-mono-tac font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1 py-0.2 rounded">[1] RAPID MG</span>
               <span id="wtab-badge-1" class="text-[9px] font-mono-tac font-bold text-amber-400">● ACTIVE</span>
             </div>
             <div class="flex items-baseline justify-between mt-0.5">
@@ -282,10 +282,10 @@
             </div>
           </button>
 
-          <!-- Weapon 2: 75mm PaK 40 Anti-Tank Cannon -->
+          <!-- Weapon 2: 75mm Anti-Tank Cannon -->
           <button id="weapon-slot-2" type="button" class="weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-orange-400 bg-orange-500/20 border border-orange-500/40 px-1 py-0.2 rounded">[2] 75mm PaK</span>
+              <span class="text-[10px] font-mono-tac font-bold text-orange-400 bg-orange-500/20 border border-orange-500/40 px-1 py-0.2 rounded">[2] AT CANNON</span>
               <span id="wtab-badge-2" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
             </div>
             <div class="flex items-baseline justify-between mt-0.5">
@@ -297,14 +297,14 @@
             </div>
           </button>
 
-          <!-- Weapon 3: Panzerschreck Rocket Launcher -->
+          <!-- Weapon 3: Heavy Rocket Launcher -->
           <button id="weapon-slot-3" type="button" class="weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-mono-tac font-bold text-rose-400 bg-rose-500/20 border border-rose-500/40 px-1 py-0.2 rounded">[3] ROCKET</span>
               <span id="wtab-badge-3" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
             </div>
             <div class="flex items-baseline justify-between mt-0.5">
-              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">PANZERSCHRECK</span>
+              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">AT ROCKET</span>
               <span id="wtab-ammo-3" class="font-mono-tac text-xs font-bold text-rose-400">10 ROCKETS</span>
             </div>
             <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
@@ -321,7 +321,7 @@
         <div class="bg-stone-950/90 backdrop-blur-md border border-stone-700/90 rounded-xl p-3 shadow-2xl min-w-[250px] sm:min-w-[310px] flex-1 sm:flex-initial">
           <div class="flex items-center justify-between mb-1">
             <div class="flex items-center gap-2">
-              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-mono-tac font-bold" id="hud-mg-tier">MG-42 MK I</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-mono-tac font-bold" id="hud-mg-tier">RAPID MG MK I</span>
               <span class="text-xs font-semibold text-stone-300" id="hud-mg-status-label">BELT READY</span>
             </div>
             <span class="font-mono-tac text-xs text-stone-400">DMG <strong id="hud-mg-dmg" class="text-stone-200">28</strong> | AP <strong id="hud-mg-ap" class="text-amber-300">15%</strong></span>
@@ -593,7 +593,7 @@
         <div class="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono-tac font-bold bg-amber-500/20 border border-amber-400/50 text-amber-300">
-              ★ ALLIED / AXIS COASTAL DEFENSE • 1944
+              ★ 3D COASTAL DEFENSE • SHORE DEFENDER
             </span>
             <div class="flex items-center gap-2">
               <button id="btn-toggle-plan" type="button" class="px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold bg-stone-900/90 hover:bg-stone-800 text-amber-300 border border-amber-500/40 transition">
@@ -765,7 +765,7 @@
       <div class="p-4 sm:p-5 bg-stone-950 border-b border-stone-800 flex items-center justify-between">
         <div>
           <span class="text-[10px] font-mono-tac uppercase tracking-widest text-amber-400 font-bold">SYSTEM DESIGN & ARCHITECTURE DOCUMENT</span>
-          <h2 class="font-military text-2xl text-stone-100">BEACH DEFENCE — WW2 3D GAME PLAN</h2>
+          <h2 class="font-military text-2xl text-stone-100">BEACH DEFENCE — 3D GAME PLAN</h2>
         </div>
         <button id="btn-close-plan" type="button" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-mono-tac font-bold">
           ✕ CLOSE PLAN
@@ -774,8 +774,8 @@
       <div class="p-5 overflow-y-auto custom-scroll space-y-4 text-xs sm:text-sm text-stone-300 leading-relaxed">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-stone-900/80 border border-stone-800 rounded-xl p-4">
-            <h3 class="font-military text-base text-amber-400 mb-1.5">1. 3D WW2 First-Person Setting & Engine</h3>
-            <p>Built on <strong>Three.js (WebGL)</strong> from a fortified 1944 coastal pillbox overlooking an amphibious invasion beach. Features animated vertex waves, sand obstacles (Czech hedgehogs, wire, craters), and a 3D mounted Heavy Machine Gun with recoil, muzzle flash, tracers, and overheat steam.</p>
+            <h3 class="font-military text-base text-amber-400 mb-1.5">1. 3D First-Person Setting & Engine</h3>
+            <p>Built on <strong>Three.js (WebGL)</strong> from a fortified coastal pillbox overlooking an amphibious invasion beach. Features animated vertex waves, sand obstacles (Czech hedgehogs, wire, craters), and a 3D mounted Heavy Machine Gun with recoil, muzzle flash, tracers, and overheat steam.</p>
           </div>
           <div class="bg-stone-900/80 border border-stone-800 rounded-xl p-4">
             <h3 class="font-military text-base text-amber-400 mb-1.5">2. Limited Shots & Gun Cooldown System</h3>
@@ -785,9 +785,9 @@
             <h3 class="font-military text-base text-amber-400 mb-1.5">3. 20-Wave Campaign & Multi-Tier Armor</h3>
             <ul class="list-disc pl-4 space-y-1">
               <li><strong>Waves 1–4 (3 mins each):</strong> Recon Boats, Infantry Assault Squads & Armored Scout Cars.</li>
-              <li><strong>Waves 5–9 (3 mins each):</strong> Medium Armor Half-Tracks & First M4 Sherman DD Tank Columns.</li>
-              <li><strong>Waves 10–19 (3 mins each):</strong> Full Amphibious Armored Divisions with Escalating Sherman Tanks.</li>
-              <li><strong>Wave 20 (6-min Final Boss):</strong> Operation Neptune Titan — 6-Minute Siege against the <strong>★ Supreme Allied Armada Flagship Colossus ★</strong>!</li>
+              <li><strong>Waves 5–9 (3 mins each):</strong> Medium Armor Half-Tracks & First Heavy Amphibious Tank Columns.</li>
+              <li><strong>Waves 10–19 (3 mins each):</strong> Full Amphibious Armored Divisions with Escalating Heavy Amphibious Tanks.</li>
+              <li><strong>Wave 20 (6-min Final Boss):</strong> Operation Titan Dreadnought — 6-Minute Siege against the <strong>★ Supreme Armada Flagship Colossus ★</strong>!</li>
             </ul>
           </div>
           <div class="bg-stone-900/80 border border-stone-800 rounded-xl p-4">
@@ -805,10 +805,10 @@
 
   <script>
     // ============================================================================
-    // BEACH DEFENCE — WW2 3D FIRST-PERSON COASTAL DEFENSE GAME
+    // BEACH DEFENCE — 3D FIRST-PERSON COASTAL DEFENSE GAME
     // ============================================================================
 
-    // --- 1. WEB AUDIO SYNTHESIZER (WW2 SOUND EFFECTS & OCEAN AMBIENCE) ---
+    // --- 1. WEB AUDIO SYNTHESIZER (BATTLEFIELD SOUND EFFECTS & OCEAN AMBIENCE) ---
     class SoundEngine {
       constructor() {
         this.ctx = null;
@@ -1424,7 +1424,7 @@
           "wave": 1,
           "name": "Recon Patrol",
           "subtitle": "WAVE 1 / 20: HIGH-INTENSITY BEACHHEAD RECON",
-          "desc": "Allied reconnaissance motorboats breach the shallows in rapid flanking pairs! Continuous squads of riflemen and stormtroopers storm the beach with M1 Garands. Score headshots for instant One-Shot Kills and keep the beach suppressed!",
+          "desc": "Enemy reconnaissance motorboats breach the shallows in rapid flanking pairs! Continuous squads of riflemen and stormtroopers storm the beach. Score headshots for instant One-Shot Kills and keep the beach suppressed!",
           "timeLimit": 180,
           "grenades": 5,
           "timeBoosters": 4,
@@ -1741,8 +1741,8 @@
         {
           "wave": 2,
           "name": "Forward Probing Force",
-          "subtitle": "WAVE 2 / 20: DUAL HIGGINS ASSAULT PLATOONS",
-          "desc": "Reinforced assault platoons disembark from Higgins LCVP barges under heavy submachine gun cover. Enemy troops actively return fire towards your bunker embrasure — eliminate them before they shoot!",
+          "subtitle": "WAVE 2 / 20: DUAL LANDING BARGE PLATOONS",
+          "desc": "Reinforced assault platoons disembark from heavy landing barges under submachine gun cover. Enemy troops actively return fire towards your bunker embrasure — eliminate them before they shoot!",
           "timeLimit": 180,
           "grenades": 5,
           "timeBoosters": 4,
@@ -2083,7 +2083,7 @@
           "unitSummary": [
             {
               "label": "34x Assault Landing Craft",
-              "badge": "Dual Higgins Echelons",
+              "badge": "Dual Landing Echelons",
               "color": "text-stone-300"
             },
             {
@@ -2828,8 +2828,8 @@
         {
           "wave": 5,
           "name": "Armored Division Strike 5",
-          "subtitle": "WAVE 5 / 20: FIRST M4 SHERMAN DD TANK SPEARHEAD",
-          "desc": "4 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "subtitle": "WAVE 5 / 20: FIRST HEAVY AMPHIBIOUS TANK SPEARHEAD",
+          "desc": "4 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 6,
           "timeBoosters": 5,
@@ -3188,7 +3188,7 @@
           ],
           "unitSummary": [
             {
-              "label": "4x Sherman DD Tanks",
+              "label": "4x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -3208,7 +3208,7 @@
           "wave": 6,
           "name": "Armored Division Strike 6",
           "subtitle": "WAVE 6 / 20: DUAL ARMORED SQUADRON ASSAULT",
-          "desc": "5 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "5 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 6,
           "timeBoosters": 5,
@@ -3567,7 +3567,7 @@
           ],
           "unitSummary": [
             {
-              "label": "5x Sherman DD Tanks",
+              "label": "5x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -3587,7 +3587,7 @@
           "wave": 7,
           "name": "Armored Division Strike 7",
           "subtitle": "WAVE 7 / 20: COMBINED ARMS AMPHIBIOUS FLOTILLA",
-          "desc": "7 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "7 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 6,
           "timeBoosters": 5,
@@ -3945,7 +3945,7 @@
           ],
           "unitSummary": [
             {
-              "label": "7x Sherman DD Tanks",
+              "label": "7x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -3965,7 +3965,7 @@
           "wave": 8,
           "name": "Armored Division Strike 8",
           "subtitle": "WAVE 8 / 20: HEAVY MECH ENCIRCLEMENT CORRIDOR",
-          "desc": "8 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "8 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 6,
           "timeBoosters": 5,
@@ -4323,7 +4323,7 @@
           ],
           "unitSummary": [
             {
-              "label": "8x Sherman DD Tanks",
+              "label": "8x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -4343,7 +4343,7 @@
           "wave": 9,
           "name": "Armored Division Strike 9",
           "subtitle": "WAVE 9 / 20: CONVERGING ARMOR REGIMENTS",
-          "desc": "9 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "9 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 7,
           "timeBoosters": 5,
@@ -4701,7 +4701,7 @@
           ],
           "unitSummary": [
             {
-              "label": "9x Sherman DD Tanks",
+              "label": "9x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -4719,9 +4719,9 @@
         },
         {
           "wave": 10,
-          "name": "Omaha Iron Wall",
+          "name": "Beachhead Iron Wall",
           "subtitle": "WAVE 10 / 20: MID-CAMPAIGN APEX ARMOR SIEGE",
-          "desc": "10 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "10 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 7,
           "timeBoosters": 6,
@@ -5079,7 +5079,7 @@
           ],
           "unitSummary": [
             {
-              "label": "10x Sherman DD Tanks",
+              "label": "10x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -5099,7 +5099,7 @@
           "wave": 11,
           "name": "Armored Division Strike 11",
           "subtitle": "WAVE 11 / 20: ESCALATING TANK COLUMNS",
-          "desc": "12 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "12 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 7,
           "timeBoosters": 6,
@@ -5456,7 +5456,7 @@
           ],
           "unitSummary": [
             {
-              "label": "12x Sherman DD Tanks",
+              "label": "12x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -5476,7 +5476,7 @@
           "wave": 12,
           "name": "Armored Division Strike 12",
           "subtitle": "WAVE 12 / 20: DUAL SQUADRON TANK ASSAULT",
-          "desc": "13 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "13 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 7,
           "timeBoosters": 6,
@@ -5833,7 +5833,7 @@
           ],
           "unitSummary": [
             {
-              "label": "13x Sherman DD Tanks",
+              "label": "13x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -5853,7 +5853,7 @@
           "wave": 13,
           "name": "Armored Division Strike 13",
           "subtitle": "WAVE 13 / 20: HEAVY ARTILLERY TANK ESCORTS",
-          "desc": "14 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "14 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -6210,7 +6210,7 @@
           ],
           "unitSummary": [
             {
-              "label": "14x Sherman DD Tanks",
+              "label": "14x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -6230,7 +6230,7 @@
           "wave": 14,
           "name": "Armored Division Strike 14",
           "subtitle": "WAVE 14 / 20: TRIPLE DIVISION ARMOR LANDINGS",
-          "desc": "15 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "15 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -6587,7 +6587,7 @@
           ],
           "unitSummary": [
             {
-              "label": "15x Sherman DD Tanks",
+              "label": "15x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -6607,7 +6607,7 @@
           "wave": 15,
           "name": "Armored Division Strike 15",
           "subtitle": "WAVE 15 / 20: MAXIMUM AMPHIBIOUS SURGE",
-          "desc": "16 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "16 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -6964,7 +6964,7 @@
           ],
           "unitSummary": [
             {
-              "label": "16x Sherman DD Tanks",
+              "label": "16x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -6984,7 +6984,7 @@
           "wave": 16,
           "name": "Armored Division Strike 16",
           "subtitle": "WAVE 16 / 20: TANK BATTALION SIEGE DIVISION",
-          "desc": "16 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "16 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -7341,7 +7341,7 @@
           ],
           "unitSummary": [
             {
-              "label": "16x Sherman DD Tanks",
+              "label": "16x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -7361,7 +7361,7 @@
           "wave": 17,
           "name": "Armored Division Strike 17",
           "subtitle": "WAVE 17 / 20: CATACLYSMIC INVASION CORRIDOR",
-          "desc": "16 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "16 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -7718,7 +7718,7 @@
           ],
           "unitSummary": [
             {
-              "label": "16x Sherman DD Tanks",
+              "label": "16x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -7738,7 +7738,7 @@
           "wave": 18,
           "name": "Armored Division Strike 18",
           "subtitle": "WAVE 18 / 20: FULL AMPHIBIOUS ARMORED DIVISION",
-          "desc": "16 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "16 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -8095,7 +8095,7 @@
           ],
           "unitSummary": [
             {
-              "label": "16x Sherman DD Tanks",
+              "label": "16x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -8115,7 +8115,7 @@
           "wave": 19,
           "name": "Armored Division Strike 19",
           "subtitle": "WAVE 19 / 20: PRE-BOSS MAXIMUM INVASION SIEGE",
-          "desc": "16 heavy Sherman DD tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
+          "desc": "16 heavy amphibious assault tanks hit the beach in simultaneous flanking pairs! Their 75mm cannons shell your concrete pillbox every few seconds. Eliminate tanks before they shatter your bunker!",
           "timeLimit": 180,
           "grenades": 8,
           "timeBoosters": 6,
@@ -8472,7 +8472,7 @@
           ],
           "unitSummary": [
             {
-              "label": "16x Sherman DD Tanks",
+              "label": "16x Heavy Amphibious Tanks",
               "badge": "75mm HE Cannons • Heavy Armor (72%)",
               "color": "text-red-400 font-bold"
             },
@@ -8490,9 +8490,9 @@
         },
         {
           "wave": 20,
-          "name": "Operation Neptune Titan",
-          "subtitle": "WAVE 20 / 20: ★ FINAL BOSS — SUPREME ALLIED DREADNOUGHT ★",
-          "desc": "THE 6-MINUTE ULTIMATE STAND! The Allied flagship colossus dreadnought has made landfall! Defend against 6 continuous minutes of unrelenting amphibious assault, destroy the Colossus Land Dreadnought and win the war!",
+          "name": "Operation Titan Dreadnought",
+          "subtitle": "WAVE 20 / 20: ★ FINAL BOSS — SUPREME ARMADA DREADNOUGHT ★",
+          "desc": "THE 6-MINUTE ULTIMATE STAND! The enemy flagship colossus dreadnought has made landfall! Defend against 6 continuous minutes of unrelenting amphibious assault, destroy the Colossus Land Dreadnought and win the war!",
           "timeLimit": 360,
           "grenades": 10,
           "timeBoosters": 8,
@@ -9253,7 +9253,7 @@
               "color": "text-amber-400 font-extrabold"
             },
             {
-              "label": "35x Heavy Sherman DD Tanks",
+              "label": "35x Heavy Heavy Amphibious Tanks",
               "badge": "Armored Division Columns",
               "color": "text-red-400"
             },
@@ -9326,8 +9326,8 @@
         1: {
           id: 'mg42',
           slot: 1,
-          name: 'MG-42 HEAVY MACHINE GUN',
-          tierName: 'MG-42 MK I',
+          name: 'HEAVY MACHINE GUN',
+          tierName: 'RAPID MG MK I',
           type: 'bullet',
           damage: 34,
           armorPen: 0.15,
@@ -9343,8 +9343,8 @@
         2: {
           id: 'cannon',
           slot: 2,
-          name: '75mm PaK 40 AT CANNON',
-          tierName: '75mm PaK 40',
+          name: '75mm AT CANNON',
+          tierName: '75mm CANNON',
           type: 'cannon',
           damage: 540,
           armorPen: 0.90,
@@ -9360,8 +9360,8 @@
         3: {
           id: 'rocket',
           slot: 3,
-          name: 'PANZERSCHRECK 54',
-          tierName: 'RPzB 54',
+          name: 'HEAVY AT ROCKET',
+          tierName: 'AT ROCKET MK I',
           type: 'rocket',
           damage: 480,
           armorPen: 0.75,
@@ -9448,15 +9448,15 @@
       w1.cooldownDuration = Math.max(0.65, +(2.6 - cLv * 0.16 * Math.sqrt(techMult)).toFixed(2));
       w1.rpm = Math.min(1600, Math.round(520 + fLv * 45 * Math.sqrt(techMult)));
       w1.critMult = +(2.6 + fLv * 0.15).toFixed(2);
-      w1.tierName = `MG-42 MK ${dLv + 1}`;
+      w1.tierName = `RAPID MG MK ${dLv + 1}`;
 
-      // Weapon 2: 75mm PaK 40 Anti-Tank Cannon
+      // Weapon 2: 75mm Anti-Tank Cannon
       const w2 = state.weapons[2];
       w2.damage = Math.round(540 + dLv * 85 * Math.sqrt(techMult));
       w2.cooldownDuration = Math.max(1.1, +(2.2 - cLv * 0.12 * Math.sqrt(techMult)).toFixed(2));
       w2.maxAmmo = Math.round(24 + aLv * 4);
 
-      // Weapon 3: Panzerschreck 54 Rocket Launcher
+      // Weapon 3: Heavy Rocket Launcher
       const w3 = state.weapons[3];
       w3.damage = Math.round(480 + dLv * 75 * Math.sqrt(techMult));
       w3.cooldownDuration = Math.max(1.4, +(2.8 - cLv * 0.14 * Math.sqrt(techMult)).toFixed(2));
@@ -9482,7 +9482,7 @@
     camera.position.set(0, 8.5, 42);
     camera.lookAt(0, 3, -30);
 
-    // Realistic Normandy Coastal Atmospheric Skydome
+    // Realistic Coastal Atmospheric Skydome
     const cSky = document.createElement('canvas');
     cSky.width = cSky.height = 512;
     const ctxSky = cSky.getContext('2d');
@@ -9624,11 +9624,11 @@
     }
 
     function initProceduralTextures() {
-      // 1. Golden Normandy Beach Sand Diffuse with shell specks & ripple bands (512x512)
+      // 1. Golden Beach Sand Diffuse with shell specks & ripple bands (512x512)
       const cSand = document.createElement('canvas');
       cSand.width = cSand.height = 512;
       const ctxS = cSand.getContext('2d');
-      // Rich warm sunny golden yellow ochre base (Omaha Beach sun-drenched golden sand)
+      // Rich warm sunny golden yellow ochre base (Sun-drenched golden beach sand)
       ctxS.fillStyle = '#f0c74b';
       ctxS.fillRect(0, 0, 512, 512);
 
@@ -9764,7 +9764,7 @@
       const cArm = document.createElement('canvas');
       cArm.width = cArm.height = 512;
       const ctxA = cArm.getContext('2d');
-      ctxA.fillStyle = '#3c4535'; // WW2 Olive Drab
+      ctxA.fillStyle = '#3c4535'; // Military Olive Drab
       ctxA.fillRect(0, 0, 512, 512);
       ctxA.strokeStyle = 'rgba(22, 28, 18, 0.85)';
       ctxA.lineWidth = 4;
@@ -9873,7 +9873,7 @@
       ctxU.restore();
       textures.infantryUniform = new THREE.CanvasTexture(cUni);
 
-      // 8. WW2 M1 Steel Helmet Diamond Netting (256x256)
+      // 8. Combat Steel Helmet Diamond Netting (256x256)
       const cNet = document.createElement('canvas');
       cNet.width = cNet.height = 256;
       const ctxN = cNet.getContext('2d');
@@ -9913,7 +9913,7 @@
       textures.wood = new THREE.CanvasTexture(cWood);
       textures.woodNormal = generateNormalMap(cWood, 2.4);
 
-      // 10. WW2 Cast Tank Armor with Welds & Allied Star (512x512)
+      // 10. Cast Tank Armor with Welds & Insignia Star (512x512)
       const cTank = document.createElement('canvas');
       cTank.width = cTank.height = 512;
       const ctxT = cTank.getContext('2d');
@@ -9929,7 +9929,7 @@
         ctxT.beginPath(); ctxT.arc(12, y, 4.5, 0, Math.PI * 2); ctxT.fill();
         ctxT.beginPath(); ctxT.arc(500, y, 4.5, 0, Math.PI * 2); ctxT.fill();
       }
-      // Allied White Invasion Star in stencil ring
+      // White Tactical Star in stencil ring
       ctxT.strokeStyle = 'rgba(242, 242, 238, 0.78)';
       ctxT.lineWidth = 6;
       ctxT.beginPath(); ctxT.arc(256, 256, 80, 0, Math.PI * 2); ctxT.stroke();
@@ -9950,7 +9950,7 @@
       ctxT.fillText('USA 30104822', 170, 410);
       textures.tankHull = new THREE.CanvasTexture(cTank);
 
-      // 11. LCVP Higgins Boat Weathered Philippine Mahogany Wood & Steel Banding (512x512)
+      // 11. LCVP Landing Boat Weathered Mahogany Wood & Steel Banding (512x512)
       const cBoat = document.createElement('canvas');
       cBoat.width = cBoat.height = 512;
       const ctxB = cBoat.getContext('2d');
@@ -10100,7 +10100,7 @@
       textures.seafoam.repeat.set(4, 1);
     }
 
-    // --- 5. BUILD 3D WW2 BEACH, OCEAN, OBSTACLES & BUNKER EMBRASURE ---
+    // --- 5. BUILD 3D BEACH, OCEAN, OBSTACLES & BUNKER EMBRASURE ---
     let oceanMesh, oceanGeo, surfFoamMesh, breakerMesh;
     const gunGroup = new THREE.Group();
     let gunBarrelGroup, muzzleFlashMesh, barrelHeatMat;
@@ -10196,11 +10196,11 @@
       wetMesh.receiveShadow = true;
       scene.add(wetMesh);
 
-      // 2. High-Fidelity Atlantic / English Channel Ocean Water (Z from -760 to -10)
+      // 2. High-Fidelity Coastal Ocean Water (Z from -760 to -10)
       oceanGeo = new THREE.PlaneGeometry(1200, 800, 100, 80);
       oceanGeo.rotateX(-Math.PI / 2);
 
-      // Realistic Optical Depth Vertex Colors: Shore Turquoise -> Channel Sapphire -> Deep Atlantic Navy
+      // Realistic Optical Depth Vertex Colors: Shore Turquoise -> Deep Ocean Sapphire -> Deep Navy
       const oceanColors = [];
       const oPos = oceanGeo.attributes.position;
       for (let i = 0; i < oPos.count; i++) {
@@ -10208,7 +10208,7 @@
         const t = Math.max(0, Math.min(1, (z + 400) / 800)); // 0 = deepest water, 1 = beach surf
         let r, g, b;
         if (t < 0.45) {
-          // Deep Atlantic (-760m to -400m): Deep stormy navy-slate
+          // Deep Ocean (-760m to -400m): Deep stormy navy-slate
           const u = t / 0.45;
           r = 0.02 + u * 0.03;
           g = 0.12 + u * 0.16;
@@ -10341,7 +10341,7 @@
         scene.add(wall);
       }
 
-      // 6. Highly Visible Allied Naval Bombardment Armada (Frontline Destroyers & Capital Dreadnoughts)
+      // 6. Highly Visible Enemy Naval Bombardment Armada (Frontline Destroyers & Capital Dreadnoughts)
       const hullCamMat = new THREE.MeshStandardMaterial({
         map: textures.metal,
         normalMap: textures.metalNormal,
@@ -10625,7 +10625,7 @@
       bunkerEmbrasureGroup.add(leftWall, rightWall);
       scene.add(bunkerEmbrasureGroup);
 
-      // 9. First-Person 3D Mounted WW2 MG42 Machine Gun
+      // 9. First-Person 3D Mounted Heavy Machine Gun
       buildFirstPersonMachineGun();
     }
 
@@ -11047,7 +11047,7 @@
         });
       }
 
-      // 17. 75mm PaK 40 Anti-Tank Cannon 3D Viewmodel Attachment
+      // 17. 75mm Anti-Tank Cannon 3D Viewmodel Attachment
       cannonGroup = new THREE.Group();
       // Massive rifled heavy artillery barrel
       const cannonBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.9, 16), gunMetal);
@@ -11076,7 +11076,7 @@
       cannonGroup.add(cannonBarrel, brakeBox, brakePort1, brakePort2, hydrLeft, hydrRight, breechBlock, periscope);
       cannonGroup.visible = false;
 
-      // 18. Panzerschreck 54 Rocket Launcher 3D Viewmodel Attachment
+      // 18. Heavy Rocket Launcher 3D Viewmodel Attachment
       rocketGroup = new THREE.Group();
       // 8.8cm rocket launch tube (Ofenrohr)
       const rocketTube = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 2.7, 16, 1, true), new THREE.MeshStandardMaterial({
@@ -11299,14 +11299,14 @@
       const LANES = [0, -7.5, 7.5, -15, 15];
       const laneX = LANES[index % LANES.length] + (Math.random() * 2.0 - 1.0);
 
-      // Authentically starts far away within the allied invasion fleet on the horizon (Z = -170 to -185m)
+      // Authentically starts far away within the enemy invasion fleet on the horizon (Z = -170 to -185m)
       const startZ = -170 - Math.random() * 15;
 
       // Planing assault craft speed: covers 160m in ~7.4 seconds with churning white wakes
       let speed = 21.5 + Math.min(3.5, state.waveIndex * 0.2);
       let hullW = 4.4, hullH = 1.85, hullL = 9.8;
 
-      // Authentic WW2 Higgins Boat Materials
+      // Authentic Landing Boat Materials
       // 1. Weathered Philippine Mahogany Plywood with dark oak framing
       const boatWoodMat = new THREE.MeshStandardMaterial({
         map: textures.boatHull,
@@ -11758,7 +11758,7 @@
 
         group.add(headGroup);
 
-        // 3. Authentic WW2 M1 Steel Helmet with Camo Netting & Scrim
+        // 3. Combat Steel Helmet with Camo Netting & Scrim
         const helmetGroup = new THREE.Group();
         helmetGroup.position.set(0, 2.18, 0);
         const helmetDome = new THREE.Mesh(
@@ -11883,13 +11883,13 @@
         group.add(armRightGroup);
         arms.push(armRightGroup);
 
-        // 6. Authentic WW2 Weapons (M1 Garand Rifle / Thompson M1A1 SMG)
+        // 6. Combat Small Arms (Semi-Auto Rifle / Submachine Gun)
         const weaponGroup = new THREE.Group();
         weaponGroup.position.set(0.16, 1.25, 0.35);
         weaponGroup.rotation.set(0.25, -0.15, 0);
 
         if (!isStorm) {
-          // M1 Garand Rifle
+          // Semi-Auto Rifle
           const stock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 1.35), unitMaterials.woodRifle);
           stock.position.z = 0.22;
           const buttPlate = new THREE.Mesh(new THREE.BoxGeometry(0.082, 0.17, 0.04), unitMaterials.darkMetal);
@@ -11921,7 +11921,7 @@
           sling.rotation.x = -0.08;
           weaponGroup.add(stock, buttPlate, receiver, rearPeepSight, handguardUpper, barrelBand, barrel, gasCylinder, frontSightBase, frontWingL, frontWingR, sling);
         } else {
-          // Thompson M1A1 Submachine Gun
+          // Submachine Gun
           const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.45), unitMaterials.woodRifle);
           tStock.position.z = -0.22;
           const tReceiver = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.16, 0.65), unitMaterials.darkMetal);
@@ -12080,7 +12080,7 @@
         gunnerHelmet.position.set(0, 2.45, -0.32);
         group.add(skateRail, gunMount, m2Receiver, m2Barrel, gunShield, m2AmmoCan, gunnerTorso, gunnerHelmet);
 
-        // Allied Star Hood Emblem Decal
+        // Tactical Star Hood Emblem Decal
         const starDecal = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.75), unitMaterials.starInsignia);
         starDecal.rotateX(-Math.PI / 2 + 0.10);
         starDecal.position.set(0, 1.62, 1.15);
@@ -12235,7 +12235,7 @@
 
       } else if (unitType === 'tank' || unitType === 'boss_tank') {
         const isBoss = (unitType === 'boss_tank');
-        name = isBoss ? '★ SUPREME ALLIED ARMADA FLAGSHIP COLOSSUS ★' : 'M4 Sherman DD Amphibious Tank';
+        name = isBoss ? '★ SUPREME ARMADA FLAGSHIP COLOSSUS ★' : 'Heavy Amphibious Assault Tank';
         armorLabel = isBoss ? 'Ultra Dreadnought Plating (82%)' : 'Heavy Armor (72%)';
         armorReduction = isBoss ? 0.82 : 0.72;
         maxHp = Math.round((isBoss ? 5200 : 940) * (isBoss ? 1.45 : waveScale));
@@ -12255,7 +12255,7 @@
         group.add(lowerHull);
         hitboxes.push(lowerHull);
 
-        // Rounded Cast Differential Transmission Cover (Famous rounded nose of the Sherman!)
+        // Rounded Cast Differential Transmission Cover (Heavy armor front nose)
         const diffCover = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 3.8, 14), unitMaterials.heavyArmor);
         diffCover.rotateZ(Math.PI / 2);
         diffCover.position.set(0, 0.95, 3.42);
@@ -12282,7 +12282,7 @@
         group.add(bowMG, bowMGBbl);
 
         if (!isBoss) {
-          // 2. Collapsible Waterproof Canvas Flotation Screen Skirt (Iconic Sherman DD)
+          // 2. Collapsible Waterproof Canvas Flotation Screen Skirt
           const skirtBorder = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.55, 7.2), unitMaterials.canvasCover);
           skirtBorder.position.y = 2.25;
           group.add(skirtBorder);
@@ -12441,7 +12441,7 @@
           flag.rotation.y = Math.PI / 2;
           tankTurret.add(flag);
         } else {
-          // Standard Sherman: 75mm M3 rifled cannon with coaxial .30 cal MG
+          // Standard Tank: 75mm rifled cannon with coaxial MG
           const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 4.6, 14), unitMaterials.heavyArmor);
           cannon.rotateX(Math.PI / 2);
           cannon.position.set(0, 0, 3.9);
@@ -12771,7 +12771,7 @@
       }
     }
 
-    // --- 8.5 INTERACTIVE ALLIED ZEPPELIN AIRSHIP SYSTEM ---
+    // --- 8.5 INTERACTIVE ZEPPELIN AIRSHIP SYSTEM ---
     function createZeppelinEntity(cfg) {
       const zepGroup = new THREE.Group();
       const zepMat = new THREE.MeshStandardMaterial({
@@ -13093,9 +13093,9 @@
       updateHUD();
 
       const badges = {
-        1: '🔫 EQUIPPED: MG-42 RAPID MACHINE GUN',
-        2: '💥 EQUIPPED: 75mm PaK 40 AT CANNON',
-        3: '🚀 EQUIPPED: PANZERSCHRECK 54 ROCKET'
+        1: '🔫 EQUIPPED: RAPID MACHINE GUN',
+        2: '💥 EQUIPPED: 75mm AT CANNON',
+        3: '🚀 EQUIPPED: HEAVY AT ROCKET'
       };
       const colors = {
         1: 'text-amber-300 border-amber-400 bg-stone-950/95 font-bold',
@@ -13311,7 +13311,7 @@
       if (state.mode !== 'PLAYING') return;
       if (w.isCooling) return;
       if (w.curAmmo <= 0) {
-        spawnFloatingCallout(state.aimWorldPoint, 'OUT OF PANZERSCHRECK ROCKETS! [R] RELOAD', 'text-rose-300 border-rose-500 bg-rose-950/90');
+        spawnFloatingCallout(state.aimWorldPoint, 'OUT OF ROCKETS! [R] RELOAD', 'text-rose-300 border-rose-500 bg-rose-950/90');
         sfx.playReadyClank();
         return;
       }
@@ -13637,7 +13637,7 @@
         setTimeout(() => sfx.playExplosion(), 500);
         spawnFloatingCallout(
           hitPoint,
-          '★ SUPREME ALLIED COLOSSUS DESTROYED! +5,000 PTS ★',
+          '★ SUPREME ARMADA COLOSSUS DESTROYED! +5,000 PTS ★',
           'text-yellow-200 border-yellow-400 bg-yellow-950/95 scale-125'
         );
       } else if (isOneShotKill) {
@@ -13905,7 +13905,7 @@
         case 'storm': return 15;      // Assault stormtrooper: 15% damage
         case 'scout_car': return 20;  // Armored scout car: 20% damage
         case 'halftrack': return 25;  // Mechanized half-track: 25% damage
-        case 'tank': return 35;       // M4 Sherman DD Tank: 35% damage
+        case 'tank': return 35;       // M4 Heavy Amphibious Tank: 35% damage
         case 'boss_tank': return 50;  // Supreme Colossus Dreadnought: 50% damage
         default: return 10;
       }
@@ -13956,7 +13956,7 @@
         const cfg = WAVE_CONFIGS[Math.min(state.waveIndex, WAVE_CONFIGS.length - 1)];
         const vicTitle = isCampaignWin ? 'CAMPAIGN VICTORY!' : `WAVE ${state.waveIndex + 1} CLEARED!`;
         const vicSub = isCampaignWin 
-          ? 'ALL 8 WAVES CLEARED — NORMANDY COAST SECURED!' 
+          ? 'ALL CAMPAIGN WAVES CLEARED — BEACH DEFENCE SECURED!' 
           : `WAVE ${state.waveIndex + 1}: ${cfg.name.toUpperCase()} REPULSED`;
 
         const badgeEl = document.getElementById('vic-badge-text');
@@ -14493,7 +14493,7 @@
       if (e.code === 'Space') state.isFiring = false;
     });
 
-    // Mouse Wheel Quick Weapon Cycling (MG-42, 75mm PaK 40, Panzerschreck)
+    // Mouse Wheel Quick Weapon Cycling (Rapid MG, 75mm AT Cannon, Heavy Rocket)
     window.addEventListener('wheel', e => {
       if (state.mode !== 'PLAYING') return;
       if (e.deltaY > 0) {
@@ -14693,7 +14693,7 @@
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i);
           const z = pos.getZ(i);
-          // 1. Long deep Atlantic swell moving in toward the beach (+Z)
+          // 1. Long deep ocean swell moving in toward the beach (+Z)
           const swell1 = Math.sin(z * 0.038 + t * 1.6) * 0.68;
           // 2. Angled English Channel cross-swell
           const swell2 = Math.cos(x * 0.026 - z * 0.020 + t * 1.25) * 0.44;
@@ -14726,7 +14726,7 @@
       }
       sfx.updateOceanAmbience(nowSec);
 
-      // Animate Allied Naval Bombardment Fleet (Destroyers & Battleships)
+      // Animate Enemy Naval Bombardment Fleet (Destroyers & Battleships)
       if (state.navalFleet) {
         state.navalFleet.forEach(ship => {
           // Gentle heave and pitch on ocean swells
@@ -14900,7 +14900,7 @@
           firePlayerWeapon(nowSec);
         }
 
-        // Update Panzerschreck Rockets
+        // Update Heavy Rockets
         for (let i = state.rockets.length - 1; i >= 0; i--) {
           const r = state.rockets[i];
           const dist = r.startPt.distanceTo(r.targetPt);
@@ -15132,7 +15132,7 @@
             }
           }
 
-          // Sherman DD tank turret tracking player's bunker
+          // heavy amphibious tank turret tracking player's bunker
           if (enemy.tankTurret) {
             const bunkerPos = new THREE.Vector3(0, 8.5, 42);
             enemy.tankTurret.lookAt(bunkerPos);

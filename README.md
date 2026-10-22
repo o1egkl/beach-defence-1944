@@ -1,10 +1,10 @@
-# Beach Defence — 1944 WW2 3D First-Person Coastal Defense
+# Beach Defence
 
 🎮 **Play Online**:
 - **Vercel**: [https://beach-defence-1944.vercel.app](https://beach-defence-1944.vercel.app)
 - **GitHub Pages**: [https://o1egkl.github.io/beach-defence-1944/](https://o1egkl.github.io/beach-defence-1944/)
 
-An action-packed 3D first-person coastal defense arcade game set in 1944, built with Three.js, Tailwind CSS, and WebGL.
+An action-packed 3D first-person coastal defense arcade game, built with Three.js, Tailwind CSS, and WebGL.
 
 ## 🎮 Gameplay Overview
 
