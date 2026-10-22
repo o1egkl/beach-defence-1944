@@ -10993,13 +10993,14 @@
       const fp3 = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.85), flashMat);
       fp3.rotation.z = -Math.PI / 3;
       muzzleFlashMesh.add(fp1, fp2, fp3);
-      muzzleFlashMesh.position.set(0, 0.015, -2.52);
+      muzzleFlashMesh.position.set(0, 0.015, 2.45);
       muzzleFlashMesh.visible = false;
       muzzleFlashMesh.material = flashMat;
 
       // 16. Assemble MG-42 Specific Parts (Procedural Base + Authentic 3D Model)
       mg42Group = new THREE.Group();
       mg42ProceduralGroup = new THREE.Group();
+      mg42ProceduralGroup.rotation.y = Math.PI; // Flip 180° so procedural fallback also points at enemies (+Z)
       mg42ProceduralGroup.add(
         receiver, ...chamfers, ...sideRibs,
         topCover, coverCenterRib, coverLatch, trunnionHinge,
@@ -11014,18 +11015,18 @@
       mg42ModelGroup = new THREE.Group();
       mg42Group.add(mg42ModelGroup);
 
-      // Load authentic mg42.glb model with barrel aimed straight towards enemies (-Z)
+      // Load authentic mg42.glb model with barrel aimed straight towards enemies (+Z)
       if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
         const gltfLoader = new THREE.GLTFLoader();
         gltfLoader.load('mg42.glb?v=' + Date.now(), (gltf) => {
           const model = gltf.scene;
 
-          // Align authentic MG42 with barrel & muzzle pointing straight forward toward enemies (-Z)
-          // and stock pointing toward the player (+Z)
+          // Align authentic MG42 with barrel & muzzle pointing straight forward toward enemies (+Z)
+          // and stock pointing toward the player (-Z)
           const S = 2.1;
           model.scale.set(S, S, S);
-          model.rotation.set(0, -Math.PI / 2, 0); // Turned 180° so the muzzle is pointing directly forward toward enemies!
-          model.position.set(0, 0.015, -1.08);
+          model.rotation.set(0, Math.PI / 2, 0); // Turned 180° so the muzzle is pointing directly forward toward enemies!
+          model.position.set(0, 0.015, 1.08);
 
           model.traverse((child) => {
             if (child.isMesh) {
@@ -11045,8 +11046,8 @@
           mg42ModelGroup.add(model);
           mg42ProceduralGroup.visible = false;
           mg42ModelGroup.visible = true;
-          if (muzzleFlashMesh) muzzleFlashMesh.position.set(0, 0.015, -2.52);
-          console.log('✅ Loaded authentic MG42 3D model aimed forward towards enemies (-Z)');
+          if (muzzleFlashMesh) muzzleFlashMesh.position.set(0, 0.015, 2.45);
+          console.log('✅ Loaded authentic MG42 3D model aimed forward towards enemies (+Z)');
         }, undefined, (err) => {
           console.log('Using procedural MG42 viewmodel:', err && err.message ? err.message : err);
         });
@@ -13412,14 +13413,14 @@
       // Sound & Muzzle Flash
       sfx.playMachineGunShot(state.upgrades.damage);
       if (muzzleFlashMesh) {
-        muzzleFlashMesh.position.set(0, 0.015, -2.52);
+        muzzleFlashMesh.position.set(0, 0.015, 2.45);
         muzzleFlashMesh.visible = true;
         muzzleFlashMesh.scale.set(1.0, 1.0, 1.0);
         muzzleFlashMesh.material.opacity = 0.95;
         muzzleFlashMesh.rotation.z = Math.random() * Math.PI;
       }
       muzzleLight.intensity = 2.4;
-      gunBarrelGroup.position.z = 0.08; // Clean recoil kick backward toward player
+      gunBarrelGroup.position.z = -0.08; // Clean recoil kick backward toward player
       state.cameraRecoilPitch = Math.min(0.020, (state.cameraRecoilPitch || 0) + 0.0045);
       state.barrelHeat = Math.min(1.0, state.barrelHeat + 0.04);
 

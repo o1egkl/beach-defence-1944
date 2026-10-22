@@ -2,5 +2,13 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/", "destination": "/beach_defence_1944_ww2_3d_first_person_coastal_defense.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    }
   ]
 }
