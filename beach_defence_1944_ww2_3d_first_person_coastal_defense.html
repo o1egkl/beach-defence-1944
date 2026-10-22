@@ -11020,8 +11020,8 @@
           // Align with first-person perspective, iron sights & bunker embrasure
           const S = 2.1;
           model.scale.set(S, S, S);
-          model.rotation.set(0, -Math.PI / 2, 0);
-          model.position.set(0, 0.015, -1.08);
+          model.rotation.set(0, Math.PI / 2, 0);
+          model.position.set(0, 0.015, 1.08);
 
           model.traverse((child) => {
             if (child.isMesh) {
@@ -11041,6 +11041,7 @@
           mg42ModelGroup.add(model);
           mg42ProceduralGroup.visible = false;
           mg42ModelGroup.visible = true;
+          if (muzzleFlashMesh) muzzleFlashMesh.position.set(0, 0.015, 2.38);
           console.log('✅ Loaded authentic MG42 3D model into gun viewmodel');
         }, undefined, (err) => {
           console.log('Using procedural MG42 viewmodel:', err && err.message ? err.message : err);
@@ -13406,12 +13407,15 @@
 
       // Sound & Muzzle Flash
       sfx.playMachineGunShot(state.upgrades.damage);
-      muzzleFlashMesh.visible = true;
-      muzzleFlashMesh.scale.set(1.0, 1.0, 1.0);
-      muzzleFlashMesh.material.opacity = 0.95;
-      muzzleFlashMesh.rotation.z = Math.random() * Math.PI;
+      if (muzzleFlashMesh) {
+        muzzleFlashMesh.position.set(0, 0.015, (mg42ModelGroup && mg42ModelGroup.visible) ? 2.38 : -2.52);
+        muzzleFlashMesh.visible = true;
+        muzzleFlashMesh.scale.set(1.0, 1.0, 1.0);
+        muzzleFlashMesh.material.opacity = 0.95;
+        muzzleFlashMesh.rotation.z = Math.random() * Math.PI;
+      }
       muzzleLight.intensity = 2.4;
-      gunBarrelGroup.position.z = 0.08; // Clean recoil kick
+      gunBarrelGroup.position.z = (mg42ModelGroup && mg42ModelGroup.visible) ? -0.08 : 0.08; // Clean recoil kick
       state.cameraRecoilPitch = Math.min(0.020, (state.cameraRecoilPitch || 0) + 0.0045);
       state.barrelHeat = Math.min(1.0, state.barrelHeat + 0.04);
 
