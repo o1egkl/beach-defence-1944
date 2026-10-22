@@ -6,6 +6,7 @@
   <title>Beach Defence — 1944 WW2 3D First-Person Coastal Defense</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -10102,6 +10103,7 @@
     const gunGroup = new THREE.Group();
     let gunBarrelGroup, muzzleFlashMesh, barrelHeatMat;
     let mg42Group, cannonGroup, rocketGroup;
+    let mg42ModelGroup, mg42ProceduralGroup, loadedMg42Material;
     const aimPlane = new THREE.Plane(new THREE.Vector3(0, 0.98, 0.2).normalize(), 0);
     const raycaster = new THREE.Raycaster();
     const environmentTargets = []; // Meshes for ground/water raycasting
@@ -11001,9 +11003,10 @@
       muzzleFlashMesh.visible = false;
       muzzleFlashMesh.material = flashMat;
 
-      // 16. Assemble MG-42 Specific Parts (Directly Matching User Reference Photo!)
+      // 16. Assemble MG-42 Specific Parts (Directly Matching Reference Model & mg42.glb)
       mg42Group = new THREE.Group();
-      mg42Group.add(
+      mg42ProceduralGroup = new THREE.Group();
+      mg42ProceduralGroup.add(
         receiver, ...chamfers, ...sideRibs,
         topCover, coverCenterRib, coverLatch, trunnionHinge,
         cockingGroup, feedGroup, innerBarrel, shroudGroup,
@@ -11012,6 +11015,44 @@
         gripGroup, triggerGuard, trigger, safetyButton,
         stockGroup, ...bufferCyls
       );
+      mg42Group.add(mg42ProceduralGroup);
+
+      mg42ModelGroup = new THREE.Group();
+      mg42Group.add(mg42ModelGroup);
+
+      // Load authentic mg42.glb model when available (with procedural fallback)
+      if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+        const gltfLoader = new THREE.GLTFLoader();
+        gltfLoader.load('mg42.glb', (gltf) => {
+          const model = gltf.scene;
+
+          // Align with first-person perspective, iron sights & bunker embrasure
+          const S = 2.1;
+          model.scale.set(S, S, S);
+          model.rotation.set(0, -Math.PI / 2, 0);
+          model.position.set(0, 0.015, -1.08);
+
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              if (child.material) {
+                loadedMg42Material = child.material;
+                child.material.roughness = Math.min(1.0, (child.material.roughness || 0.45));
+                child.material.metalness = Math.min(1.0, (child.material.metalness || 0.85));
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+
+          mg42ModelGroup.add(model);
+          mg42ProceduralGroup.visible = false;
+          mg42ModelGroup.visible = true;
+          console.log('✅ Loaded authentic MG42 3D model into gun viewmodel');
+        }, undefined, (err) => {
+          console.log('Using procedural MG42 viewmodel:', err && err.message ? err.message : err);
+        });
+      }
 
       // 17. 75mm PaK 40 Anti-Tank Cannon 3D Viewmodel Attachment
       cannonGroup = new THREE.Group();
@@ -14401,8 +14442,13 @@
           if (state.barrelHeat > 0.05) {
             barrelHeatMat.emissive.setHex(0xff3300);
             barrelHeatMat.emissiveIntensity = state.barrelHeat * 2.2;
+            if (loadedMg42Material) {
+              loadedMg42Material.emissive.setHex(0xff2200);
+              loadedMg42Material.emissiveIntensity = state.barrelHeat * 0.45;
+            }
           } else {
             barrelHeatMat.emissiveIntensity = 0;
+            if (loadedMg42Material) loadedMg42Material.emissiveIntensity = 0;
           }
         }
       }
