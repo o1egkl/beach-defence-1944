@@ -10630,6 +10630,7 @@
 
       // 9. First-Person 3D Mounted Heavy Machine Gun
       buildFirstPersonMachineGun();
+      initSoldierGLBLoader();
     }
 
     function getBeachHeightAt(x, z) {
@@ -11015,10 +11016,10 @@
       mg42ModelGroup = new THREE.Group();
       mg42Group.add(mg42ModelGroup);
 
-      // Load authentic mg42.glb model with barrel aimed straight towards enemies (+Z)
+      // Load authentic models/mg42.glb model with barrel aimed straight towards enemies (+Z)
       if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
         const gltfLoader = new THREE.GLTFLoader();
-        gltfLoader.load('mg42.glb?v=' + Date.now(), (gltf) => {
+        gltfLoader.load('models/mg42.glb?v=' + Date.now(), (gltf) => {
           const model = gltf.scene;
 
           // Align authentic MG42 with barrel & muzzle pointing straight forward toward enemies (+Z)
@@ -11147,6 +11148,74 @@
       hpBg: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15, depthWrite: false }),
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
+
+    let soldierGLBTemplate = null;
+
+    function initSoldierGLBLoader() {
+      if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+        const soldierLoader = new THREE.GLTFLoader();
+        soldierLoader.load('models/soldier_model.glb?v=' + Date.now(), (gltf) => {
+          const rawModel = gltf.scene;
+
+          // Hide floor cobblestones/pedestal in group3
+          rawModel.traverse((child) => {
+            if (child.name === 'group3' || (child.name && child.name.startsWith('pCube'))) {
+              child.visible = false;
+            }
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              if (child.material) {
+                child.material.depthTest = true;
+                child.material.depthWrite = true;
+                child.material.roughness = Math.min(1.0, (child.material.roughness || 0.65));
+                child.material.metalness = Math.min(1.0, (child.material.metalness || 0.15));
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+
+          // Model height in GLB: ~151.13 units. Scale 0.016 gives ~2.42m height matching in-game proportions.
+          const S = 0.016;
+          rawModel.scale.set(S, S, S);
+          rawModel.position.set(0.194, 0, -0.065);
+
+          soldierGLBTemplate = rawModel;
+          console.log('✅ Loaded authentic Soldier 3D model (models/soldier_model.glb)');
+
+          // Upgrade any active soldiers already on the beach
+          if (typeof state !== 'undefined' && state.enemies) {
+            state.enemies.forEach((enemy) => {
+              if (!enemy.dead && (enemy.unitType === 'rifle' || enemy.unitType === 'storm') && !enemy.soldierGLBMesh) {
+                applySoldierGLB(enemy);
+              }
+            });
+          }
+        }, undefined, (err) => {
+          console.log('Using procedural soldier models:', err && err.message ? err.message : err);
+        });
+      }
+    }
+
+    function applySoldierGLB(enemy) {
+      if (!soldierGLBTemplate || enemy.soldierGLBMesh) return;
+      const clone = soldierGLBTemplate.clone(true);
+      if (enemy.unitType === 'storm') {
+        clone.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.material = child.material.clone();
+            if (child.material.color) {
+              child.material.color.multiplyScalar(0.78);
+            }
+          }
+        });
+      }
+      enemy.group.add(clone);
+      enemy.soldierGLBMesh = clone;
+      if (enemy.proceduralGroup) {
+        enemy.proceduralGroup.visible = false;
+      }
+    }
 
     function createFloatingHPBar(width = 1.8) {
       const group = new THREE.Group();
@@ -11568,11 +11637,17 @@
       boatSpec.cargo.forEach((cType, cIdx) => {
         if (cType !== 'rifle' && cType !== 'storm') return;
         const tGrp = new THREE.Group();
-        const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
-        tTorso.position.y = 0.55;
-        const tHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), unitMaterials.helmet);
-        tHelmet.position.y = 1.05;
-        tGrp.add(tTorso, tHelmet);
+        if (soldierGLBTemplate) {
+          const m = soldierGLBTemplate.clone(true);
+          m.position.set(0, 0, 0);
+          tGrp.add(m);
+        } else {
+          const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
+          tTorso.position.y = 0.55;
+          const tHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), unitMaterials.helmet);
+          tHelmet.position.y = 1.05;
+          tGrp.add(tTorso, tHelmet);
+        }
         const row = Math.floor(cIdx / 2);
         const col = (cIdx % 2 === 0 ? -1 : 1);
         tGrp.position.set(col * 0.85, hullH * 0.5, -hullL * 0.15 + row * 1.4);
@@ -11648,15 +11723,15 @@
         const leggingsMat = unitMaterials.canvasGaiter;
         const bootMat = unitMaterials.leatherBoot;
 
+        const proceduralGroup = new THREE.Group();
+
         // 1. Torso: M1941 Field Jacket with collar lapels, pockets, belt, web suspenders, canteen, haversack
         const torsoGroup = new THREE.Group();
         const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.36, 1.15, 8), uniformMat);
         chest.position.y = 1.35;
         chest.scale.set(1.15, 1.0, 0.7);
         chest.castShadow = true;
-        chest.userData = { isWeakSpot: false };
         torsoGroup.add(chest);
-        hitboxes.push(chest);
         torsoMesh = torsoGroup;
 
         // Folded collar lapels
@@ -11729,7 +11804,7 @@
         shovelBlade.position.set(0.06, 1.40, -0.47);
         torsoGroup.add(backpack, bedroll, shovelHandle, shovelBlade);
 
-        group.add(torsoGroup);
+        proceduralGroup.add(torsoGroup);
 
         // 2. Sculpted Head & Facial Anatomy (Brow ridge, nose, jawline, ears)
         const headGroup = new THREE.Group();
@@ -11741,9 +11816,7 @@
 
         const cranium = new THREE.Mesh(new THREE.SphereGeometry(0.30, 12, 10), unitMaterials.skin);
         cranium.scale.set(0.95, 1.05, 1.0);
-        cranium.userData = { isWeakSpot: true };
         headGroup.add(cranium);
-        hitboxes.push(cranium);
 
         // Facial brow ridge
         const brow = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.12), unitMaterials.skin);
@@ -11762,7 +11835,7 @@
         earR.position.set(0.29, 0, 0.02);
         headGroup.add(brow, nose, jaw, earL, earR);
 
-        group.add(headGroup);
+        proceduralGroup.add(headGroup);
 
         // 3. Combat Steel Helmet with Camo Netting & Scrim
         const helmetGroup = new THREE.Group();
@@ -11773,8 +11846,6 @@
         );
         helmetDome.scale.set(0.98, 1.0, 1.08); // Authentic front-to-back elongation
         helmetDome.castShadow = true;
-        helmetDome.userData = { isWeakSpot: true };
-        hitboxes.push(helmetDome);
 
         const helmetRim = new THREE.Mesh(
           new THREE.TorusGeometry(0.39, 0.026, 6, 18),
@@ -11807,7 +11878,7 @@
 
         helmetMesh = helmetDome;
         helmetGroup.add(helmetDome, helmetRim, chinstrap);
-        group.add(helmetGroup);
+        proceduralGroup.add(helmetGroup);
 
         // 4. Articulated Legs: Wool trousers, Canvas M1938 Gaiters, Contoured Leather Boots with Heels
         for (let l = -1; l <= 1; l += 2) {
@@ -11846,7 +11917,7 @@
 
           kneeGroup.add(leggings, laceSeam, bootGroup);
           hipGroup.add(kneeGroup);
-          group.add(hipGroup);
+          proceduralGroup.add(hipGroup);
           legs.push({ hip: hipGroup, knee: kneeGroup });
         }
 
@@ -11867,7 +11938,7 @@
         lThumb.position.set(-0.04, 0.03, 0);
         lHandGrp.add(lPalm, lThumb);
         armLeftGroup.add(lUpperArm, lForearm, lHandGrp);
-        group.add(armLeftGroup);
+        proceduralGroup.add(armLeftGroup);
         arms.push(armLeftGroup);
 
         const armRightGroup = new THREE.Group();
@@ -11886,7 +11957,7 @@
         rThumb.position.set(0.04, 0.03, 0);
         rHandGrp.add(rPalm, rThumb);
         armRightGroup.add(rUpperArm, rForearm, rHandGrp);
-        group.add(armRightGroup);
+        proceduralGroup.add(armRightGroup);
         arms.push(armRightGroup);
 
         // 6. Combat Small Arms (Semi-Auto Rifle / Submachine Gun)
@@ -11954,8 +12025,30 @@
           tMag.rotation.x = -0.15;
           weaponGroup.add(tStock, tReceiver, tRearSight, tForegrip, tBarrel, tComp, tMag);
         }
-        group.add(weaponGroup);
+        proceduralGroup.add(weaponGroup);
         weaponMesh = weaponGroup;
+
+        group.add(proceduralGroup);
+
+        // Dedicated invisible collision hitboxes on group (ensures bullet raycasts always hit accurately)
+        const chestHitbox = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.44, 0.36, 1.15, 8),
+          new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+        );
+        chestHitbox.position.y = 1.35;
+        chestHitbox.scale.set(1.15, 1.0, 0.7);
+        chestHitbox.userData = { isWeakSpot: false };
+        group.add(chestHitbox);
+        hitboxes.push(chestHitbox);
+
+        const headHitbox = new THREE.Mesh(
+          new THREE.SphereGeometry(0.38, 10, 8),
+          new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+        );
+        headHitbox.position.set(0, 2.15, 0);
+        headHitbox.userData = { isWeakSpot: true };
+        group.add(headHitbox);
+        hitboxes.push(headHitbox);
 
       } else if (unitType === 'scout_car') {
         name = 'Recon Scout Car';
@@ -12522,6 +12615,8 @@
         weapon: weaponMesh,
         tankTurret,
         helmetMesh,
+        proceduralGroup: (unitType === 'rifle' || unitType === 'storm') ? proceduralGroup : null,
+        soldierGLBMesh: null,
         isDying: false,
         dyingTime: 0,
         wobbleSeed: Math.random() * 10,
@@ -12535,6 +12630,12 @@
       });
 
       state.enemies.push(enemyObj);
+
+      if (unitType === 'rifle' || unitType === 'storm') {
+        if (soldierGLBTemplate) {
+          applySoldierGLB(enemyObj);
+        }
+      }
     }
 
     // --- 7. PARACHUTE HEALTH / REPAIR SUPPLY CRATES ---
@@ -15090,6 +15191,9 @@
             enemy.group.position.y = Math.max(0, enemy.group.position.y - dt * 0.85);
             enemy.group.position.z -= dt * (1.0 - progress) * 1.5;
             if (enemy.torso) enemy.torso.rotation.x = 0;
+            if (enemy.soldierGLBMesh) {
+              enemy.soldierGLBMesh.rotation.x = 0.16 + (1 - progress) * 0.2;
+            }
             if (enemy.weapon && enemy.weapon.parent) {
               enemy.weapon.position.y = Math.max(0.12, enemy.weapon.position.y - dt * 1.8);
               enemy.weapon.rotation.z += dt * 2.2;
@@ -15105,7 +15209,15 @@
           enemy.group.position.y = groundY;
 
           // Articulated infantry movement: hip & knee flexion, sprint lean, shoulder counter-rotation
-          if (enemy.legs && enemy.legs.length === 2) {
+          if (enemy.soldierGLBMesh) {
+            enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * 4.6;
+            const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
+            enemy.group.position.y += Math.abs(stride) * 0.12;
+            // Realistic combat sprint charge: forward lean + torso sway + weapon tilt
+            enemy.soldierGLBMesh.rotation.x = 0.16 + Math.abs(stride) * 0.04;
+            enemy.soldierGLBMesh.rotation.y = Math.sin(enemy.stridePhase) * 0.06;
+            enemy.soldierGLBMesh.rotation.z = Math.sin(enemy.stridePhase) * 0.04;
+          } else if (enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * 4.6;
             const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
             if (enemy.legs[0].hip) {
