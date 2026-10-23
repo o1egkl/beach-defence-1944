@@ -11231,24 +11231,80 @@
     function applySoldierGLB(enemy) {
       if (!soldierGLBTemplate || enemy.soldierGLBMesh) return;
       const clone = soldierGLBTemplate.clone(true);
-      if (enemy.unitType === 'storm') {
-        clone.traverse((child) => {
-          if (child.isMesh && child.material) {
+
+      // Cache articulated sub-assemblies for secondary kinematic animation
+      enemy.soldierWeapon = clone.getObjectByName('SAIGA');
+      if (enemy.soldierWeapon) {
+        enemy.soldierWeapon.userData.baseY = enemy.soldierWeapon.position.y || 0;
+        enemy.soldierWeapon.userData.baseRotX = enemy.soldierWeapon.rotation.x || 0;
+        enemy.soldierWeapon.userData.baseRotZ = enemy.soldierWeapon.rotation.z || 0;
+      }
+      enemy.soldierBackpack = clone.getObjectByName('Mesh_Backpack');
+      if (enemy.soldierBackpack) {
+        enemy.soldierBackpack.userData.baseRotX = enemy.soldierBackpack.rotation.x || 0;
+      }
+
+      // Initialize individual tactical pathing & personality seeds
+      enemy.baseLaneX = enemy.group.position.x;
+      enemy.weaveSpeed = 0.85 + Math.random() * 0.7;
+      enemy.weaveAmp = 0.55 + Math.random() * 0.75;
+      enemy.strideCadence = (enemy.unitType === 'storm' ? 5.2 : 4.6) + Math.random() * 0.5;
+      enemy.deathForward = Math.random() > 0.35;
+      enemy.deathRoll = (Math.random() - 0.5) * 0.35;
+
+      const isStorm = (enemy.unitType === 'storm');
+
+      clone.traverse((child) => {
+        if (child.isMesh && child.material) {
+          const isBody = (child.name && child.name.includes('Mesh_Body_lambert17'));
+
+          if (isStorm || isBody) {
             if (Array.isArray(child.material)) {
               child.material = child.material.map(mat => {
                 const cm = mat.clone();
-                if (cm.color) cm.color.multiplyScalar(0.78);
+                if (isStorm && cm.color) cm.color.multiplyScalar(0.78);
                 return cm;
               });
             } else {
               child.material = child.material.clone();
-              if (child.material.color) {
+              if (isStorm && child.material.color) {
                 child.material.color.multiplyScalar(0.78);
               }
             }
           }
-        });
-      }
+
+          // Attach procedural leg-running stride vertex shader to soldier body mesh
+          if (isBody) {
+            const bodyMat = Array.isArray(child.material) ? child.material[0] : child.material;
+            bodyMat.userData = bodyMat.userData || {};
+            bodyMat.userData.uStride = { value: 0 };
+            bodyMat.onBeforeCompile = function(shader) {
+              shader.uniforms.uStride = bodyMat.userData.uStride;
+              shader.vertexShader = 'uniform float uStride;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                `
+                #include <begin_vertex>
+                if (position.y < 80.0) {
+                  float legFactor = clamp((80.0 - position.y) / 80.0, 0.0, 1.0);
+                  float legSign = (position.x < -12.0) ? 1.0 : -1.0;
+                  float swing = sin(uStride) * legSign;
+                  transformed.z += swing * legFactor * 13.5;
+                  if (swing * legSign < 0.0) {
+                    transformed.y += abs(swing) * legFactor * 5.5;
+                  }
+                }
+                `
+              );
+            };
+            bodyMat.customProgramCacheKey = function() {
+              return 'soldier_leg_stride_v1';
+            };
+            enemy.strideMaterial = bodyMat;
+          }
+        }
+      });
+
       enemy.group.add(clone);
       enemy.soldierGLBMesh = clone;
       if (enemy.proceduralGroup) {
@@ -15244,38 +15300,107 @@
         for (const enemy of state.enemies) {
           if (enemy.isDying) {
             enemy.dyingTime += dt;
-            const progress = Math.min(1.0, enemy.dyingTime / 0.65);
-            // Stagger backwards from bullet impact and collapse naturally onto the sand
-            enemy.group.rotation.x = -progress * Math.PI * 0.46;
-            enemy.group.position.y = Math.max(0, enemy.group.position.y - dt * 0.85);
-            enemy.group.position.z -= dt * (1.0 - progress) * 1.5;
-            if (enemy.torso) enemy.torso.rotation.x = 0;
+            const progress = Math.min(1.0, enemy.dyingTime / 0.75);
+            const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
+
             if (enemy.soldierGLBMesh) {
-              enemy.soldierGLBMesh.rotation.x = 0.16 + (1 - progress) * 0.2;
+              if (enemy.deathForward) {
+                // Realistic forward momentum stumble & collapse onto the sand
+                enemy.group.position.z += (1.0 - progress) * enemy.speed * 0.45 * dt;
+                enemy.soldierGLBMesh.rotation.x = 0.24 + progress * Math.PI * 0.38;
+                enemy.soldierGLBMesh.rotation.z = (enemy.deathRoll || 0.15) * progress;
+                enemy.group.position.y = Math.max(groundY - 0.1, enemy.group.position.y - dt * 0.7);
+              } else {
+                // Stagger backwards & twist from high-impact hit
+                enemy.group.position.z -= (1.0 - progress) * 0.7 * dt;
+                enemy.soldierGLBMesh.rotation.x = 0.24 - progress * Math.PI * 0.42;
+                enemy.soldierGLBMesh.rotation.y += (1.0 - progress) * dt * 2.2;
+                enemy.group.position.y = Math.max(groundY - 0.1, enemy.group.position.y - dt * 0.7);
+              }
+              // Weapon drops out of hands onto the sand
+              if (enemy.soldierWeapon) {
+                enemy.soldierWeapon.rotation.x += dt * 3.8;
+                enemy.soldierWeapon.position.y -= dt * 1.6;
+              }
+            } else {
+              enemy.group.rotation.x = -progress * Math.PI * 0.46;
+              enemy.group.position.y = Math.max(0, enemy.group.position.y - dt * 0.85);
+              enemy.group.position.z -= dt * (1.0 - progress) * 1.5;
             }
-            if (enemy.weapon && enemy.weapon.parent) {
-              enemy.weapon.position.y = Math.max(0.12, enemy.weapon.position.y - dt * 1.8);
-              enemy.weapon.rotation.z += dt * 2.2;
-            }
-            if (enemy.dyingTime > 2.8) {
+            if (enemy.dyingTime > 3.0) {
               scene.remove(enemy.group);
             }
             continue;
           }
           if (enemy.dead) continue;
-          enemy.group.position.z += enemy.speed * dt;
+
+          // 1. Natural tactical weaving & bounding across the sand (zig-zag dodging MG-42 fire)
+          if (enemy.baseLaneX === undefined) {
+            enemy.baseLaneX = enemy.group.position.x;
+            enemy.weaveSpeed = 0.9 + Math.random() * 0.7;
+            enemy.weaveAmp = 0.6 + Math.random() * 0.7;
+            enemy.strideCadence = (enemy.unitType === 'storm' ? 5.2 : 4.6) + Math.random() * 0.5;
+          }
+          const time = (typeof performance !== 'undefined' ? performance.now() * 0.001 : 0);
+          const targetWeaveX = enemy.baseLaneX + Math.sin(time * enemy.weaveSpeed + enemy.wobbleSeed) * enemy.weaveAmp;
+          const weaveShift = (targetWeaveX - enemy.group.position.x) * dt * 2.0;
+          enemy.group.position.x += weaveShift;
+
+          // 2. Sprint burst cadence (rhythmic acceleration)
+          const burstMod = 1.0 + Math.sin((enemy.stridePhase || 0) * 0.35) * 0.12;
+          enemy.group.position.z += enemy.speed * burstMod * dt;
+
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
           enemy.group.position.y = groundY;
 
-          // Articulated infantry movement: hip & knee flexion, sprint lean, shoulder counter-rotation
+          // 3. Slope gradient adaptation (leaning naturally into the beach incline)
+          const dz = 1.4;
+          const hFront = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z + dz);
+          const hBack = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z - dz);
+          const slopePitch = Math.atan2(hFront - hBack, dz * 2.0);
+
+          // 4. Articulated GLB Soldier Motion
           if (enemy.soldierGLBMesh) {
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * 4.6;
-            const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
-            enemy.group.position.y += Math.abs(stride) * 0.12;
-            // Realistic combat sprint charge: forward lean + torso sway + weapon tilt
-            enemy.soldierGLBMesh.rotation.x = 0.16 + Math.abs(stride) * 0.04;
-            enemy.soldierGLBMesh.rotation.y = Math.sin(enemy.stridePhase) * 0.06;
-            enemy.soldierGLBMesh.rotation.z = Math.sin(enemy.stridePhase) * 0.04;
+            enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * (enemy.strideCadence || 4.8);
+            const phase = enemy.stridePhase;
+            const stride = Math.sin(phase);
+
+            // Double bounce: Center of Mass dips on foot strike and rises on toe-off
+            const comBounce = Math.abs(stride) * 0.09;
+            enemy.group.position.y = groundY + comBounce;
+
+            // Combat forward sprint lean + slope pitch + acceleration nodding
+            const forwardLean = 0.24 + slopePitch + Math.abs(stride) * 0.035;
+            enemy.soldierGLBMesh.rotation.x = forwardLean;
+
+            // Pelvic roll (lateral lean towards supporting foot) + banking into weave turns
+            const turnBank = -weaveShift * 0.45;
+            const lateralRoll = Math.sin(phase) * 0.075 + turnBank;
+            enemy.soldierGLBMesh.rotation.z = lateralRoll;
+
+            // Shoulder & torso counter-rotation (yaw twist)
+            enemy.soldierGLBMesh.rotation.y = Math.sin(phase) * 0.085;
+
+            // Update leg stride vertex shader uniform
+            if (enemy.strideMaterial && enemy.strideMaterial.userData && enemy.strideMaterial.userData.uStride) {
+              enemy.strideMaterial.userData.uStride.value = phase;
+            }
+
+            // Weapon dynamics (holding rifle across chest with bob, tilt and recoil)
+            if (enemy.soldierWeapon) {
+              const bY = enemy.soldierWeapon.userData.baseY || 0;
+              enemy.soldierWeaponRecoil = Math.max(0, (enemy.soldierWeaponRecoil || 0) - dt * 6.0);
+              enemy.soldierWeapon.position.y = bY + Math.sin(phase * 2.0 - 0.4) * 0.7;
+              enemy.soldierWeapon.position.z = -(enemy.soldierWeaponRecoil || 0) * 1.8;
+              enemy.soldierWeapon.rotation.z = (enemy.soldierWeapon.userData.baseRotZ || 0) + Math.sin(phase - 0.25) * 0.08;
+              enemy.soldierWeapon.rotation.x = (enemy.soldierWeapon.userData.baseRotX || 0) + Math.sin(phase * 2.0) * 0.04 - (enemy.soldierWeaponRecoil || 0) * 0.15;
+            }
+
+            // Heavy backpack inertia bounce
+            if (enemy.soldierBackpack) {
+              const bRotX = enemy.soldierBackpack.userData.baseRotX || 0;
+              enemy.soldierBackpack.rotation.x = bRotX + Math.sin(phase * 2.0 - 0.7) * 0.06;
+            }
           } else if (enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * 4.6;
             const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
@@ -15364,6 +15489,9 @@
                 spawnBurstParticles(muzzlePos, 0xfacc15, 3, 2);
                 spawnBurstParticles(targetPos, 0x94a3b8, 3, 2);
                 sfx.playEnemyRifleShot(isStorm);
+                if (enemy.soldierWeapon) {
+                  enemy.soldierWeaponRecoil = 0.9;
+                }
                 if (Math.abs(targetPos.x) < 1.4 && Math.abs(targetPos.y - 7.8) < 0.9) {
                   sfx.playPillboxImpact();
                   state.cameraRecoilPitch = Math.min(0.024, (state.cameraRecoilPitch || 0) + 0.005);
