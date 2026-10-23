@@ -11191,6 +11191,37 @@
               }
             });
           }
+          // Upgrade passenger troops inside any boats currently sailing or beached
+          if (typeof state !== 'undefined' && state.boats) {
+            state.boats.forEach((boat) => {
+              if (boat.troopMeshes && boat.troopMeshes.length > 0) {
+                boat.troopMeshes.forEach((tGrp, idx) => {
+                  while (tGrp.children.length > 0) {
+                    tGrp.remove(tGrp.children[0]);
+                  }
+                  const m = soldierGLBTemplate.clone(true);
+                  const cType = boat.cargo ? boat.cargo[boat.disembarkedCount + idx] : null;
+                  if (cType === 'storm') {
+                    m.traverse((child) => {
+                      if (child.isMesh && child.material) {
+                        if (Array.isArray(child.material)) {
+                          child.material = child.material.map(mat => {
+                            const cm = mat.clone();
+                            if (cm.color) cm.color.multiplyScalar(0.78);
+                            return cm;
+                          });
+                        } else {
+                          child.material = child.material.clone();
+                          if (child.material.color) child.material.color.multiplyScalar(0.78);
+                        }
+                      }
+                    });
+                  }
+                  tGrp.add(m);
+                });
+              }
+            });
+          }
         }, undefined, (err) => {
           console.log('Using procedural soldier models:', err && err.message ? err.message : err);
         });
@@ -11203,9 +11234,17 @@
       if (enemy.unitType === 'storm') {
         clone.traverse((child) => {
           if (child.isMesh && child.material) {
-            child.material = child.material.clone();
-            if (child.material.color) {
-              child.material.color.multiplyScalar(0.78);
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => {
+                const cm = mat.clone();
+                if (cm.color) cm.color.multiplyScalar(0.78);
+                return cm;
+              });
+            } else {
+              child.material = child.material.clone();
+              if (child.material.color) {
+                child.material.color.multiplyScalar(0.78);
+              }
             }
           }
         });
@@ -11639,7 +11678,22 @@
         const tGrp = new THREE.Group();
         if (soldierGLBTemplate) {
           const m = soldierGLBTemplate.clone(true);
-          m.position.set(0, 0, 0);
+          if (cType === 'storm') {
+            m.traverse((child) => {
+              if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material = child.material.map(mat => {
+                    const cm = mat.clone();
+                    if (cm.color) cm.color.multiplyScalar(0.78);
+                    return cm;
+                  });
+                } else {
+                  child.material = child.material.clone();
+                  if (child.material.color) child.material.color.multiplyScalar(0.78);
+                }
+              }
+            });
+          }
           tGrp.add(m);
         } else {
           const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
@@ -11707,6 +11761,7 @@
       let helmetMesh = null;
       let torsoMesh = null;
       let weaponMesh = null;
+      let proceduralGroup = null;
 
       if (unitType === 'rifle' || unitType === 'storm') {
         const isStorm = unitType === 'storm';
@@ -11723,7 +11778,7 @@
         const leggingsMat = unitMaterials.canvasGaiter;
         const bootMat = unitMaterials.leatherBoot;
 
-        const proceduralGroup = new THREE.Group();
+        proceduralGroup = new THREE.Group();
 
         // 1. Torso: M1941 Field Jacket with collar lapels, pockets, belt, web suspenders, canteen, haversack
         const torsoGroup = new THREE.Group();
@@ -15149,11 +15204,15 @@
                 const uType = boat.cargo[idx];
                 const offsetX = (idx - (boat.cargo.length - 1) * 0.5) * 1.4;
                 // Soldiers exit right at the foot of the lowered ramp in plain sight
-                spawnEnemyUnit(
-                  uType,
-                  boat.group.position.x + offsetX,
-                  boat.group.position.z + 2.0
-                );
+                try {
+                  spawnEnemyUnit(
+                    uType,
+                    boat.group.position.x + offsetX,
+                    boat.group.position.z + 2.0
+                  );
+                } catch (spawnErr) {
+                  console.error('Failed to spawn disembarking unit:', spawnErr);
+                }
                 // Remove this soldier's placeholder visual mesh inside the boat hold
                 if (boat.troopMeshes && boat.troopMeshes.length > 0) {
                   const m = boat.troopMeshes.shift();
