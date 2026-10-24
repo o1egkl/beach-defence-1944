@@ -10447,110 +10447,499 @@
         });
       });
 
-      // B. Capital Dreadnought Battleships (USS Nevada / HMS Warspite Bombardment Group)
+      // B. Capital Yamato-Class Dreadnought Battleships (IJN Yamato / IJN Musashi / IJN Shinano Bombardment Group)
+      // Authentic Imperial Japanese Navy Materials (Yamato / Musashi Profile)
+      const yamatoHullMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        normalMap: textures.metalNormal,
+        color: 0x56626d, // Kure Naval Arsenal Slate Grey topsides
+        roughness: 0.45,
+        metalness: 0.65
+      });
+      const yamatoRedHullMat = new THREE.MeshStandardMaterial({
+        color: 0x7a221c, // Anti-fouling red-lead bottom paint
+        roughness: 0.62,
+        metalness: 0.30
+      });
+      const yamatoBootStripeMat = new THREE.MeshStandardMaterial({
+        color: 0x181a1c, // Dark charcoal/black waterline boot-topping
+        roughness: 0.70,
+        metalness: 0.20
+      });
+      const yamatoDeckWoodMat = new THREE.MeshStandardMaterial({
+        color: 0x7c6953, // Weathered teak wood deck planking
+        roughness: 0.78,
+        metalness: 0.15
+      });
+      const yamatoTurretMat = new THREE.MeshStandardMaterial({
+        map: textures.metal,
+        color: 0x4e5963, // Heavy faceted armor plate
+        roughness: 0.38,
+        metalness: 0.72
+      });
+      const yamatoGunBarrelMat = new THREE.MeshStandardMaterial({
+        color: 0x20252a, // Gunmetal 46cm & 15.5cm gun barrels
+        roughness: 0.30,
+        metalness: 0.88
+      });
+      const yamatoBlastBagMat = new THREE.MeshStandardMaterial({
+        color: 0xd8d4cb, // Weathered canvas blast bags (bloomers)
+        roughness: 0.85,
+        metalness: 0.05
+      });
+      const yamatoBlackFunnelMat = new THREE.MeshStandardMaterial({
+        color: 0x151719, // Matte black exhaust casing cap
+        roughness: 0.75,
+        metalness: 0.40
+      });
+      const yamatoGoldMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37, // Golden Imperial Chrysanthemum crest
+        roughness: 0.25,
+        metalness: 0.85
+      });
+      const yamatoBronzePropMat = new THREE.MeshStandardMaterial({
+        color: 0xb87333, // Bronze screw propellers
+        roughness: 0.30,
+        metalness: 0.85
+      });
+      const yamatoBridgeGlassMat = new THREE.MeshStandardMaterial({
+        color: 0x0c141a, // Dark bridge viewing slit band
+        roughness: 0.15,
+        metalness: 0.90
+      });
+      const yamatoRadarMat = new THREE.MeshStandardMaterial({
+        color: 0x262c32, // Type 21 radar mattress frame
+        roughness: 0.45,
+        metalness: 0.80
+      });
+      const yamatoFloatplaneGreenMat = new THREE.MeshStandardMaterial({
+        color: 0x254026, // IJN dark naval green aircraft camouflage
+        roughness: 0.50,
+        metalness: 0.30
+      });
+      const yamatoFloatplaneUndersideMat = new THREE.MeshStandardMaterial({
+        color: 0xa8b0ac, // Light ash grey underside
+        roughness: 0.55,
+        metalness: 0.25
+      });
+      const yamatoHinomaruMat = new THREE.MeshStandardMaterial({
+        color: 0xb31d1d, // Hinomaru red roundel
+        roughness: 0.50,
+        metalness: 0.10
+      });
+
+      // Procedural 16-Ray Imperial Japanese Navy Rising Sun Ensign
+      const cEnsign = document.createElement('canvas');
+      cEnsign.width = 128;
+      cEnsign.height = 80;
+      const ctxE = cEnsign.getContext('2d');
+      ctxE.fillStyle = '#f8f8f4';
+      ctxE.fillRect(0, 0, 128, 80);
+      const sunX = 48, sunY = 40, sunR = 18;
+      ctxE.fillStyle = '#b81e1e';
+      for (let i = 0; i < 16; i++) {
+        const a1 = (i * Math.PI) / 8 - (Math.PI / 32);
+        const a2 = (i * Math.PI) / 8 + (Math.PI / 32);
+        ctxE.beginPath();
+        ctxE.moveTo(sunX, sunY);
+        ctxE.lineTo(sunX + Math.cos(a1) * 150, sunY + Math.sin(a1) * 150);
+        ctxE.lineTo(sunX + Math.cos(a2) * 150, sunY + Math.sin(a2) * 150);
+        ctxE.closePath();
+        ctxE.fill();
+      }
+      ctxE.beginPath();
+      ctxE.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+      ctxE.fill();
+      const ensignTex = new THREE.CanvasTexture(cEnsign);
+      const yamatoEnsignMat = new THREE.MeshBasicMaterial({ map: ensignTex, side: THREE.DoubleSide });
+
       const battleshipConfigs = [
-        { x: -52, z: -195, rotY: 0.04, name: 'USS Nevada (BB-36)' },
-        { x: 18, z: -235, rotY: -0.02, name: 'HMS Warspite (03)' },
-        { x: 142, z: -275, rotY: -0.05, name: 'USS Texas (BB-35)' }
+        { x: -52, z: -195, rotY: 0.04, name: 'IJN Yamato' },
+        { x: 18, z: -235, rotY: -0.02, name: 'IJN Musashi' },
+        { x: 142, z: -275, rotY: -0.05, name: 'IJN Shinano (Battleship Spec)' }
       ];
+
       battleshipConfigs.forEach((cfg, idx) => {
         const ship = new THREE.Group();
         ship.position.set(cfg.x, 2.4, cfg.z);
         ship.rotation.y = cfg.rotY;
 
-        // Heavy Dreadnought Armored Hull (84m length, 14.5m beam)
-        const hull = new THREE.Mesh(new THREE.BoxGeometry(84, 9.5, 14.5), hullCamMat);
-        hull.position.y = 4.2;
-        hull.castShadow = true;
-        const boot = new THREE.Mesh(new THREE.BoxGeometry(84.4, 2.4, 14.2), bootToppingMat);
-        boot.position.y = 1.0;
-        ship.add(hull, boot);
+        // 1. Lower Hull & Anti-Fouling Red Bottom
+        const redHullMid = new THREE.Mesh(new THREE.BoxGeometry(60, 3.4, 15.0), yamatoRedHullMat);
+        redHullMid.position.set(-5, -4.1, 0);
+        redHullMid.castShadow = true;
 
-        // Armor Citadel Strake
-        const belt = new THREE.Mesh(new THREE.BoxGeometry(55, 4.5, 15.2), hullCamMat);
-        belt.position.set(0, 5.2, 0);
-        ship.add(belt);
+        const redHullFwd = new THREE.Mesh(new THREE.BoxGeometry(26, 3.4, 10.0), yamatoRedHullMat);
+        redHullFwd.position.set(35, -4.1, 0);
 
-        // Multi-tier Armored Bridge Citadel & Navigation Tower
-        const bridge = new THREE.Mesh(new THREE.BoxGeometry(16, 9.5, 11), superMat);
-        bridge.position.set(8, 11.5, 0);
-        const conningTower = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 4.5, 6.5, 12), superMat);
-        conningTower.position.set(13, 14, 0);
-        const upperBridge = new THREE.Mesh(new THREE.BoxGeometry(9, 5.5, 8.5), superMat);
-        upperBridge.position.set(7, 17, 0);
-        const director = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.8, 6.5), navalGunMat);
-        director.position.set(7, 20.5, 0);
-        ship.add(bridge, conningTower, upperBridge, director);
+        const redBowCut = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 4.8, 16, 8), yamatoRedHullMat);
+        redBowCut.rotateZ(-Math.PI / 2);
+        redBowCut.position.set(48, -4.1, 0);
 
-        // Heavy Tripod Foremast with Radar Antenna (34m high!)
-        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.65, 24, 8), superMat);
-        mast.position.set(10, 24, 0);
-        const radar = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.2, 0.5), navalGunMat);
-        radar.position.set(10, 32, 0);
-        ship.add(mast, radar);
+        // Iconic Bulbous Bow Hydro-Bulb (Yamato signature hydrodynamic feature)
+        const bulbousBow = new THREE.Mesh(new THREE.SphereGeometry(2.4, 12, 10), yamatoRedHullMat);
+        bulbousBow.scale.set(1.6, 0.9, 0.9);
+        bulbousBow.position.set(53.2, -4.3, 0);
 
-        // Dual Heavy Funnels (Smokestacks)
-        [-4, -16].forEach(fx => {
-          const funnel = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 9.5, 12), superMat);
-          funnel.rotation.z = -0.10;
-          funnel.position.set(fx, 12.5, 0);
-          const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 1.2, 12), navalGunMat);
-          cap.position.set(fx, 16.8, 0);
-          ship.add(funnel, cap);
+        const redHullAft = new THREE.Mesh(new THREE.BoxGeometry(26, 3.4, 9.5), yamatoRedHullMat);
+        redHullAft.position.set(-36, -4.1, 0);
+
+        const redSternCounter = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 0.8, 14, 12), yamatoRedHullMat);
+        redSternCounter.rotateZ(Math.PI / 2);
+        redSternCounter.position.set(-47, -3.8, 0);
+
+        [-7.8, 7.8].forEach(bz => {
+          const bulge = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 56, 8), yamatoRedHullMat);
+          bulge.rotateZ(Math.PI / 2);
+          bulge.position.set(-5, -3.2, bz);
+          ship.add(bulge);
         });
 
-        // Superfiring 14-Inch Heavy Gun Turrets (Turret 'A' & 'B')
-        const turretA = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
-        turretA.position.set(24, 10.2, 0);
-        for (let b = -1; b <= 1; b++) {
-          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
-          barrel.rotateZ(-Math.PI / 2);
-          barrel.position.set(36, 10.2, b * 2.8);
-          turretA.add(barrel);
-        }
-        ship.add(turretA);
+        const keel = new THREE.Mesh(new THREE.BoxGeometry(90, 0.8, 0.8), yamatoRedHullMat);
+        keel.position.set(-2, -5.7, 0);
 
-        // Turret 'B' (Elevated Barbette)
-        const barbetteB = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 5.5, 4.2, 14), superMat);
-        barbetteB.position.set(12, 11.0, 0);
-        const turretB = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
-        turretB.position.set(12, 14.5, 0);
-        for (let b = -1; b <= 1; b++) {
-          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
-          barrel.rotateZ(-Math.PI / 2);
-          barrel.position.set(24, 14.5, b * 2.8);
-          turretB.add(barrel);
-        }
-        ship.add(barbetteB, turretB);
+        const mainRudder = new THREE.Mesh(new THREE.BoxGeometry(4.5, 3.2, 0.4), yamatoRedHullMat);
+        mainRudder.position.set(-46, -4.2, 0);
+        const auxRudder = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.2, 0.35), yamatoRedHullMat);
+        auxRudder.position.set(-39.5, -4.4, 0);
 
-        // Aft Heavy Gun Turrets ('X' and 'Y')
-        const turretX = new THREE.Mesh(new THREE.BoxGeometry(11.5, 4.4, 11.5), navalGunMat);
-        turretX.position.set(-26, 10.2, 0);
-        for (let b = -1; b <= 1; b++) {
-          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 26, 10), navalGunMat);
-          barrel.rotateZ(Math.PI / 2);
-          barrel.position.set(-38, 10.2, b * 2.8);
-          turretX.add(barrel);
-        }
-        ship.add(turretX);
+        [-4.6, 4.6].forEach(pz => {
+          const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 10, 6), yamatoGunBarrelMat);
+          shaft.rotateZ(Math.PI / 2);
+          shaft.position.set(-43, -4.5, pz);
+          const screw = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 0.4, 6), yamatoBronzePropMat);
+          screw.rotateZ(Math.PI / 2);
+          screw.position.set(-45.5, -4.5, pz);
+          ship.add(shaft, screw);
+        });
+        [-2.0, 2.0].forEach(pz => {
+          const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 12, 6), yamatoGunBarrelMat);
+          shaft.rotateZ(Math.PI / 2);
+          shaft.position.set(-46, -4.8, pz);
+          const screw = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 0.4, 6), yamatoBronzePropMat);
+          screw.rotateZ(Math.PI / 2);
+          screw.position.set(-48.5, -4.8, pz);
+          ship.add(shaft, screw);
+        });
 
-        // Flanking 5-Inch Secondary Battery Turrets
-        for (let side = -1; side <= 1; side += 2) {
-          for (let tx = -8; tx <= 8; tx += 8) {
-            const sec = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.2, 3.5), navalGunMat);
-            sec.position.set(tx, 10.0, side * 6.5);
-            const b = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 6, 8), navalGunMat);
-            b.rotateX(side * Math.PI / 2);
-            b.position.set(tx, 10.0, side * 9.5);
-            ship.add(sec, b);
-          }
+        ship.add(redHullMid, redHullFwd, redBowCut, bulbousBow, redHullAft, redSternCounter, keel, mainRudder, auxRudder);
+
+        // 2. Waterline Boot-Topping (Dark Charcoal Band)
+        const bootMid = new THREE.Mesh(new THREE.BoxGeometry(60.2, 0.8, 15.2), yamatoBootStripeMat);
+        bootMid.position.set(-5, -2.4, 0);
+        const bootFwd = new THREE.Mesh(new THREE.BoxGeometry(26.2, 0.8, 10.4), yamatoBootStripeMat);
+        bootFwd.position.set(35, -2.4, 0);
+        const bootBow = new THREE.Mesh(new THREE.BoxGeometry(12.2, 0.8, 4.2), yamatoBootStripeMat);
+        bootBow.position.set(48, -2.4, 0);
+        const bootAft = new THREE.Mesh(new THREE.BoxGeometry(28.2, 0.8, 9.8), yamatoBootStripeMat);
+        bootAft.position.set(-36, -2.4, 0);
+        ship.add(bootMid, bootFwd, bootBow, bootAft);
+
+        // 3. Upper Hull Topsides & Wave Sheerline (Kure Arsenal Grey)
+        const hullMid = new THREE.Mesh(new THREE.BoxGeometry(58, 5.6, 15.0), yamatoHullMat);
+        hullMid.position.set(-5, 0.6, 0);
+        hullMid.castShadow = true;
+
+        const armorBelt = new THREE.Mesh(new THREE.BoxGeometry(54, 3.8, 15.8), yamatoHullMat);
+        armorBelt.position.set(-5, 0.2, 0);
+
+        const hullFwd = new THREE.Mesh(new THREE.BoxGeometry(26, 5.8, 11.2), yamatoHullMat);
+        hullFwd.position.set(35, 0.8, 0);
+
+        const bowSheer = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 5.5, 18, 8), yamatoHullMat);
+        bowSheer.rotateZ(-Math.PI / 2);
+        bowSheer.position.set(46, 1.8, 0);
+
+        const bowStem = new THREE.Mesh(new THREE.BoxGeometry(0.6, 6.8, 0.6), yamatoHullMat);
+        bowStem.position.set(53.2, 2.4, 0);
+
+        // Golden Imperial Chrysanthemum Crest at stemhead
+        const chryCrest = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.25, 16), yamatoGoldMat);
+        chryCrest.rotateZ(Math.PI / 2);
+        chryCrest.position.set(53.6, 4.7, 0);
+
+        const jackstaff = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 3.8, 6), yamatoGunBarrelMat);
+        jackstaff.position.set(53.0, 6.8, 0);
+
+        const hullAft = new THREE.Mesh(new THREE.BoxGeometry(26, 4.8, 10.5), yamatoHullMat);
+        hullAft.position.set(-36, 0.2, 0);
+
+        const sternCounter = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 3.8, 12, 12), yamatoHullMat);
+        sternCounter.rotateZ(Math.PI / 2);
+        sternCounter.position.set(-47, -0.2, 0);
+
+        ship.add(hullMid, armorBelt, hullFwd, bowSheer, bowStem, chryCrest, jackstaff, hullAft, sternCounter);
+
+        // 4. Weather Decks (Teak Planking)
+        const deckFwd = new THREE.Mesh(new THREE.BoxGeometry(32, 0.35, 13.0), yamatoDeckWoodMat);
+        deckFwd.position.set(28, 3.5, 0);
+
+        const deckMid = new THREE.Mesh(new THREE.BoxGeometry(40, 0.35, 14.5), yamatoDeckWoodMat);
+        deckMid.position.set(-8, 3.5, 0);
+
+        const deckAft = new THREE.Mesh(new THREE.BoxGeometry(18, 0.35, 10.2), yamatoDeckWoodMat);
+        deckAft.position.set(-44, 2.1, 0);
+
+        ship.add(deckFwd, deckMid, deckAft);
+
+        // 5. Main Battery (3 x Triple 46cm Type 94 Turrets)
+        function createMainTurret(facingAngle) {
+          const turretGroup = new THREE.Group();
+          const body = new THREE.Mesh(new THREE.BoxGeometry(11.2, 3.8, 10.5), yamatoTurretMat);
+          body.position.y = 1.9;
+          const glacis = new THREE.Mesh(new THREE.BoxGeometry(6.0, 3.8, 10.4), yamatoTurretMat);
+          glacis.rotateZ(-0.45);
+          glacis.position.set(3.2, 2.2, 0);
+          const rfBlister = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8, 12.6), yamatoTurretMat);
+          rfBlister.position.set(-4.8, 2.2, 0);
+          const cupola = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.6, 8), yamatoTurretMat);
+          cupola.position.set(-1.0, 4.0, 0);
+          turretGroup.add(body, glacis, rfBlister, cupola);
+
+          [-2.8, 0, 2.8].forEach(bz => {
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.58, 25, 12), yamatoGunBarrelMat);
+            barrel.rotateZ(-Math.PI / 2);
+            barrel.position.set(15.5, 1.9, bz);
+            const bloomer = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.85, 2.4, 10), yamatoBlastBagMat);
+            bloomer.rotateZ(-Math.PI / 2);
+            bloomer.position.set(3.8, 1.9, bz);
+            turretGroup.add(barrel, bloomer);
+          });
+          turretGroup.rotation.y = facingAngle;
+          return turretGroup;
         }
 
-        // Muzzle Flash Star Mesh for Shore Bombardment
-        const flashGeo = new THREE.SphereGeometry(3.8, 8, 8);
+        const barbette1 = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.8, 1.2, 18), yamatoHullMat);
+        barbette1.position.set(26, 4.0, 0);
+        const turret1 = createMainTurret(0);
+        turret1.position.set(26, 4.4, 0);
+        ship.add(barbette1, turret1);
+
+        const barbette2 = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.8, 3.6, 18), yamatoHullMat);
+        barbette2.position.set(11, 4.8, 0);
+        const turret2 = createMainTurret(0);
+        turret2.position.set(11, 6.6, 0);
+        ship.add(barbette2, turret2);
+
+        const barbette3 = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.8, 1.4, 18), yamatoHullMat);
+        barbette3.position.set(-36, 4.0, 0);
+        const turret3 = createMainTurret(Math.PI);
+        turret3.position.set(-36, 4.4, 0);
+        ship.add(barbette3, turret3);
+
+        // 6. Secondary Battery (2 x Triple 15.5cm Turrets)
+        function createSecondaryTurret(facingAngle) {
+          const secGroup = new THREE.Group();
+          const sBody = new THREE.Mesh(new THREE.BoxGeometry(5.5, 2.4, 5.5), yamatoTurretMat);
+          sBody.position.y = 1.2;
+          const sFace = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.7, 2.4, 12, 1, false, 0, Math.PI), yamatoTurretMat);
+          sFace.rotateY(-Math.PI / 2);
+          sFace.position.set(2.0, 1.2, 0);
+          secGroup.add(sBody, sFace);
+
+          [-1.4, 0, 1.4].forEach(bz => {
+            const b = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 11, 8), yamatoGunBarrelMat);
+            b.rotateZ(-Math.PI / 2);
+            b.position.set(7.5, 1.2, bz);
+            const bl = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.4, 8), yamatoBlastBagMat);
+            bl.rotateZ(-Math.PI / 2);
+            bl.position.set(2.4, 1.2, bz);
+            secGroup.add(b, bl);
+          });
+          secGroup.rotation.y = facingAngle;
+          return secGroup;
+        }
+
+        const secBarbFwd = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 2.6, 14), yamatoHullMat);
+        secBarbFwd.position.set(-2.2, 7.8, 0);
+        const secTurretFwd = createSecondaryTurret(0);
+        secTurretFwd.position.set(-2.2, 9.1, 0);
+        ship.add(secBarbFwd, secTurretFwd);
+
+        const secBarbAft = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 2.6, 14), yamatoHullMat);
+        secBarbAft.position.set(-23.0, 5.2, 0);
+        const secTurretAft = createSecondaryTurret(Math.PI);
+        secTurretAft.position.set(-23.0, 6.5, 0);
+        ship.add(secBarbAft, secTurretAft);
+
+        // 7. Pagoda Bridge Citadel (Tiered Tower)
+        const bridgeGroup = new THREE.Group();
+        const bTier1 = new THREE.Mesh(new THREE.BoxGeometry(14, 5.0, 9.5), yamatoHullMat);
+        bTier1.position.set(-8.5, 6.0, 0);
+        const bTier2 = new THREE.Mesh(new THREE.BoxGeometry(11, 3.2, 8.2), yamatoHullMat);
+        bTier2.position.set(-8.8, 9.8, 0);
+        const bWindows = new THREE.Mesh(new THREE.BoxGeometry(11.2, 0.75, 8.4), yamatoBridgeGlassMat);
+        bWindows.position.set(-8.8, 10.2, 0);
+        const bTier3 = new THREE.Mesh(new THREE.BoxGeometry(8.5, 3.0, 7.0), yamatoHullMat);
+        bTier3.position.set(-9.2, 12.8, 0);
+
+        [-4.6, 4.6].forEach(wz => {
+          const wing = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.4, 2.2), yamatoHullMat);
+          wing.position.set(-9.2, 12.0, wz);
+          bridgeGroup.add(wing);
+        });
+
+        const bTier4 = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 3.2, 2.8, 12), yamatoHullMat);
+        bTier4.position.set(-9.5, 15.5, 0);
+
+        // 15-meter Director Rangefinder Cupola & Optical Arms
+        const rfCupola = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 1.8, 12), yamatoTurretMat);
+        rfCupola.position.set(-9.5, 17.5, 0);
+        const rfArms = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 15.2), yamatoTurretMat);
+        rfArms.position.set(-9.5, 17.5, 0);
+
+        [-7.6, 7.6].forEach(lz => {
+          const hood = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.6, 0.8), yamatoGunBarrelMat);
+          hood.position.set(-9.5, 17.5, lz);
+          bridgeGroup.add(hood);
+        });
+
+        const radarAntenna = new THREE.Mesh(new THREE.BoxGeometry(0.4, 2.2, 4.2), yamatoRadarMat);
+        radarAntenna.position.set(-9.5, 19.5, 0);
+
+        bridgeGroup.add(bTier1, bTier2, bWindows, bTier3, bTier4, rfCupola, rfArms, radarAntenna);
+        ship.add(bridgeGroup);
+
+        // 8. Raked Funnel & Machinery Casing (~26 degree aft rake)
+        const funnelGroup = new THREE.Group();
+        const funnel = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.2, 8.5, 14), yamatoHullMat);
+        funnel.scale.set(1.3, 1.0, 0.85);
+        funnel.rotateZ(-0.45);
+        funnel.position.set(-16.5, 8.8, 0);
+
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.65, 2.65, 1.4, 14), yamatoBlackFunnelMat);
+        cap.scale.set(1.3, 1.0, 0.85);
+        cap.rotateZ(-0.45);
+        cap.position.set(-18.2, 12.2, 0);
+
+        const pipeFwd = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 8.8, 8), yamatoGunBarrelMat);
+        pipeFwd.rotateZ(-0.45);
+        pipeFwd.position.set(-15.2, 8.8, 0);
+
+        const slPlat = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.4, 6.2), yamatoHullMat);
+        slPlat.position.set(-16.0, 7.5, 0);
+        [-2.2, 2.2].forEach(sz => {
+          const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.8, 1.2, 10), yamatoGunBarrelMat);
+          sl.rotateX(Math.PI / 2);
+          sl.position.set(-16.0, 8.4, sz);
+          funnelGroup.add(sl);
+        });
+
+        funnelGroup.add(funnel, cap, pipeFwd, slPlat);
+        ship.add(funnelGroup);
+
+        // 9. Mainmast & Imperial Japanese Navy Ensign
+        const mastGroup = new THREE.Group();
+        const mastLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.55, 18, 8), yamatoHullMat);
+        mastLeg.rotateZ(-0.25);
+        mastLeg.position.set(-20.5, 12.5, 0);
+
+        const yard = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 9.5), yamatoGunBarrelMat);
+        yard.position.set(-21.8, 18.0, 0);
+
+        const gaff = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 6.0, 6), yamatoGunBarrelMat);
+        gaff.rotateZ(-0.65);
+        gaff.position.set(-23.5, 16.5, 0);
+
+        const ensign = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 2.6), yamatoEnsignMat);
+        ensign.rotateY(Math.PI / 2);
+        ensign.rotateZ(0.12);
+        ensign.position.set(-25.2, 15.2, 0.2);
+
+        mastGroup.add(mastLeg, yard, gaff, ensign);
+        ship.add(mastGroup);
+
+        // 10. Anti-Aircraft (AA) Batteries
+        const aaPositions = [
+          { x: -6, z: 7.4 }, { x: -12, z: 7.6 }, { x: -18, z: 7.4 },
+          { x: -6, z: -7.4 }, { x: -12, z: -7.6 }, { x: -18, z: -7.4 }
+        ];
+        aaPositions.forEach(p => {
+          const sponson = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 1.2, 10), yamatoHullMat);
+          sponson.position.set(p.x, 4.8, p.z);
+          const aaHouse = new THREE.Mesh(new THREE.SphereGeometry(1.4, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.6), yamatoTurretMat);
+          aaHouse.position.set(p.x, 5.4, p.z);
+          const sign = p.z > 0 ? 1 : -1;
+          [-0.35, 0.35].forEach(bo => {
+            const b = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 4.2, 6), yamatoGunBarrelMat);
+            b.rotateX(sign * Math.PI / 2);
+            b.rotateY(0.35);
+            b.position.set(p.x + bo, 5.8, p.z + sign * 2.2);
+            ship.add(b);
+          });
+          ship.add(sponson, aaHouse);
+        });
+
+        const tubPositions = [
+          { x: 18, z: 5.2 }, { x: 18, z: -5.2 },
+          { x: -1, z: 6.8 }, { x: -1, z: -6.8 },
+          { x: -29, z: 4.8 }, { x: -29, z: -4.8 }
+        ];
+        tubPositions.forEach(tp => {
+          const tub = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.9, 10), yamatoHullMat);
+          tub.position.set(tp.x, 4.0, tp.z);
+          const guns = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.8), yamatoGunBarrelMat);
+          guns.position.set(tp.x, 4.4, tp.z);
+          ship.add(tub, guns);
+        });
+
+        // 11. Sunken Quarterdeck Aviation Facilities
+        [-4.8, 4.8].forEach(cz => {
+          const catRail = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.7, 1.1), yamatoGunBarrelMat);
+          catRail.rotateY(cz > 0 ? 0.12 : -0.12);
+          catRail.position.set(-45, 2.6, cz);
+          ship.add(catRail);
+        });
+
+        // Reconnaissance Floatplane on Port Catapult
+        const planeGroup = new THREE.Group();
+        const planeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.44, 4.8, 8), yamatoFloatplaneGreenMat);
+        planeBody.rotateZ(Math.PI / 2);
+        planeBody.position.set(-45, 3.8, 4.8);
+        const planeWings = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.12, 6.2), yamatoFloatplaneGreenMat);
+        planeWings.position.set(-44.6, 4.1, 4.8);
+        [-2.6, 2.6].forEach(wz => {
+          const roundel = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.04, 12), yamatoHinomaruMat);
+          roundel.position.set(-44.6, 4.18, 4.8 + wz);
+          planeGroup.add(roundel);
+        });
+        const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.1), yamatoFloatplaneGreenMat);
+        tailFin.position.set(-47.0, 4.3, 4.8);
+        [-0.85, 0.85].forEach(fz => {
+          const flt = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 4.2, 8), yamatoFloatplaneUndersideMat);
+          flt.rotateZ(Math.PI / 2);
+          flt.position.set(-45, 3.1, 4.8 + fz);
+          const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6), yamatoGunBarrelMat);
+          strut.position.set(-45, 3.5, 4.8 + fz);
+          planeGroup.add(flt, strut);
+        });
+        const prop = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.15), yamatoGunBarrelMat);
+        prop.position.set(-42.5, 3.8, 4.8);
+        planeGroup.add(planeBody, planeWings, tailFin, prop);
+        ship.add(planeGroup);
+
+        // Heavy Aircraft Recovery Derrick Crane at Stern
+        const craneMast = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.45, 6.5, 8), yamatoGunBarrelMat);
+        craneMast.position.set(-49.5, 4.8, 0);
+        const craneBoom = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.35, 0.35), yamatoGunBarrelMat);
+        craneBoom.rotateZ(0.55);
+        craneBoom.position.set(-51.5, 6.4, 0);
+        ship.add(craneMast, craneBoom);
+
+        // Stern Jackstaff & Ensign
+        const sternStaff = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 3.6, 6), yamatoGunBarrelMat);
+        sternStaff.position.set(-51.8, 3.8, 0);
+        const sternEnsign = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.2), yamatoEnsignMat);
+        sternEnsign.rotateY(Math.PI / 2);
+        sternEnsign.rotateZ(0.15);
+        sternEnsign.position.set(-53.2, 3.8, 0.1);
+        ship.add(sternStaff, sternEnsign);
+
+        // 12. Shore Bombardment Muzzle Flash
+        const flashGeo = new THREE.SphereGeometry(4.2, 8, 8);
         const flashMat = new THREE.MeshBasicMaterial({ color: 0xffaa22, transparent: true, opacity: 0 });
         const muzzleFlash = new THREE.Mesh(flashGeo, flashMat);
-        muzzleFlash.position.set(48, 11, 0);
+        muzzleFlash.position.set(48, 4.0, 0);
         ship.add(muzzleFlash);
 
         scene.add(ship);
