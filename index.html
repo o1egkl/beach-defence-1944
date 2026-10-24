@@ -7,6 +7,19 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Beach Defence</title>
+  <meta name="theme-color" content="#181c14">
+  <meta name="color-scheme" content="dark">
+  <meta name="application-name" content="Beach Defence 1944">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Beach Defence">
+  <meta name="msapplication-TileColor" content="#181c14">
+  <meta name="msapplication-TileImage" content="/icons/icon-512.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -580,6 +593,9 @@
             <span>↺ RESTART WAVE</span>
           </button>
         </div>
+        <button id="btn-pause-install-pwa" type="button" class="hidden py-2 px-3 rounded-xl font-mono-tac text-xs text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+          <span>💻 INSTALL WINDOWS APP (OFFLINE PLAY)</span>
+        </button>
       </div>
     </div>
   </div>
@@ -746,6 +762,9 @@
         <div class="flex items-center gap-2">
           <button id="btn-reset-campaign" type="button" class="px-3.5 py-2 rounded-xl text-xs font-mono-tac font-semibold bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-stone-200 border border-stone-700 transition">
             ↺ Reset Campaign
+          </button>
+          <button id="btn-install-pwa" type="button" class="hidden px-3.5 py-2 rounded-xl text-xs font-mono-tac font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.3)] transition items-center gap-1.5 active:scale-95 cursor-pointer">
+            <span>💻 INSTALL WINDOWS APP</span>
           </button>
         </div>
         <div class="flex flex-wrap items-center gap-2.5">
@@ -16040,6 +16059,86 @@
     } else {
       window.addEventListener('DOMContentLoaded', initGame);
       window.addEventListener('load', initGame);
+    }
+
+    // --- PWA Service Worker & Windows App Installation Management ---
+    let deferredInstallPrompt = null;
+    const btnInstallPwa = document.getElementById('btn-install-pwa');
+    const btnPauseInstallPwa = document.getElementById('btn-pause-install-pwa');
+    const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches ||
+                            window.matchMedia('(display-mode: fullscreen)').matches ||
+                            window.navigator.standalone === true;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+        }).catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+      });
+    }
+
+    function showInstallButtons() {
+      if (isStandaloneApp) {
+        if (btnInstallPwa) {
+          btnInstallPwa.innerHTML = '<span>💻 WINDOWS APP ACTIVE</span>';
+          btnInstallPwa.classList.remove('hidden');
+          btnInstallPwa.classList.add('inline-flex');
+          btnInstallPwa.classList.add('opacity-70');
+          btnInstallPwa.style.pointerEvents = 'none';
+        }
+        return;
+      }
+      if (btnInstallPwa) {
+        btnInstallPwa.classList.remove('hidden');
+        btnInstallPwa.classList.add('inline-flex');
+      }
+      if (btnPauseInstallPwa) {
+        btnPauseInstallPwa.classList.remove('hidden');
+        btnPauseInstallPwa.classList.add('flex');
+      }
+    }
+
+    function hideInstallButtons() {
+      if (btnInstallPwa) btnInstallPwa.classList.add('hidden');
+      if (btnPauseInstallPwa) btnPauseInstallPwa.classList.add('hidden');
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      showInstallButtons();
+    });
+
+    async function triggerPwaInstall() {
+      if (!deferredInstallPrompt) {
+        alert('To install on Windows: In Microsoft Edge or Chrome, click the App Install icon in the address bar, or open the browser menu and select "Apps" -> "Install Beach Defence 1944 as an app".');
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      console.log('[PWA] Install prompt outcome:', outcome);
+      deferredInstallPrompt = null;
+      if (outcome === 'accepted') {
+        hideInstallButtons();
+      }
+    }
+
+    if (btnInstallPwa) {
+      btnInstallPwa.addEventListener('click', triggerPwaInstall);
+    }
+    if (btnPauseInstallPwa) {
+      btnPauseInstallPwa.addEventListener('click', triggerPwaInstall);
+    }
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] App successfully installed!');
+      hideInstallButtons();
+    });
+
+    if (isStandaloneApp) {
+      showInstallButtons();
     }
   </script>
 </body>

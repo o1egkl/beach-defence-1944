@@ -24,6 +24,14 @@ Defend the bunker and coastline from waves of incoming enemy invasion forces:
    ```
 2. Open `index.html` directly in any modern web browser (Chrome, Firefox, Edge, Safari). No build steps or server required!
 
+## 💻 Windows Desktop App (PWA & Offline Play)
+
+You can run Beach Defence 1944 as a native standalone Windows application:
+
+- **1-Click Windows Launcher**: Double-click [`Launch-Beach-Defence.bat`](file:///d:/agravity/beach%20defence/Launch-Beach-Defence.bat) to launch the game directly in borderless fullscreen app mode on Windows.
+- **Install from Browser**: In Microsoft Edge or Google Chrome, click the **"Install" icon (➕ / computer)** in the address bar or click **"💻 INSTALL WINDOWS APP"** inside the main game menu.
+- **Offline Support**: Once loaded, the game caches its core engine, audio synthesizer, and 3D assets via Service Worker for offline play without an internet connection.
+
 ## 🕹️ Controls
 
 - **Mouse**: Aim bunker turret / look around
