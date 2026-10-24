@@ -22,7 +22,7 @@ Defend the bunker and coastline from waves of incoming enemy invasion forces:
    git clone https://github.com/o1egkl/beach-defence-1944.git
    cd beach-defence-1944
    ```
-2. Open `index.html` or `beach_defence_1944_ww2_3d_first_person_coastal_defense.html` directly in any modern web browser (Chrome, Firefox, Edge, Safari). No build steps or server required!
+2. Open `index.html` directly in any modern web browser (Chrome, Firefox, Edge, Safari). No build steps or server required!
 
 ## 🕹️ Controls
 
