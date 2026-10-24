@@ -11149,67 +11149,16 @@
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
 
-    // Authentic 3D Soldier Model System (models/soldier_model.glb)
+    // Procedural WW2 Soldier System (High-Definition 1944 Textures & 60 FPS Fluid Running Kinematics)
     let soldierGLBTemplate = null;
 
     function initSoldierGLBLoader() {
-      if (typeof THREE === 'undefined' || !THREE.GLTFLoader) return;
-      const soldierLoader = new THREE.GLTFLoader();
-      soldierLoader.load('models/soldier_model.glb?v=' + Date.now(), (gltf) => {
-        const model = gltf.scene;
-
-        // Hide ground pedestal/cobblestone platform so soldiers have clean feet on sand
-        model.traverse((child) => {
-          if (child.name === 'group3' || (child.name && child.name.toLowerCase().startsWith('pcube'))) {
-            child.visible = false;
-          }
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            if (child.material) {
-              child.material.roughness = Math.min(1.0, (child.material.roughness || 0.65));
-              child.material.metalness = Math.min(0.2, (child.material.metalness || 0.05));
-              child.material.depthTest = true;
-              child.material.depthWrite = true;
-            }
-          }
-        });
-
-        // Bounding box height is ~151.13 units. Scale S = 0.016 gives ~2.42m height matching in-game soldier scale.
-        // Facing: model faces +Z, advancing towards the bunker at Z=42.
-        const S = 0.016;
-        model.scale.set(S, S, S);
-        model.position.set(0.194, 0, -0.065);
-
-        soldierGLBTemplate = model;
-        console.log('✅ Loaded authentic Soldier 3D model (models/soldier_model.glb)');
-
-        // Apply immediately to any soldiers already spawned on the beach
-        state.enemies.forEach((enemy) => {
-          if ((enemy.unitType === 'rifle' || enemy.unitType === 'storm') && !enemy.soldierGLBMesh) {
-            applySoldierGLB(enemy);
-          }
-        });
-      }, undefined, (err) => {
-        console.warn('⚠️ Could not load models/soldier_model.glb, falling back to procedural soldier:', err);
-      });
+      // Kept disabled for soldiers: procedural WW2 soldier provides authentic 1944 uniform, M1 helmet, and fluid 60 FPS skeletal running strides
+      soldierGLBTemplate = null;
     }
 
     function applySoldierGLB(enemy) {
-      if (!soldierGLBTemplate || !enemy.group) return;
-      if (enemy.soldierGLBMesh) return;
-
-      const clone = soldierGLBTemplate.clone(true);
-      clone.position.set(0.194, 0, -0.065);
-      clone.rotation.set(0, 0, 0);
-
-      enemy.group.add(clone);
-      enemy.soldierGLBMesh = clone;
-
-      // Hide procedural geometry so only the authentic 3D soldier model is rendered
-      if (enemy.proceduralGroup) {
-        enemy.proceduralGroup.visible = false;
-      }
+      // No-op: using upgraded procedural WW2 soldier with 2-segment articulated limbs
     }
 
     function createFloatingHPBar(width = 1.8) {
@@ -11635,70 +11584,64 @@
         const uniformMat = isStorm ? unitMaterials.stormCoat : unitMaterials.infantryCoat;
         const tGrp = new THREE.Group();
 
-        if (soldierGLBTemplate) {
-          const m = soldierGLBTemplate.clone(true);
-          m.position.set(0, 0, 0);
-          tGrp.add(m);
-        } else {
-          // 1. Contoured Torso & Field Jacket
-          const tTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.95, 12), uniformMat);
-          tTorso.position.y = 1.15;
-          tTorso.scale.set(1.15, 1.0, 0.7);
-          tTorso.castShadow = true;
+        // 1. Contoured Torso & Field Jacket
+        const tTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.95, 12), uniformMat);
+        tTorso.position.y = 1.15;
+        tTorso.scale.set(1.15, 1.0, 0.7);
+        tTorso.castShadow = true;
 
-          const tBelt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.16, 12), unitMaterials.canvasGaiter);
-          tBelt.position.y = 0.72;
-          tBelt.scale.set(1.15, 1.0, 0.7);
+        const tBelt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.16, 12), unitMaterials.canvasGaiter);
+        tBelt.position.y = 0.72;
+        tBelt.scale.set(1.15, 1.0, 0.7);
 
-          const tBackpack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.65, 0.22), unitMaterials.canvasGaiter);
-          tBackpack.position.set(0, 1.25, -0.28);
-          tGrp.add(tTorso, tBelt, tBackpack);
+        const tBackpack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.65, 0.22), unitMaterials.canvasGaiter);
+        tBackpack.position.set(0, 1.25, -0.28);
+        tGrp.add(tTorso, tBelt, tBackpack);
 
-          // 2. Sculpted Head & M1 Helmet
-          const tNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.18, 8), unitMaterials.skin);
-          tNeck.position.y = 1.72;
-          const tHead = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), unitMaterials.skin);
-          tHead.position.y = 1.88;
-          const tHelmet = new THREE.Mesh(
-            new THREE.SphereGeometry(0.36, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
-            unitMaterials.helmet
-          );
-          tHelmet.scale.set(0.98, 1.0, 1.08);
-          tHelmet.position.y = 1.94;
-          const tRim = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.024, 6, 16), unitMaterials.helmet);
-          tRim.rotation.x = Math.PI / 2;
-          tRim.position.y = 1.94;
-          tGrp.add(tNeck, tHead, tHelmet, tRim);
+        // 2. Sculpted Head & M1 Helmet
+        const tNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.18, 8), unitMaterials.skin);
+        tNeck.position.y = 1.72;
+        const tHead = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), unitMaterials.skin);
+        tHead.position.y = 1.88;
+        const tHelmet = new THREE.Mesh(
+          new THREE.SphereGeometry(0.36, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
+          unitMaterials.helmet
+        );
+        tHelmet.scale.set(0.98, 1.0, 1.08);
+        tHelmet.position.y = 1.94;
+        const tRim = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.024, 6, 16), unitMaterials.helmet);
+        tRim.rotation.x = Math.PI / 2;
+        tRim.position.y = 1.94;
+        tGrp.add(tNeck, tHead, tHelmet, tRim);
 
-          // 3. Legs
-          for (let s = -1; s <= 1; s += 2) {
-            const tThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.50, 8), uniformMat);
-            tThigh.position.set(s * 0.20, 0.48, 0);
-            const tGaiter = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.42, 8), unitMaterials.canvasGaiter);
-            tGaiter.position.set(s * 0.20, 0.18, 0);
-            const tBoot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.30), unitMaterials.leatherBoot);
-            tBoot.position.set(s * 0.20, 0.05, 0.05);
-            tGrp.add(tThigh, tGaiter, tBoot);
-          }
-
-          // 4. Arms holding rifle upright
-          for (let s = -1; s <= 1; s += 2) {
-            const tArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.52, 8), uniformMat);
-            tArm.position.set(s * 0.36, 1.25, 0.10);
-            tArm.rotation.set(0.65, 0, -s * 0.22);
-            tGrp.add(tArm);
-          }
-
-          // Upright M1 Garand Rifle
-          const tRifle = new THREE.Group();
-          const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 1.25), unitMaterials.woodRifle);
-          tStock.rotation.x = -Math.PI / 2 + 0.12;
-          const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.75, 8), unitMaterials.darkMetal);
-          tBarrel.position.set(0, 0.65, 0);
-          tRifle.add(tStock, tBarrel);
-          tRifle.position.set(0.10, 1.05, 0.32);
-          tGrp.add(tRifle);
+        // 3. Legs
+        for (let s = -1; s <= 1; s += 2) {
+          const tThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.50, 8), uniformMat);
+          tThigh.position.set(s * 0.20, 0.48, 0);
+          const tGaiter = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.42, 8), unitMaterials.canvasGaiter);
+          tGaiter.position.set(s * 0.20, 0.18, 0);
+          const tBoot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.30), unitMaterials.leatherBoot);
+          tBoot.position.set(s * 0.20, 0.05, 0.05);
+          tGrp.add(tThigh, tGaiter, tBoot);
         }
+
+        // 4. Arms holding rifle upright
+        for (let s = -1; s <= 1; s += 2) {
+          const tArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.52, 8), uniformMat);
+          tArm.position.set(s * 0.36, 1.25, 0.10);
+          tArm.rotation.set(0.65, 0, -s * 0.22);
+          tGrp.add(tArm);
+        }
+
+        // Upright M1 Garand Rifle
+        const tRifle = new THREE.Group();
+        const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 1.25), unitMaterials.woodRifle);
+        tStock.rotation.x = -Math.PI / 2 + 0.12;
+        const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.75, 8), unitMaterials.darkMetal);
+        tBarrel.position.set(0, 0.65, 0);
+        tRifle.add(tStock, tBarrel);
+        tRifle.position.set(0.10, 1.05, 0.32);
+        tGrp.add(tRifle);
 
         const row = Math.floor(cIdx / 2);
         const col = (cIdx % 2 === 0 ? -1 : 1);
@@ -15262,28 +15205,8 @@
 
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
-          // Authentic WW2 infantry running biomechanics (supports both 3D GLB soldier model and procedural fallback)
-          if (enemy.soldierGLBMesh) {
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed / 0.50);
-            const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
-
-            // Natural center-of-mass sprint bounce (4.5 cm)
-            enemy.group.position.y = groundY + Math.abs(stride) * 0.045;
-
-            // Combat charge forward lean (~10 deg) with rhythmic breath and shoulder sway
-            enemy.soldierGLBMesh.rotation.x = 0.16 + Math.abs(stride) * 0.035;
-            enemy.soldierGLBMesh.rotation.y = Math.sin(enemy.stridePhase) * 0.055;
-            enemy.soldierGLBMesh.rotation.z = Math.sin(enemy.stridePhase) * 0.035;
-
-            // Footstep sand dust puff on every boot plant
-            const currentStep = Math.floor(enemy.stridePhase / Math.PI);
-            if (currentStep !== enemy.lastFootstepStep) {
-              enemy.lastFootstepStep = currentStep;
-              const footSide = (stride > 0 ? 0.22 : -0.22);
-              const footPos = new THREE.Vector3(enemy.group.position.x + footSide, groundY + 0.05, enemy.group.position.z);
-              spawnBurstParticles(footPos, 0xd4b483, 3, 1.0);
-            }
-          } else if (enemy.legs && enemy.legs.length === 2) {
+          // Authentic 60 FPS WW2 infantry running biomechanics
+          if (enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed / 0.50);
             const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
             if (enemy.legs[0].hip) {
