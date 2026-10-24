@@ -11721,90 +11721,98 @@
 
         proceduralGroup = new THREE.Group();
 
-        // 1. Torso: M1941 Field Jacket with collar lapels, pockets, belt, web suspenders, canteen, haversack
+        // Root anatomical pelvis at waist height
+        const pelvisGroup = new THREE.Group();
+        pelvisGroup.position.set(0, 0.88, 0);
+        proceduralGroup.add(pelvisGroup);
+
+        // 1. Torso Group (spine & chest, hinged at the pelvis)
         const torsoGroup = new THREE.Group();
+        torsoGroup.position.set(0, 0, 0);
+        pelvisGroup.add(torsoGroup);
+        torsoMesh = torsoGroup;
+
+        // 10-Pocket M1 Cartridge Webbing Belt around waist (at pelvis level y = 0)
+        const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.18, 10), unitMaterials.canvasGaiter);
+        belt.scale.set(1.1, 1.0, 0.7);
+        belt.position.y = 0;
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), unitMaterials.brassAmmo);
+        buckle.position.set(0, 0, 0.28);
+        torsoGroup.add(belt, buckle);
+
+        for (let p = -2; p <= 2; p++) {
+          if (p === 0) continue;
+          const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.11), unitMaterials.canvasGaiter);
+          pouch.position.set(p * 0.17, 0, 0.28);
+          torsoGroup.add(pouch);
+        }
+
+        // Canteen on right hip
+        const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 8), unitMaterials.canvasGaiter);
+        canteen.position.set(0.44, 0, 0);
+        const canteenCap = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 6), unitMaterials.darkMetal);
+        canteenCap.position.set(0.44, 0.12, 0);
+        // First aid pouch on left hip
+        const aidPouch = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.09), unitMaterials.canvasGaiter);
+        aidPouch.position.set(-0.44, 0, 0);
+        torsoGroup.add(canteen, canteenCap, aidPouch);
+
+        // Torso: M1941 Field Jacket chest
         const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.36, 1.15, 8), uniformMat);
-        chest.position.y = 1.35;
+        chest.position.y = 0.47;
         chest.scale.set(1.15, 1.0, 0.7);
         chest.castShadow = true;
         torsoGroup.add(chest);
-        torsoMesh = torsoGroup;
 
         // Folded collar lapels
         const collarL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.14), uniformMat);
-        collarL.position.set(-0.16, 1.94, 0.18);
+        collarL.position.set(-0.16, 1.06, 0.18);
         collarL.rotation.set(-0.2, 0, 0.25);
         const collarR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.14), uniformMat);
-        collarR.position.set(0.16, 1.94, 0.18);
+        collarR.position.set(0.16, 1.06, 0.18);
         collarR.rotation.set(-0.2, 0, -0.25);
         // V-neck undershirt glimpse
         const vNeck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.08), unitMaterials.canvasGaiter);
-        vNeck.position.set(0, 1.90, 0.16);
+        vNeck.position.set(0, 1.02, 0.16);
         torsoGroup.add(collarL, collarR, vNeck);
 
         // Breast bellow pockets with button flaps
         for (let s = -1; s <= 1; s += 2) {
           const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.20, 0.08), uniformMat);
-          pocket.position.set(s * 0.24, 1.55, 0.28);
+          pocket.position.set(s * 0.24, 0.67, 0.28);
           const pFlap = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.07, 0.09), uniformMat);
-          pFlap.position.set(s * 0.24, 1.66, 0.29);
+          pFlap.position.set(s * 0.24, 0.78, 0.29);
           const pButton = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.02), unitMaterials.brassAmmo);
-          pButton.position.set(s * 0.24, 1.63, 0.34);
+          pButton.position.set(s * 0.24, 0.75, 0.34);
           torsoGroup.add(pocket, pFlap, pButton);
         }
 
         // M1936 Web Suspenders crossing shoulders down to cartridge belt
         for (let s = -1; s <= 1; s += 2) {
           const suspenderFront = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.85, 0.04), unitMaterials.canvasGaiter);
-          suspenderFront.position.set(s * 0.25, 1.35, 0.26);
+          suspenderFront.position.set(s * 0.25, 0.47, 0.26);
           const suspenderBack = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.85, 0.04), unitMaterials.canvasGaiter);
-          suspenderBack.position.set(s * 0.22, 1.35, -0.26);
+          suspenderBack.position.set(s * 0.22, 0.47, -0.26);
           torsoGroup.add(suspenderFront, suspenderBack);
         }
 
-        // 10-Pocket M1 Cartridge Webbing Belt around waist
-        const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.18, 10), unitMaterials.canvasGaiter);
-        belt.scale.set(1.1, 1.0, 0.7);
-        belt.position.y = 0.88;
-        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), unitMaterials.brassAmmo);
-        buckle.position.set(0, 0.88, 0.28);
-        torsoGroup.add(belt, buckle);
-
-        for (let p = -2; p <= 2; p++) {
-          if (p === 0) continue;
-          const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.11), unitMaterials.canvasGaiter);
-          pouch.position.set(p * 0.17, 0.88, 0.28);
-          torsoGroup.add(pouch);
-        }
-
-        // Canteen on right hip
-        const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 8), unitMaterials.canvasGaiter);
-        canteen.position.set(0.44, 0.88, 0);
-        const canteenCap = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 6), unitMaterials.darkMetal);
-        canteenCap.position.set(0.44, 1.0, 0);
-        // First aid pouch on left hip
-        const aidPouch = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.09), unitMaterials.canvasGaiter);
-        aidPouch.position.set(-0.44, 0.88, 0);
-        torsoGroup.add(canteen, canteenCap, aidPouch);
-
         // M1928 Haversack Backpack on back with rolled wool bedroll & entrenching shovel
         const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.75, 0.28), unitMaterials.canvasGaiter);
-        backpack.position.set(0, 1.45, -0.34);
+        backpack.position.set(0, 0.57, -0.34);
         const bedroll = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.65, 8), unitMaterials.scrimGreen);
         bedroll.rotateZ(Math.PI / 2);
-        bedroll.position.set(0, 1.88, -0.34);
+        bedroll.position.set(0, 1.00, -0.34);
         const shovelHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.52, 6), unitMaterials.woodRifle);
-        shovelHandle.position.set(0.12, 1.62, -0.46);
+        shovelHandle.position.set(0.12, 0.74, -0.46);
         shovelHandle.rotation.z = -0.25;
         const shovelBlade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.20, 0.04), unitMaterials.darkMetal);
-        shovelBlade.position.set(0.06, 1.40, -0.47);
+        shovelBlade.position.set(0.06, 0.52, -0.47);
         torsoGroup.add(backpack, bedroll, shovelHandle, shovelBlade);
 
-        proceduralGroup.add(torsoGroup);
-
-        // 2. Sculpted Head & Facial Anatomy (Brow ridge, nose, jawline, ears)
+        // 2. Sculpted Head & Facial Anatomy (Mounted directly on torso neck!)
         const headGroup = new THREE.Group();
-        headGroup.position.set(0, 2.12, 0);
+        headGroup.position.set(0, 1.24, 0.02);
+        torsoGroup.add(headGroup);
 
         const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.22, 8), unitMaterials.skin);
         neck.position.y = -0.17;
@@ -11831,16 +11839,14 @@
         earR.position.set(0.29, 0, 0.02);
         headGroup.add(brow, nose, jaw, earL, earR);
 
-        proceduralGroup.add(headGroup);
-
-        // 3. Combat Steel Helmet with Camo Netting & Scrim
+        // 3. Combat Steel Helmet with Camo Netting & Scrim (Inside headGroup)
         const helmetGroup = new THREE.Group();
-        helmetGroup.position.set(0, 2.18, 0);
+        helmetGroup.position.set(0, 0.06, 0);
         const helmetDome = new THREE.Mesh(
           new THREE.SphereGeometry(0.39, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
           unitMaterials.helmet
         );
-        helmetDome.scale.set(0.98, 1.0, 1.08); // Authentic front-to-back elongation
+        helmetDome.scale.set(0.98, 1.0, 1.08);
         helmetDome.castShadow = true;
 
         const helmetRim = new THREE.Mesh(
@@ -11874,59 +11880,21 @@
 
         helmetMesh = helmetDome;
         helmetGroup.add(helmetDome, helmetRim, chinstrap);
-        proceduralGroup.add(helmetGroup);
+        headGroup.add(helmetGroup);
 
-        // 4. Articulated Legs: Wool trousers, Canvas M1938 Gaiters, Contoured Leather Boots with Heels
-        for (let l = -1; l <= 1; l += 2) {
-          const hipGroup = new THREE.Group();
-          hipGroup.position.set(l * 0.24, 0.88, 0);
+        // 4. Arms & Two-Handed Weapon Assembly (Attached to shoulders of torsoGroup)
+        const upperBodyWeapons = new THREE.Group();
+        upperBodyWeapons.position.set(0, 0.84, 0);
+        torsoGroup.add(upperBodyWeapons);
 
-          const upperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.58, 8), uniformMat);
-          upperLeg.position.y = -0.29;
-          upperLeg.castShadow = true;
-          hipGroup.add(upperLeg);
-
-          const kneeGroup = new THREE.Group();
-          kneeGroup.position.set(0, -0.56, 0);
-
-          // Canvas gaiters/leggings laced around shins with lace seam
-          const leggings = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.48, 8), leggingsMat);
-          leggings.position.y = -0.22;
-          leggings.castShadow = true;
-          // Legging lace seam rib
-          const laceSeam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.44, 0.04), unitMaterials.scrimKhaki);
-          laceSeam.position.set(l * 0.11, -0.22, 0.02);
-
-          // Contoured combat service boot: heel, ankle, and toe
-          const bootGroup = new THREE.Group();
-          bootGroup.position.set(0, -0.46, 0.06);
-          // Main boot body
-          const bootMain = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.36), bootMat);
-          bootMain.castShadow = true;
-          // Raised heel block
-          const bootHeel = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.08, 0.14), unitMaterials.darkMetal);
-          bootHeel.position.set(0, -0.07, -0.10);
-          // Rounded toe cap
-          const bootToe = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.12, 0.14), bootMat);
-          bootToe.position.set(0, -0.03, 0.20);
-          bootGroup.add(bootMain, bootHeel, bootToe);
-
-          kneeGroup.add(leggings, laceSeam, bootGroup);
-          hipGroup.add(kneeGroup);
-          proceduralGroup.add(hipGroup);
-          legs.push({ hip: hipGroup, knee: kneeGroup });
-        }
-
-        // 5. Articulated Arms holding weapon in two-handed assault ready position with sculpted hands
         const armLeftGroup = new THREE.Group();
-        armLeftGroup.position.set(-0.48, 1.72, 0);
+        armLeftGroup.position.set(-0.48, 0, 0);
         const lUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.52, 8), uniformMat);
         lUpperArm.position.set(0, -0.22, 0.12);
         lUpperArm.rotation.x = -0.45;
         const lForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.48, 8), uniformMat);
         lForearm.position.set(0.18, -0.42, 0.42);
         lForearm.rotation.set(-0.85, 0.35, -0.3);
-        // Sculpted hand gripping gun fore-end (palm + thumb + fingers)
         const lHandGrp = new THREE.Group();
         lHandGrp.position.set(0.25, -0.48, 0.58);
         const lPalm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.10), unitMaterials.skin);
@@ -11934,18 +11902,17 @@
         lThumb.position.set(-0.04, 0.03, 0);
         lHandGrp.add(lPalm, lThumb);
         armLeftGroup.add(lUpperArm, lForearm, lHandGrp);
-        proceduralGroup.add(armLeftGroup);
+        upperBodyWeapons.add(armLeftGroup);
         arms.push(armLeftGroup);
 
         const armRightGroup = new THREE.Group();
-        armRightGroup.position.set(0.48, 1.72, 0);
+        armRightGroup.position.set(0.48, 0, 0);
         const rUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.52, 8), uniformMat);
         rUpperArm.position.set(0, -0.22, 0.08);
         rUpperArm.rotation.x = -0.35;
         const rForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.48, 8), uniformMat);
         rForearm.position.set(-0.14, -0.42, 0.35);
         rForearm.rotation.set(-0.75, -0.25, 0.2);
-        // Sculpted right hand gripping trigger & wrist
         const rHandGrp = new THREE.Group();
         rHandGrp.position.set(-0.16, -0.46, 0.48);
         const rPalm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.10), unitMaterials.skin);
@@ -11953,12 +11920,12 @@
         rThumb.position.set(0.04, 0.03, 0);
         rHandGrp.add(rPalm, rThumb);
         armRightGroup.add(rUpperArm, rForearm, rHandGrp);
-        proceduralGroup.add(armRightGroup);
+        upperBodyWeapons.add(armRightGroup);
         arms.push(armRightGroup);
 
-        // 6. Combat Small Arms (Semi-Auto Rifle / Submachine Gun)
+        // Combat Small Arms (Positioned directly in hands inside upperBodyWeapons)
         const weaponGroup = new THREE.Group();
-        weaponGroup.position.set(0.16, 1.25, 0.35);
+        weaponGroup.position.set(0.16, -0.47, 0.35);
         weaponGroup.rotation.set(0.25, -0.15, 0);
 
         if (!isStorm) {
@@ -11981,14 +11948,12 @@
           const gasCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.40, 8), unitMaterials.darkMetal);
           gasCylinder.rotateX(Math.PI / 2);
           gasCylinder.position.set(0, 0.02, 1.05);
-          // Front sight with dual protective ear wings
           const frontSightBase = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.04, 0.04), unitMaterials.darkMetal);
           frontSightBase.position.set(0, 0.09, 1.28);
           const frontWingL = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.03), unitMaterials.darkMetal);
           frontWingL.position.set(-0.018, 0.11, 1.28);
           const frontWingR = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.03), unitMaterials.darkMetal);
           frontWingR.position.set(0.018, 0.11, 1.28);
-          // Leather sling
           const sling = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.015, 0.65), unitMaterials.leatherBoot);
           sling.position.set(0, -0.06, 0.55);
           sling.rotation.x = -0.08;
@@ -12006,13 +11971,11 @@
           const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.45, 8), unitMaterials.darkMetal);
           tBarrel.rotateX(Math.PI / 2);
           tBarrel.position.set(0, 0.04, 0.75);
-          // Finned cooling rings on barrel
           for (let r = 0; r < 4; r++) {
             const fin = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.008, 4, 10), unitMaterials.darkMetal);
             fin.position.set(0, 0.04, 0.60 + r * 0.05);
             weaponGroup.add(fin);
           }
-          // Cutts compensator muzzle
           const tComp = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.034, 0.12, 8), unitMaterials.darkMetal);
           tComp.rotateX(Math.PI / 2);
           tComp.position.set(0, 0.04, 0.96);
@@ -12021,8 +11984,45 @@
           tMag.rotation.x = -0.15;
           weaponGroup.add(tStock, tReceiver, tRearSight, tForegrip, tBarrel, tComp, tMag);
         }
-        proceduralGroup.add(weaponGroup);
+        upperBodyWeapons.add(weaponGroup);
         weaponMesh = weaponGroup;
+
+        // 5. Articulated Legs (Attached to pelvisGroup at y = 0)
+        for (let l = -1; l <= 1; l += 2) {
+          const hipGroup = new THREE.Group();
+          hipGroup.position.set(l * 0.24, 0, 0);
+
+          const upperLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.58, 8), uniformMat);
+          upperLeg.position.y = -0.29;
+          upperLeg.castShadow = true;
+          hipGroup.add(upperLeg);
+
+          const kneeGroup = new THREE.Group();
+          kneeGroup.position.set(0, -0.56, 0);
+
+          // Canvas gaiters/leggings laced around shins with lace seam
+          const leggings = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.48, 8), leggingsMat);
+          leggings.position.y = -0.22;
+          leggings.castShadow = true;
+          const laceSeam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.44, 0.04), unitMaterials.scrimKhaki);
+          laceSeam.position.set(l * 0.11, -0.22, 0.02);
+
+          // Contoured combat service boot: heel, ankle, and toe
+          const bootGroup = new THREE.Group();
+          bootGroup.position.set(0, -0.46, 0.06);
+          const bootMain = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.36), bootMat);
+          bootMain.castShadow = true;
+          const bootHeel = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.08, 0.14), unitMaterials.darkMetal);
+          bootHeel.position.set(0, -0.07, -0.10);
+          const bootToe = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.12, 0.14), bootMat);
+          bootToe.position.set(0, -0.03, 0.20);
+          bootGroup.add(bootMain, bootHeel, bootToe);
+
+          kneeGroup.add(leggings, laceSeam, bootGroup);
+          hipGroup.add(kneeGroup);
+          pelvisGroup.add(hipGroup);
+          legs.push({ hip: hipGroup, knee: kneeGroup });
+        }
 
         group.add(proceduralGroup);
 
@@ -12604,10 +12604,13 @@
         group,
         hitboxes,
         hpBar,
+        pelvis: (unitType === 'rifle' || unitType === 'storm') ? pelvisGroup : null,
+        torso: torsoMesh,
+        head: (unitType === 'rifle' || unitType === 'storm') ? headGroup : null,
+        armsWeapon: (unitType === 'rifle' || unitType === 'storm') ? upperBodyWeapons : null,
         legs,
         arms,
         wheels,
-        torso: torsoMesh,
         weapon: weaponMesh,
         tankTurret,
         helmetMesh,
@@ -12626,12 +12629,6 @@
       });
 
       state.enemies.push(enemyObj);
-
-      if (unitType === 'rifle' || unitType === 'storm') {
-        if (soldierGLBTemplate) {
-          applySoldierGLB(enemyObj);
-        }
-      }
     }
 
     // --- 7. PARACHUTE HEALTH / REPAIR SUPPLY CRATES ---
@@ -15206,48 +15203,83 @@
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
           // Authentic 60 FPS WW2 infantry running biomechanics
-          if (enemy.legs && enemy.legs.length === 2) {
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed / 0.50);
-            const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
-            if (enemy.legs[0].hip) {
-              // Full anatomical 2-segment limb stride
-              enemy.legs[0].hip.rotation.x = stride * 0.72;
-              enemy.legs[1].hip.rotation.x = -stride * 0.72;
-              // Knee flexes upward during push-off / back-swing (~55 deg) and extends on forward plant
-              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.max(0, -stride * 0.95);
-              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.max(0, stride * 0.95);
-            } else if (enemy.legs[0].rotation) {
-              enemy.legs[0].rotation.x = stride * 0.52;
-              enemy.legs[1].rotation.x = -stride * 0.52;
-            }
+          if (enemy.pelvis && enemy.legs && enemy.legs.length === 2) {
+            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed * 2.2);
+            const phase = enemy.stridePhase + enemy.wobbleSeed;
+            const swingL = Math.sin(phase);
+            const swingR = -swingL;
 
-            // Natural center-of-mass sprint bounce (4.5 cm)
-            enemy.group.position.y = groundY + Math.abs(stride) * 0.045;
+            // 1. Natural Center-of-Mass Bounce (occurs twice per stride cycle at foot strikes)
+            const bounce = Math.abs(swingL) * 0.045;
+            enemy.pelvis.position.y = 0.88 + bounce;
+            enemy.group.position.y = groundY;
 
+            // 2. Pelvic Tilts (natural human gait: twist into leading leg + hip roll)
+            enemy.pelvis.rotation.y = -swingL * 0.045;
+            enemy.pelvis.rotation.z = swingL * 0.035;
+
+            // 3. Anatomical 2-Segment Limb Strides
+            // Left Leg:
+            enemy.legs[0].hip.rotation.x = -swingL * 0.48;
+            // Knee flexes upward during push-off / back-swing (swingL < 0) and extends forward to plant
+            enemy.legs[0].knee.rotation.x = Math.max(0.08, -swingL * 1.10);
+
+            // Right Leg (counter-phase):
+            enemy.legs[1].hip.rotation.x = -swingR * 0.48;
+            enemy.legs[1].knee.rotation.x = Math.max(0.08, -swingR * 1.10);
+
+            // 4. Torso Combat Sprint Lean & Shoulder Counter-Rotation
             if (enemy.torso) {
-              // Combat charge forward lean (~10 deg) with rhythmic breath and shoulder sway
-              enemy.torso.rotation.x = 0.18 + Math.abs(stride) * 0.02;
-              enemy.torso.rotation.y = Math.sin(enemy.stridePhase) * 0.06;
-              enemy.torso.rotation.z = Math.sin(enemy.stridePhase) * 0.035;
-            }
-            if (enemy.arms && enemy.arms.length === 2) {
-              // Natural sprint arm swing counter-balancing the legs
-              enemy.arms[0].rotation.x = -stride * 0.35;
-              enemy.arms[1].rotation.x = stride * 0.35;
-            }
-            if (enemy.weapon) {
-              // Weapon held firmly at ready, swaying with upper body
-              enemy.weapon.rotation.x = 0.22 + Math.sin(enemy.stridePhase * 2) * 0.04;
+              // Tactical hunched sprint lean (~14 deg) with breath pulse
+              enemy.torso.rotation.x = 0.24 + Math.abs(swingL) * 0.02;
+              // Shoulder counter-twist balancing leg swing
+              enemy.torso.rotation.y = swingL * 0.055;
+              enemy.torso.rotation.z = -swingL * 0.025;
             }
 
-            // Footstep sand dust puff on every boot plant
-            const currentStep = Math.floor(enemy.stridePhase / Math.PI);
+            // 5. Head Stabilization (eyes locked forward on bunker embrasure)
+            if (enemy.head) {
+              enemy.head.rotation.x = -0.12; // Compensate torso lean so gaze is level
+              enemy.head.rotation.y = -swingL * 0.035; // Counter-stabilize heading
+            }
+
+            // 6. Two-Handed Tactical Rifle Carry Sway
+            if (enemy.armsWeapon) {
+              enemy.armsWeapon.rotation.x = 0.08 + Math.sin(phase * 2) * 0.025;
+              enemy.armsWeapon.rotation.y = -swingL * 0.03;
+              enemy.armsWeapon.rotation.z = -swingL * 0.02;
+
+              // Fire recoil impulse
+              if (enemy.soldierWeaponRecoil > 0) {
+                enemy.armsWeapon.position.z = -enemy.soldierWeaponRecoil * 0.08;
+                enemy.soldierWeaponRecoil = Math.max(0, enemy.soldierWeaponRecoil - dt * 5.0);
+              } else {
+                enemy.armsWeapon.position.z = 0;
+              }
+            }
+
+            // 7. Grounded Footstep Sand Dust Puffs
+            const currentStep = Math.floor(phase / Math.PI);
             if (currentStep !== enemy.lastFootstepStep) {
               enemy.lastFootstepStep = currentStep;
-              const footSide = (stride > 0 ? 0.22 : -0.22);
-              const footPos = new THREE.Vector3(enemy.group.position.x + footSide, groundY + 0.05, enemy.group.position.z);
-              spawnBurstParticles(footPos, 0xd4b483, 3, 1.0);
+              const footSide = (swingL > 0 ? -0.22 : 0.22);
+              const footPos = new THREE.Vector3(
+                enemy.group.position.x + footSide,
+                groundY + 0.05,
+                enemy.group.position.z
+              );
+              spawnBurstParticles(footPos, 0xd4b483, 3, 0.8);
             }
+          } else if (enemy.legs && enemy.legs.length === 2) {
+            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed * 2.2);
+            const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
+            if (enemy.legs[0].hip) {
+              enemy.legs[0].hip.rotation.x = -stride * 0.48;
+              enemy.legs[1].hip.rotation.x = stride * 0.48;
+              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.max(0.08, -stride * 1.10);
+              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.max(0.08, stride * 1.10);
+            }
+            enemy.group.position.y = groundY + Math.abs(stride) * 0.045;
           } else {
             enemy.group.position.y = groundY;
           }
