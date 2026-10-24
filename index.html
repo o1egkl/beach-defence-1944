@@ -13707,18 +13707,27 @@
     function killEnemy(enemy, hitPoint, isOneShotKill, isCrit) {
       if (enemy.dead) return;
       enemy.dead = true;
-      if (enemy.hpBar) enemy.hpBar.visible = false;
+      enemy.isDying = false;
+
+      if (enemy.hpBar) {
+        enemy.hpBar.visible = false;
+        scene.remove(enemy.hpBar);
+      }
+
+      if (enemy.group) {
+        enemy.group.visible = false;
+        scene.remove(enemy.group);
+      }
 
       if (enemy.unitType === 'rifle' || enemy.unitType === 'storm') {
-        enemy.isDying = true;
-        enemy.dyingTime = 0;
         if (isOneShotKill && enemy.helmetMesh) {
           spawnPoppedHelmet(enemy.group.position);
-          enemy.helmetMesh.visible = false;
         }
+        // Immediate clean elimination: dust puff, sparks & blood particles
+        spawnBurstParticles(hitPoint, 0xc93b2b, 14, 10);
+        spawnBurstParticles(enemy.group.position, 0xd4b483, 12, 8);
       } else {
         createSmokeColumn(enemy.group.position.x, enemy.group.position.y + 0.4, enemy.group.position.z);
-        scene.remove(enemy.group);
       }
 
       state.enemiesKilledInWave++;
@@ -13911,7 +13920,10 @@
 
     function clearBattlefieldEntities() {
       state.boats.forEach(b => scene.remove(b.group));
-      state.enemies.forEach(e => scene.remove(e.group));
+      state.enemies.forEach(e => {
+        if (e.group) { e.group.visible = false; scene.remove(e.group); }
+        if (e.hpBar) { e.hpBar.visible = false; scene.remove(e.hpBar); }
+      });
       state.grenadeObjs.forEach(g => scene.remove(g.mesh));
       state.particles.forEach(p => scene.remove(p.mesh));
       state.supplyDrops.forEach(d => scene.remove(d.group));
@@ -15181,34 +15193,9 @@
           }
         }
 
-        // Update Advancing Enemy Units
+        // Update Advancing Enemy Units (filter dead enemies out to eliminate lingering corpses and artifacts)
+        state.enemies = state.enemies.filter(e => !e.dead);
         for (const enemy of state.enemies) {
-          if (enemy.isDying) {
-            enemy.dyingTime += dt;
-            const progress = Math.min(1.0, enemy.dyingTime / 0.65);
-            const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
-
-            // Momentum stumble forward & crumple into the beach sand
-            enemy.group.position.z += (1.0 - progress) * enemy.speed * 0.35 * dt;
-            if (enemy.legs && enemy.legs.length === 2) {
-              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.PI * 0.42 * progress;
-              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.PI * 0.42 * progress;
-            }
-            if (enemy.torso) {
-              enemy.torso.rotation.x = 0.18 + progress * (Math.PI * 0.44);
-            } else {
-              enemy.group.rotation.x = -progress * Math.PI * 0.46;
-            }
-            enemy.group.position.y = Math.max(groundY, enemy.group.position.y - dt * 1.5);
-            if (enemy.weapon) {
-              enemy.weapon.rotation.x += dt * 3.2;
-              enemy.weapon.position.y -= dt * 1.6;
-            }
-            if (enemy.dyingTime > 3.0) {
-              scene.remove(enemy.group);
-            }
-            continue;
-          }
           if (enemy.dead) continue;
 
           // Advance forward along the beach towards the bunker
@@ -15341,7 +15328,14 @@
           if (enemy.group.position.z >= 35) {
             enemy.dead = true;
             enemy.passedThrough = true;
-            scene.remove(enemy.group);
+            if (enemy.hpBar) {
+              enemy.hpBar.visible = false;
+              scene.remove(enemy.hpBar);
+            }
+            if (enemy.group) {
+              enemy.group.visible = false;
+              scene.remove(enemy.group);
+            }
             state.enemiesPassedInWave = (state.enemiesPassedInWave || 0) + 1;
 
             // Damage scales according to unit power: basic rifleman = 10%, storm = 15%, scout_car = 20%, halftrack = 25%, tank = 35%, boss = 50%
