@@ -11149,115 +11149,16 @@
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
 
+    // Procedural WW2 Soldier System (High-Definition 1944 Textures & 60 FPS Fluid Running Kinematics)
     let soldierGLBTemplate = null;
 
     function initSoldierGLBLoader() {
-      if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
-        const soldierLoader = new THREE.GLTFLoader();
-        soldierLoader.load('models/soldier_model.glb?v=' + Date.now(), (gltf) => {
-          const rawModel = gltf.scene;
-
-          // Hide floor cobblestones/pedestal in group3
-          rawModel.traverse((child) => {
-            if (child.name === 'group3' || (child.name && child.name.startsWith('pCube'))) {
-              child.visible = false;
-            }
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-              if (child.material) {
-                child.material.depthTest = true;
-                child.material.depthWrite = true;
-                child.material.roughness = Math.min(1.0, (child.material.roughness || 0.65));
-                child.material.metalness = Math.min(1.0, (child.material.metalness || 0.15));
-                child.material.needsUpdate = true;
-              }
-            }
-          });
-
-          // Model height in GLB: ~151.13 units. Scale 0.016 gives ~2.42m height matching in-game proportions.
-          const S = 0.016;
-          rawModel.scale.set(S, S, S);
-          rawModel.position.set(0.194, 0, -0.065);
-
-          soldierGLBTemplate = rawModel;
-          console.log('✅ Loaded authentic Soldier 3D model (models/soldier_model.glb)');
-
-          // Upgrade any active soldiers already on the beach
-          if (typeof state !== 'undefined' && state.enemies) {
-            state.enemies.forEach((enemy) => {
-              if (!enemy.dead && (enemy.unitType === 'rifle' || enemy.unitType === 'storm') && !enemy.soldierGLBMesh) {
-                applySoldierGLB(enemy);
-              }
-            });
-          }
-          // Upgrade passenger troops inside any boats currently sailing or beached
-          if (typeof state !== 'undefined' && state.boats) {
-            state.boats.forEach((boat) => {
-              if (boat.troopMeshes && boat.troopMeshes.length > 0) {
-                boat.troopMeshes.forEach((tGrp, idx) => {
-                  while (tGrp.children.length > 0) {
-                    tGrp.remove(tGrp.children[0]);
-                  }
-                  const m = soldierGLBTemplate.clone(true);
-                  const cType = boat.cargo ? boat.cargo[boat.disembarkedCount + idx] : null;
-                  if (cType === 'storm') {
-                    m.traverse((child) => {
-                      if (child.isMesh && child.material) {
-                        if (Array.isArray(child.material)) {
-                          child.material = child.material.map(mat => {
-                            const cm = mat.clone();
-                            if (cm.color) cm.color.multiplyScalar(0.78);
-                            return cm;
-                          });
-                        } else {
-                          child.material = child.material.clone();
-                          if (child.material.color) child.material.color.multiplyScalar(0.78);
-                        }
-                      }
-                    });
-                  }
-                  tGrp.add(m);
-                });
-              }
-            });
-          }
-        }, undefined, (err) => {
-          console.log('Using procedural soldier models:', err && err.message ? err.message : err);
-        });
-      }
+      // Kept disabled for soldiers: procedural WW2 soldier provides authentic 1944 uniform, M1 helmet, and fluid 60 FPS skeletal running strides
+      soldierGLBTemplate = null;
     }
 
     function applySoldierGLB(enemy) {
-      if (!soldierGLBTemplate || enemy.soldierGLBMesh) return;
-      const clone = soldierGLBTemplate.clone(true);
-
-      const isStorm = (enemy.unitType === 'storm');
-      if (isStorm) {
-        clone.traverse((child) => {
-          if (child.isMesh && child.material) {
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => {
-                const cm = mat.clone();
-                if (cm.color) cm.color.multiplyScalar(0.78);
-                return cm;
-              });
-            } else {
-              child.material = child.material.clone();
-              if (child.material.color) {
-                child.material.color.multiplyScalar(0.78);
-              }
-            }
-          }
-        });
-      }
-
-      enemy.stridePhase = Math.random() * Math.PI * 2;
-      enemy.group.add(clone);
-      enemy.soldierGLBMesh = clone;
-      if (enemy.proceduralGroup) {
-        enemy.proceduralGroup.visible = false;
-      }
+      // No-op: using upgraded procedural WW2 soldier with 2-segment articulated limbs
     }
 
     function createFloatingHPBar(width = 1.8) {
@@ -11676,36 +11577,72 @@
         boatObj.props.push(blades);
       }
 
-      // 7. Visible passenger troops inside the cargo hold waiting to beach!
+      // 7. High-Definition WW2 Passenger Troops inside the cargo hold waiting to beach!
       boatSpec.cargo.forEach((cType, cIdx) => {
         if (cType !== 'rifle' && cType !== 'storm') return;
+        const isStorm = (cType === 'storm');
+        const uniformMat = isStorm ? unitMaterials.stormCoat : unitMaterials.infantryCoat;
         const tGrp = new THREE.Group();
-        if (soldierGLBTemplate) {
-          const m = soldierGLBTemplate.clone(true);
-          if (cType === 'storm') {
-            m.traverse((child) => {
-              if (child.isMesh && child.material) {
-                if (Array.isArray(child.material)) {
-                  child.material = child.material.map(mat => {
-                    const cm = mat.clone();
-                    if (cm.color) cm.color.multiplyScalar(0.78);
-                    return cm;
-                  });
-                } else {
-                  child.material = child.material.clone();
-                  if (child.material.color) child.material.color.multiplyScalar(0.78);
-                }
-              }
-            });
-          }
-          tGrp.add(m);
-        } else {
-          const tTorso = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.42), unitMaterials.infantryCoat);
-          tTorso.position.y = 0.55;
-          const tHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), unitMaterials.helmet);
-          tHelmet.position.y = 1.05;
-          tGrp.add(tTorso, tHelmet);
+
+        // 1. Contoured Torso & Field Jacket
+        const tTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.95, 12), uniformMat);
+        tTorso.position.y = 1.15;
+        tTorso.scale.set(1.15, 1.0, 0.7);
+        tTorso.castShadow = true;
+
+        const tBelt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.16, 12), unitMaterials.canvasGaiter);
+        tBelt.position.y = 0.72;
+        tBelt.scale.set(1.15, 1.0, 0.7);
+
+        const tBackpack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.65, 0.22), unitMaterials.canvasGaiter);
+        tBackpack.position.set(0, 1.25, -0.28);
+        tGrp.add(tTorso, tBelt, tBackpack);
+
+        // 2. Sculpted Head & M1 Helmet
+        const tNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.18, 8), unitMaterials.skin);
+        tNeck.position.y = 1.72;
+        const tHead = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), unitMaterials.skin);
+        tHead.position.y = 1.88;
+        const tHelmet = new THREE.Mesh(
+          new THREE.SphereGeometry(0.36, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
+          unitMaterials.helmet
+        );
+        tHelmet.scale.set(0.98, 1.0, 1.08);
+        tHelmet.position.y = 1.94;
+        const tRim = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.024, 6, 16), unitMaterials.helmet);
+        tRim.rotation.x = Math.PI / 2;
+        tRim.position.y = 1.94;
+        tGrp.add(tNeck, tHead, tHelmet, tRim);
+
+        // 3. Legs
+        for (let s = -1; s <= 1; s += 2) {
+          const tThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.50, 8), uniformMat);
+          tThigh.position.set(s * 0.20, 0.48, 0);
+          const tGaiter = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.42, 8), unitMaterials.canvasGaiter);
+          tGaiter.position.set(s * 0.20, 0.18, 0);
+          const tBoot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.30), unitMaterials.leatherBoot);
+          tBoot.position.set(s * 0.20, 0.05, 0.05);
+          tGrp.add(tThigh, tGaiter, tBoot);
         }
+
+        // 4. Arms holding rifle upright
+        for (let s = -1; s <= 1; s += 2) {
+          const tArm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.52, 8), uniformMat);
+          tArm.position.set(s * 0.36, 1.25, 0.10);
+          tArm.rotation.set(0.65, 0, -s * 0.22);
+          tGrp.add(tArm);
+        }
+
+        // Upright M1 Garand Rifle
+        const tRifle = new THREE.Group();
+        const tStock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 1.25), unitMaterials.woodRifle);
+        tStock.rotation.x = -Math.PI / 2 + 0.12;
+        const tBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.75, 8), unitMaterials.darkMetal);
+        tBarrel.position.set(0, 0.65, 0);
+        tRifle.add(tStock, tBarrel);
+        tRifle.position.set(0.10, 1.05, 0.32);
+        tGrp.add(tRifle);
+
         const row = Math.floor(cIdx / 2);
         const col = (cIdx % 2 === 0 ? -1 : 1);
         tGrp.position.set(col * 0.85, hullH * 0.5, -hullL * 0.15 + row * 1.4);
@@ -15248,19 +15185,24 @@
         for (const enemy of state.enemies) {
           if (enemy.isDying) {
             enemy.dyingTime += dt;
-            const progress = Math.min(1.0, enemy.dyingTime / 0.55);
+            const progress = Math.min(1.0, enemy.dyingTime / 0.65);
             const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
-            if (enemy.soldierGLBMesh) {
-              // Natural forward crumple and fall onto the beach sand
-              enemy.group.position.z += (1.0 - progress) * enemy.speed * 0.25 * dt;
-              enemy.soldierGLBMesh.rotation.x = 0.14 + progress * (Math.PI * 0.44);
-              enemy.soldierGLBMesh.rotation.z = THREE.MathUtils.lerp(enemy.soldierGLBMesh.rotation.z, 0.2, progress);
-              enemy.group.position.y = Math.max(groundY, enemy.group.position.y - dt * 1.8);
+            // Momentum stumble forward & crumple into the beach sand
+            enemy.group.position.z += (1.0 - progress) * enemy.speed * 0.35 * dt;
+            if (enemy.legs && enemy.legs.length === 2) {
+              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.PI * 0.42 * progress;
+              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.PI * 0.42 * progress;
+            }
+            if (enemy.torso) {
+              enemy.torso.rotation.x = 0.18 + progress * (Math.PI * 0.44);
             } else {
               enemy.group.rotation.x = -progress * Math.PI * 0.46;
-              enemy.group.position.y = Math.max(0, enemy.group.position.y - dt * 0.85);
-              enemy.group.position.z -= dt * (1.0 - progress) * 1.5;
+            }
+            enemy.group.position.y = Math.max(groundY, enemy.group.position.y - dt * 1.5);
+            if (enemy.weapon) {
+              enemy.weapon.rotation.x += dt * 3.2;
+              enemy.weapon.position.y -= dt * 1.6;
             }
             if (enemy.dyingTime > 3.0) {
               scene.remove(enemy.group);
@@ -15275,59 +15217,52 @@
           enemy.group.position.x += Math.sin(enemy.group.position.z * 0.04 + enemy.wobbleSeed) * dt * 0.2;
 
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
-          enemy.group.position.y = groundY;
 
-          // Grounded, realistic soldier sprint animation
-          if (enemy.soldierGLBMesh) {
-            // Synchronize step cycle strictly to distance traveled (1 stride ~= 0.75m)
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed / 0.55);
-            const stepCycle = Math.sin(enemy.stridePhase);
-
-            // Subtle vertical center-of-mass bobbing (only 3.5cm, natural human sprint)
-            enemy.group.position.y = groundY + Math.abs(stepCycle) * 0.035;
-
-            // Stable military assault posture: forward combat lean (~8 deg) with subtle rhythm
-            enemy.soldierGLBMesh.rotation.x = 0.14 + Math.abs(stepCycle) * 0.015;
-
-            // Subtle pelvic step sway (1.2 deg) and shoulder counter-twist (1.0 deg)
-            enemy.soldierGLBMesh.rotation.z = stepCycle * 0.022;
-            enemy.soldierGLBMesh.rotation.y = stepCycle * 0.018;
-
-            // Kicking up realistic sand dust puffs on boot plant
-            const currentStep = Math.floor(enemy.stridePhase / Math.PI);
-            if (currentStep !== enemy.lastFootstepStep) {
-              enemy.lastFootstepStep = currentStep;
-              const footSide = (stepCycle > 0 ? 0.22 : -0.22);
-              const footPos = new THREE.Vector3(enemy.group.position.x + footSide, groundY + 0.05, enemy.group.position.z);
-              spawnBurstParticles(footPos, 0xd4b483, 2, 0.8);
-            }
-          } else if (enemy.legs && enemy.legs.length === 2) {
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * enemy.speed * 4.6;
+          // Authentic 60 FPS WW2 infantry running biomechanics
+          if (enemy.legs && enemy.legs.length === 2) {
+            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed / 0.50);
             const stride = Math.sin(enemy.stridePhase + enemy.wobbleSeed);
             if (enemy.legs[0].hip) {
-              // Upgraded 2-segment anatomical limb articulation with natural knee bending
-              enemy.legs[0].hip.rotation.x = stride * 0.68;
-              enemy.legs[1].hip.rotation.x = -stride * 0.68;
-              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.max(0, -stride * 0.88);
-              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.max(0, stride * 0.88);
+              // Full anatomical 2-segment limb stride
+              enemy.legs[0].hip.rotation.x = stride * 0.72;
+              enemy.legs[1].hip.rotation.x = -stride * 0.72;
+              // Knee flexes upward during push-off / back-swing (~55 deg) and extends on forward plant
+              if (enemy.legs[0].knee) enemy.legs[0].knee.rotation.x = Math.max(0, -stride * 0.95);
+              if (enemy.legs[1].knee) enemy.legs[1].knee.rotation.x = Math.max(0, stride * 0.95);
             } else if (enemy.legs[0].rotation) {
               enemy.legs[0].rotation.x = stride * 0.52;
               enemy.legs[1].rotation.x = -stride * 0.52;
             }
-            enemy.group.position.y += Math.abs(stride) * 0.12;
+
+            // Natural center-of-mass sprint bounce (4.5 cm)
+            enemy.group.position.y = groundY + Math.abs(stride) * 0.045;
 
             if (enemy.torso) {
-              // Realistic forward combat sprint lean (0.22 rad) + pelvic/shoulder sway
-              enemy.torso.rotation.x = 0.22;
-              enemy.torso.rotation.y = Math.sin(enemy.stridePhase) * 0.08;
+              // Combat charge forward lean (~10 deg) with rhythmic breath and shoulder sway
+              enemy.torso.rotation.x = 0.18 + Math.abs(stride) * 0.02;
+              enemy.torso.rotation.y = Math.sin(enemy.stridePhase) * 0.06;
+              enemy.torso.rotation.z = Math.sin(enemy.stridePhase) * 0.035;
             }
             if (enemy.arms && enemy.arms.length === 2) {
-              enemy.arms[0].rotation.x = -stride * 0.40;
-              enemy.arms[1].rotation.x = stride * 0.40;
+              // Natural sprint arm swing counter-balancing the legs
+              enemy.arms[0].rotation.x = -stride * 0.35;
+              enemy.arms[1].rotation.x = stride * 0.35;
             }
             if (enemy.weapon) {
-              enemy.weapon.rotation.x = 0.25 + Math.sin(enemy.stridePhase * 2) * 0.06;
+              // Weapon held firmly at ready, swaying with upper body
+              enemy.weapon.rotation.x = 0.22 + Math.sin(enemy.stridePhase * 2) * 0.04;
             }
+
+            // Footstep sand dust puff on every boot plant
+            const currentStep = Math.floor(enemy.stridePhase / Math.PI);
+            if (currentStep !== enemy.lastFootstepStep) {
+              enemy.lastFootstepStep = currentStep;
+              const footSide = (stride > 0 ? 0.22 : -0.22);
+              const footPos = new THREE.Vector3(enemy.group.position.x + footSide, groundY + 0.05, enemy.group.position.z);
+              spawnBurstParticles(footPos, 0xd4b483, 3, 1.0);
+            }
+          } else {
+            enemy.group.position.y = groundY;
           }
 
           // Rolling vehicle wheels
