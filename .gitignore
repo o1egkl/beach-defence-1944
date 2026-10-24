@@ -16,6 +16,8 @@ desktop.ini
 *.log
 scratch/
 .vercel/
-lib/
-
 .vercel
+
+# Node & Electron build outputs
+node_modules/
+dist/

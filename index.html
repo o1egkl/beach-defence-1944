@@ -16,13 +16,14 @@
   <meta name="apple-mobile-web-app-title" content="Beach Defence">
   <meta name="msapplication-TileColor" content="#181c14">
   <meta name="msapplication-TileImage" content="/icons/icon-512.png">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script src="lib/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com/3.4.17'"></script>
+  <script src="lib/three.min.js" onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'"></script>
+  <script src="lib/GLTFLoader.js" onerror="this.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -126,7 +127,8 @@
     #victory-modal,
     #defeat-modal,
     #pause-modal,
-    #plan-modal {
+    #plan-modal,
+    #exit-modal {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -135,7 +137,8 @@
     #victory-modal.hidden,
     #defeat-modal.hidden,
     #pause-modal.hidden,
-    #plan-modal.hidden {
+    #plan-modal.hidden,
+    #exit-modal.hidden {
       display: none !important;
     }
   </style>
@@ -521,12 +524,15 @@
         </div>
       </div>
 
-      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex gap-3 shrink-0">
-        <button id="btn-defeat-retry" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-950 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-400 hover:to-amber-400 shadow-lg transition active:scale-95">
+      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex flex-col sm:flex-row gap-2.5 shrink-0">
+        <button id="btn-defeat-retry" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-950 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-400 hover:to-amber-400 shadow-lg transition active:scale-95 cursor-pointer">
           ↺ RETRY WAVE
         </button>
-        <button id="btn-defeat-armory" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-200 bg-stone-800 hover:bg-stone-700 border border-stone-600 transition active:scale-95">
+        <button id="btn-defeat-armory" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-200 bg-stone-800 hover:bg-stone-700 border border-stone-600 transition active:scale-95 cursor-pointer">
           OK — PROCEED TO ARMORY ➔
+        </button>
+        <button id="btn-defeat-exit" type="button" class="py-3 px-4 rounded-xl font-military text-base sm:text-lg text-stone-400 hover:text-red-300 bg-stone-900 hover:bg-red-950/50 border border-stone-700 hover:border-red-700 transition active:scale-95 cursor-pointer" title="Exit Game">
+          🚪 EXIT
         </button>
       </div>
     </div>
@@ -586,15 +592,37 @@
         </button>
 
         <div class="grid grid-cols-2 gap-2.5">
-          <button id="btn-pause-armory" type="button" class="py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-stone-200 bg-stone-900 hover:bg-stone-800 border border-stone-700 transition flex items-center justify-center gap-1.5 active:scale-95">
+          <button id="btn-pause-armory" type="button" class="py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-stone-200 bg-stone-900 hover:bg-stone-800 border border-stone-700 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
             <span>🔧 UPGRADE ARMORY</span>
           </button>
-          <button id="btn-pause-restart" type="button" class="py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-red-300 bg-red-950/40 hover:bg-red-900/50 border border-red-800/60 transition flex items-center justify-center gap-1.5 active:scale-95">
+          <button id="btn-pause-restart" type="button" class="py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-red-300 bg-red-950/40 hover:bg-red-900/50 border border-red-800/60 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
             <span>↺ RESTART WAVE</span>
           </button>
         </div>
+        <button id="btn-pause-exit" type="button" class="w-full py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-stone-300 hover:text-red-300 bg-stone-900 hover:bg-red-950/50 border border-stone-700 hover:border-red-700 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer" title="Exit to Desktop">
+          <span>🚪 EXIT GAME TO DESKTOP</span>
+        </button>
         <button id="btn-pause-install-pwa" type="button" class="hidden py-2 px-3 rounded-xl font-mono-tac text-xs text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
           <span>💻 INSTALL WINDOWS APP (OFFLINE PLAY)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TACTICAL EXIT GAME CONFIRMATION MODAL ================= -->
+  <div id="exit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md pointer-events-auto">
+    <div class="relative w-full max-w-md mx-auto my-auto bg-[#171a14] border-2 border-red-700/80 rounded-2xl shadow-[0_0_50px_rgba(185,28,28,0.45)] overflow-hidden flex flex-col">
+      <div class="p-5 bg-gradient-to-b from-red-950/70 to-stone-950 border-b border-red-800/60 text-center">
+        <span class="text-xs font-mono-tac uppercase tracking-widest text-red-400 font-bold">MILITARY DISCHARGE PROTOCOL</span>
+        <h2 class="font-military text-2xl sm:text-3xl text-stone-100 mt-1">ABANDON BUNKER?</h2>
+        <p class="text-xs sm:text-sm text-stone-300 mt-1.5 font-mono-tac">Are you sure you want to quit the mission and exit to your desktop?</p>
+      </div>
+      <div class="p-4 sm:p-5 bg-stone-950 flex flex-col sm:flex-row gap-3">
+        <button id="btn-cancel-exit" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-sm sm:text-base text-stone-200 bg-stone-900 hover:bg-stone-800 border border-stone-700 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+          <span>◀ CANCEL & STAY</span>
+        </button>
+        <button id="btn-confirm-exit" type="button" class="flex-1 py-3 px-4 rounded-xl font-military text-sm sm:text-base text-stone-950 bg-gradient-to-r from-red-500 via-red-600 to-amber-600 hover:from-red-400 hover:to-amber-500 font-bold shadow-lg transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+          <span>🚪 EXIT GAME</span>
         </button>
       </div>
     </div>
@@ -617,6 +645,9 @@
             <div class="flex items-center gap-2">
               <button id="btn-toggle-plan" type="button" class="px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold bg-stone-900/90 hover:bg-stone-800 text-amber-300 border border-amber-500/40 transition">
                 📋 ARCHITECTURE & GAME PLAN
+              </button>
+              <button id="btn-top-exit-game" type="button" class="px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold bg-red-950/50 hover:bg-red-900/70 text-red-300 hover:text-red-100 border border-red-800/60 transition flex items-center gap-1 cursor-pointer" title="Exit Game">
+                <span>🚪 EXIT GAME</span>
               </button>
             </div>
           </div>
@@ -762,6 +793,9 @@
         <div class="flex items-center gap-2">
           <button id="btn-reset-campaign" type="button" class="px-3.5 py-2 rounded-xl text-xs font-mono-tac font-semibold bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-stone-200 border border-stone-700 transition">
             ↺ Reset Campaign
+          </button>
+          <button id="btn-armory-exit" type="button" class="px-3.5 py-2 rounded-xl text-xs font-mono-tac font-semibold bg-stone-900 hover:bg-red-950/50 text-stone-300 hover:text-red-300 border border-stone-700 hover:border-red-700 transition flex items-center gap-1.5 active:scale-95 cursor-pointer" title="Exit to Desktop">
+            <span>🚪 Exit Game</span>
           </button>
           <button id="btn-install-pwa" type="button" class="hidden px-3.5 py-2 rounded-xl text-xs font-mono-tac font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.3)] transition items-center gap-1.5 active:scale-95 cursor-pointer">
             <span>💻 INSTALL WINDOWS APP</span>
@@ -15044,13 +15078,22 @@
     window.addEventListener('keydown', e => {
       state.keys[e.code] = true;
 
-      // Global Pause / Resume shortcut toggle on Escape or P
+      // Global Pause / Resume or Exit shortcut toggle on Escape or P
       if (e.code === 'Escape' || e.code === 'KeyP') {
         e.preventDefault();
+        const exitModal = document.getElementById('exit-modal');
+        if (exitModal && !exitModal.classList.contains('hidden')) {
+          hideExitModal();
+          return;
+        }
         const planModal = document.getElementById('plan-modal');
         if (planModal && !planModal.classList.contains('hidden')) {
           planModal.classList.add('hidden');
           planModal.classList.remove('flex');
+          return;
+        }
+        if (state.mode === 'ARMORY' && e.code === 'Escape') {
+          showExitModal();
           return;
         }
         togglePause();
@@ -15282,6 +15325,63 @@
       m.classList.add('hidden');
       m.classList.remove('flex');
     });
+
+    // --- Tactical Exit Game Handlers ---
+    function showExitModal() {
+      sfx.init();
+      const m = document.getElementById('exit-modal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+      }
+    }
+
+    function hideExitModal() {
+      const m = document.getElementById('exit-modal');
+      if (m) {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+    }
+
+    function executeExitGame() {
+      if (window.electronAPI && typeof window.electronAPI.quitApp === 'function') {
+        window.electronAPI.quitApp();
+        return;
+      }
+      try {
+        window.close();
+      } catch (e) {}
+      hideExitModal();
+      alert("Mission Aborted. To exit Beach Defence 1944 completely, please close this browser tab or window.");
+    }
+
+    const btnPauseExit = document.getElementById('btn-pause-exit');
+    if (btnPauseExit) btnPauseExit.addEventListener('click', showExitModal);
+
+    const btnArmoryExit = document.getElementById('btn-armory-exit');
+    if (btnArmoryExit) btnArmoryExit.addEventListener('click', showExitModal);
+
+    const btnTopExitGame = document.getElementById('btn-top-exit-game');
+    if (btnTopExitGame) btnTopExitGame.addEventListener('click', showExitModal);
+
+    const btnDefeatExit = document.getElementById('btn-defeat-exit');
+    if (btnDefeatExit) btnDefeatExit.addEventListener('click', showExitModal);
+
+    const btnCancelExit = document.getElementById('btn-cancel-exit');
+    if (btnCancelExit) btnCancelExit.addEventListener('click', hideExitModal);
+
+    const btnConfirmExit = document.getElementById('btn-confirm-exit');
+    if (btnConfirmExit) btnConfirmExit.addEventListener('click', executeExitGame);
+
+    const exitModalEl = document.getElementById('exit-modal');
+    if (exitModalEl) {
+      exitModalEl.addEventListener('click', (e) => {
+        if (e.target.id === 'exit-modal') {
+          hideExitModal();
+        }
+      });
+    }
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
