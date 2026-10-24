@@ -12092,6 +12092,9 @@
       let torsoMesh = null;
       let weaponMesh = null;
       let proceduralGroup = null;
+      let pelvisGroup = null;
+      let headGroup = null;
+      let upperBodyWeapons = null;
 
       if (unitType === 'rifle' || unitType === 'storm') {
         const isStorm = unitType === 'storm';
@@ -12111,7 +12114,7 @@
         proceduralGroup = new THREE.Group();
 
         // Root anatomical pelvis at waist height
-        const pelvisGroup = new THREE.Group();
+        pelvisGroup = new THREE.Group();
         pelvisGroup.position.set(0, 0.88, 0);
         proceduralGroup.add(pelvisGroup);
 
@@ -12199,7 +12202,7 @@
         torsoGroup.add(backpack, bedroll, shovelHandle, shovelBlade);
 
         // 2. Sculpted Head & Facial Anatomy (Mounted directly on torso neck!)
-        const headGroup = new THREE.Group();
+        headGroup = new THREE.Group();
         headGroup.position.set(0, 1.24, 0.02);
         torsoGroup.add(headGroup);
 
@@ -12272,7 +12275,7 @@
         headGroup.add(helmetGroup);
 
         // 4. Arms & Two-Handed Weapon Assembly (Attached to shoulders of torsoGroup)
-        const upperBodyWeapons = new THREE.Group();
+        upperBodyWeapons = new THREE.Group();
         upperBodyWeapons.position.set(0, 0.84, 0);
         torsoGroup.add(upperBodyWeapons);
 
@@ -13596,7 +13599,7 @@
 
     function applyExplosionDamage(center, radius, baseDmg, boatDmg = 450) {
       state.enemies.forEach(enemy => {
-        if (enemy.dead) return;
+        if (enemy.dead || enemy.isDying) return;
         const dist = enemy.group.position.distanceTo(center);
         if (dist <= radius) {
           const falloff = 1 - (dist / radius) * 0.55;
@@ -13698,7 +13701,7 @@
 
       raycaster.setFromCamera(state.mouseNDC, camera);
       const targetMeshes = [];
-      state.enemies.forEach(e => { if (!e.dead) targetMeshes.push(...e.hitboxes); });
+      state.enemies.forEach(e => { if (!e.dead && !e.isDying) targetMeshes.push(...e.hitboxes); });
       state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) targetMeshes.push(...b.hitboxes); });
       if (state.zeppelins) {
         state.zeppelins.forEach(z => {
@@ -13927,7 +13930,7 @@
       // Collect all active enemy hitboxes, supply drops & destructible landing craft boats
       const targetMeshes = [];
       state.enemies.forEach(e => {
-        if (!e.dead) targetMeshes.push(...e.hitboxes);
+        if (!e.dead && !e.isDying) targetMeshes.push(...e.hitboxes);
       });
       state.supplyDrops.forEach(d => {
         if (d.active) {
@@ -14091,28 +14094,43 @@
     }
 
     function killEnemy(enemy, hitPoint, isOneShotKill, isCrit) {
-      if (enemy.dead) return;
-      enemy.dead = true;
-      enemy.isDying = false;
+      if (enemy.dead || enemy.isDying) return;
 
       if (enemy.hpBar) {
         enemy.hpBar.visible = false;
         scene.remove(enemy.hpBar);
+        enemy.hpBar = null;
       }
 
-      if (enemy.group) {
-        enemy.group.visible = false;
-        scene.remove(enemy.group);
+      if (enemy.hitboxes) {
+        enemy.hitboxes.forEach(hb => {
+          hb.userData.enemyRef = null;
+        });
       }
 
       if (enemy.unitType === 'rifle' || enemy.unitType === 'storm') {
+        enemy.isDying = true;
+        enemy.dead = false;
+        enemy.dyingTime = 0;
+        enemy.stumbleVel = enemy.speed * (0.65 + Math.random() * 0.35);
+        enemy.stumbleDir = (Math.random() - 0.5) * 0.4;
+        enemy.deathTwist = (Math.random() - 0.5) * 0.45;
+        enemy.deathBackward = (isCrit && Math.random() < 0.4);
+
         if (isOneShotKill && enemy.helmetMesh) {
           spawnPoppedHelmet(enemy.group.position);
+          enemy.helmetMesh.visible = false;
         }
-        // Immediate clean elimination: dust puff, sparks & blood particles
+        // Authentic sand & blood impact particles
         spawnBurstParticles(hitPoint, 0xc93b2b, 14, 10);
         spawnBurstParticles(enemy.group.position, 0xd4b483, 12, 8);
       } else {
+        enemy.dead = true;
+        enemy.isDying = false;
+        if (enemy.group) {
+          enemy.group.visible = false;
+          scene.remove(enemy.group);
+        }
         createSmokeColumn(enemy.group.position.x, enemy.group.position.y + 0.4, enemy.group.position.z);
       }
 
@@ -14235,7 +14253,7 @@
       const baseBlastDmg = 340 + state.upgrades.damage * 45;
 
       state.enemies.forEach(enemy => {
-        if (enemy.dead) return;
+        if (enemy.dead || enemy.isDying) return;
         const dist = enemy.group.position.distanceTo(pos);
         if (dist <= blastRadius) {
           const falloff = 1 - (dist / blastRadius) * 0.55;
@@ -14863,7 +14881,7 @@
 
       // Check if hovering over an enemy to display armor/HP scanner
       const enemyMeshes = [];
-      state.enemies.forEach(e => { if (!e.dead) enemyMeshes.push(...e.hitboxes); });
+      state.enemies.forEach(e => { if (!e.dead && !e.isDying) enemyMeshes.push(...e.hitboxes); });
       const eHits = raycaster.intersectObjects(enemyMeshes, false);
       const readout = document.getElementById('target-readout');
       const reticleRing = document.getElementById('reticle-ring');
@@ -15579,10 +15597,94 @@
           }
         }
 
-        // Update Advancing Enemy Units (filter dead enemies out to eliminate lingering corpses and artifacts)
-        state.enemies = state.enemies.filter(e => !e.dead);
-        for (const enemy of state.enemies) {
-          if (enemy.dead) continue;
+        // Update Advancing Enemy Units (reverse iteration handles both alive sprint & dying kinematics safely)
+        for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
+          const enemy = state.enemies[eIdx];
+          if (enemy.dead) {
+            if (enemy.group) scene.remove(enemy.group);
+            if (enemy.hpBar) scene.remove(enemy.hpBar);
+            state.enemies.splice(eIdx, 1);
+            continue;
+          }
+
+          if (enemy.isDying) {
+            enemy.dyingTime += dt;
+            const t = Math.min(1.0, enemy.dyingTime / 0.65); // 0.65s crumple collapse
+            const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
+
+            // Forward sprint momentum decays naturally to standstill
+            if (enemy.stumbleVel > 0.05) {
+              const forwardMul = enemy.deathBackward ? -0.4 : 1.0;
+              enemy.group.position.z += enemy.stumbleVel * forwardMul * dt;
+              enemy.group.position.x += enemy.stumbleDir * enemy.stumbleVel * dt;
+              enemy.stumbleVel *= Math.max(0, 1.0 - dt * 5.0);
+            }
+
+            // Authentic kinematic death crumple:
+            // 1. Pelvis drops down to sand level (0.88 down to 0.16)
+            if (enemy.pelvis) {
+              const startPelvisY = 0.88;
+              const targetPelvisY = 0.16;
+              enemy.pelvis.position.y = startPelvisY + (targetPelvisY - startPelvisY) * (t * t);
+              enemy.pelvis.rotation.z = enemy.deathTwist * t;
+              enemy.pelvis.rotation.y = enemy.stumbleDir * t;
+            }
+
+            // 2. Knees buckle and fold onto sand
+            if (enemy.legs && enemy.legs.length === 2) {
+              enemy.legs[0].hip.rotation.x = -0.3 * (1 - t) + 0.65 * t;
+              enemy.legs[1].hip.rotation.x = 0.3 * (1 - t) + 0.85 * t;
+              enemy.legs[0].knee.rotation.x = 1.35 * t;
+              enemy.legs[1].knee.rotation.x = 1.55 * t;
+            }
+
+            // 3. Torso crumples forward (or arches back on crit kickback)
+            if (enemy.torso) {
+              if (enemy.deathBackward) {
+                enemy.torso.rotation.x = 0.24 * (1 - t) - 0.95 * (t * (2 - t));
+              } else {
+                enemy.torso.rotation.x = 0.24 * (1 - t) + 1.15 * (t * (2 - t));
+              }
+              enemy.torso.rotation.y = (enemy.stumbleDir * 1.2) * t;
+              enemy.torso.rotation.z = (enemy.deathTwist * 0.8) * t;
+            }
+
+            // 4. Head drops limp
+            if (enemy.head) {
+              enemy.head.rotation.x = 0.65 * t;
+              enemy.head.rotation.z = 0.45 * t;
+            }
+
+            // 5. Arms release weapon down to sand
+            if (enemy.armsWeapon) {
+              enemy.armsWeapon.rotation.x = 0.85 * t;
+              enemy.armsWeapon.rotation.z = -0.45 * t;
+              enemy.armsWeapon.position.y = -0.35 * t;
+            }
+
+            // 6. Sand impact dust puff when body hits beach (~0.35s in)
+            if (!enemy.sandPuffed && enemy.dyingTime >= 0.35) {
+              enemy.sandPuffed = true;
+              const puffPos = enemy.group.position.clone();
+              puffPos.y = groundY + 0.1;
+              puffPos.z += (enemy.deathBackward ? -0.4 : 0.6);
+              spawnBurstParticles(puffPos, 0xd4b483, 10, 2.5);
+            }
+
+            enemy.group.position.y = groundY;
+
+            // Clean corpse removal after death animation finishes (1.25s total)
+            if (enemy.dyingTime >= 1.25) {
+              enemy.dead = true;
+              enemy.isDying = false;
+              if (enemy.group) {
+                enemy.group.visible = false;
+                scene.remove(enemy.group);
+              }
+              state.enemies.splice(eIdx, 1);
+            }
+            continue;
+          }
 
           // Advance forward along the beach towards the bunker
           enemy.group.position.z += enemy.speed * dt;
