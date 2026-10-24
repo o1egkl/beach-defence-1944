@@ -9525,6 +9525,31 @@
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
+    // --- REUSABLE PERFORMANCE & ZERO-ALLOCATION MATH HELPERS ---
+    const _vGunViewOffset = new THREE.Vector3();
+    const _vAxisY = new THREE.Vector3(0, 1, 0);
+    const _vBunkerAim = new THREE.Vector3(0, 8.5, 42);
+    const _vBunkerDirectHit = new THREE.Vector3(0, 8.2, 38);
+    const _vPuffPos = new THREE.Vector3();
+    const _vFootPos = new THREE.Vector3();
+    const _vMuzzlePos = new THREE.Vector3();
+    const _vTargetPos = new THREE.Vector3();
+    const _vCannonTip = new THREE.Vector3();
+    const _vBreachPos = new THREE.Vector3();
+    const _reusableTargetMeshes = [];
+    const _hoverHitboxes = [];
+    const canvasRect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    function updateCanvasRect() {
+      if (renderer && renderer.domElement) {
+        const r = renderer.domElement.getBoundingClientRect();
+        canvasRect.left = r.left;
+        canvasRect.top = r.top;
+        canvasRect.width = r.width || window.innerWidth;
+        canvasRect.height = r.height || window.innerHeight;
+      }
+    }
+    updateCanvasRect();
+
     // Cinematic Lighting: Sky hemisphere + directional sun + warm golden sand bounce
     const hemiLight = new THREE.HemisphereLight(0xd4e8f8, 0xdcb45a, 0.70);
     scene.add(hemiLight);
@@ -10199,8 +10224,8 @@
       wetMesh.receiveShadow = true;
       scene.add(wetMesh);
 
-      // 2. High-Fidelity Coastal Ocean Water (Z from -760 to -10)
-      oceanGeo = new THREE.PlaneGeometry(1200, 800, 100, 80);
+      // 2. High-Fidelity Coastal Ocean Water (Z from -760 to -10, optimized 60x48 mesh)
+      oceanGeo = new THREE.PlaneGeometry(1200, 800, 60, 48);
       oceanGeo.rotateX(-Math.PI / 2);
 
       // Realistic Optical Depth Vertex Colors: Shore Turquoise -> Deep Ocean Sapphire -> Deep Navy
@@ -11599,12 +11624,14 @@
       state.smokePlumes.push({ baseX: x, baseY: y, baseZ: z, particles: smokeParticles });
     }
 
+    const sharedCasingGeo = new THREE.CylinderGeometry(0.014, 0.016, 0.11, 8);
+    const sharedCasingMat = new THREE.MeshStandardMaterial({ color: 0xf5ba42, metalness: 0.95, roughness: 0.18 });
+    const _vCasingOffset = new THREE.Vector3(0.22, -0.06, -0.45);
+
     function createSpentCasing(origin) {
-      const casingGeo = new THREE.CylinderGeometry(0.014, 0.016, 0.11, 8);
-      const casingMat = new THREE.MeshStandardMaterial({ color: 0xf5ba42, metalness: 0.95, roughness: 0.18 });
-      const mesh = new THREE.Mesh(casingGeo, casingMat);
+      const mesh = new THREE.Mesh(sharedCasingGeo, sharedCasingMat);
       // Eject cleanly forward and to the right over the embrasure sill, away from camera
-      mesh.position.copy(origin).add(new THREE.Vector3(0.22, -0.06, -0.45));
+      mesh.position.copy(origin).add(_vCasingOffset);
       scene.add(mesh);
       return {
         mesh,
@@ -13132,20 +13159,23 @@
     }
 
     // --- 8. PARTICLES, TRACERS & FLOATING UI CALLOUTS ---
+    const _vCalloutCamDir = new THREE.Vector3();
+    const _vCalloutToPos = new THREE.Vector3();
+    const _vCalloutScreen = new THREE.Vector3();
+
     function spawnFloatingCallout(worldPos, text, colorClass = '') {
       if (!worldPos) return;
       // Strict frustum check: never spawn callouts for points behind or too close to the camera
-      const camDir = new THREE.Vector3();
-      camera.getWorldDirection(camDir);
-      const toPos = worldPos.clone().sub(camera.position);
-      if (camDir.dot(toPos) <= 0.5) return;
+      camera.getWorldDirection(_vCalloutCamDir);
+      _vCalloutToPos.subVectors(worldPos, camera.position);
+      if (_vCalloutCamDir.dot(_vCalloutToPos) <= 0.5) return;
 
-      const screenPos = worldPos.clone().project(camera);
-      if (screenPos.z >= 1.0 || screenPos.z <= -1.0) return;
-      if (screenPos.x < -1.1 || screenPos.x > 1.1 || screenPos.y < -1.1 || screenPos.y > 1.1) return;
+      _vCalloutScreen.copy(worldPos).project(camera);
+      if (_vCalloutScreen.z >= 1.0 || _vCalloutScreen.z <= -1.0) return;
+      if (_vCalloutScreen.x < -1.1 || _vCalloutScreen.x > 1.1 || _vCalloutScreen.y < -1.1 || _vCalloutScreen.y > 1.1) return;
 
-      const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+      const x = (_vCalloutScreen.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-_vCalloutScreen.y * 0.5 + 0.5) * window.innerHeight;
 
       // Identify combat feedback indicators (e.g. -34, CRIT -88, 💥 -540, BLAST -300, KILLED, ONE-SHOT, PTS)
       const isCombatText = /-\d+/.test(text) || text.includes('CRIT') || text.includes('BLAST') || text.includes('HIT') || text.includes('KILL') || text.includes('PTS') || text.includes('DESTROYED');
@@ -13166,7 +13196,8 @@
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
       el.textContent = text;
-      document.getElementById('callouts-container').appendChild(el);
+      const c = document.getElementById('callouts-container');
+      if (c) c.appendChild(el);
       setTimeout(() => el.remove(), 1250);
     }
 
@@ -13178,24 +13209,60 @@
       setTimeout(() => { el.style.opacity = '0'; }, 110);
     }
 
+    // High-performance shared unit tracer geometry & static materials (Zero allocation per shot)
+    const tracerUnitGeo = new THREE.CylinderGeometry(1, 1, 1, 6);
+    tracerUnitGeo.rotateX(Math.PI / 2);
+
+    const playerTracerMatNormal = new THREE.MeshBasicMaterial({
+      color: 0xffe066,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const playerTracerMatCrit = new THREE.MeshBasicMaterial({
+      color: 0xff3b10,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const enemyTracerMatSmall = new THREE.MeshBasicMaterial({
+      color: 0xffcc33,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const enemyTracerMatCannon = new THREE.MeshBasicMaterial({
+      color: 0xff5500,
+      transparent: true,
+      opacity: 1.0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    const heavyCannonTracerMat = new THREE.MeshBasicMaterial({
+      color: 0xff9922,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const _vTracerDir = new THREE.Vector3();
+    const _vTracerMid = new THREE.Vector3();
+
     function createTracerBeam(startPos, endPos, isCrit = false) {
       if (!startPos || !endPos) return;
-      const dir = new THREE.Vector3().subVectors(endPos, startPos);
-      const dist = dir.length();
+      _vTracerDir.subVectors(endPos, startPos);
+      const dist = _vTracerDir.length();
       if (dist < 0.2) return;
-      const mid = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+      _vTracerMid.addVectors(startPos, endPos).multiplyScalar(0.5);
 
-      const geo = new THREE.CylinderGeometry(0.024, 0.024, dist, 6);
-      geo.rotateX(Math.PI / 2);
-      const mat = new THREE.MeshBasicMaterial({
-        color: isCrit ? 0xff3b10 : 0xffe066,
-        transparent: true,
-        opacity: 0.95,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(mid);
+      const mat = isCrit ? playerTracerMatCrit : playerTracerMatNormal;
+      const mesh = new THREE.Mesh(tracerUnitGeo, mat);
+      mesh.scale.set(0.024, 0.024, dist);
+      mesh.position.copy(_vTracerMid);
       mesh.lookAt(endPos);
       scene.add(mesh);
       state.particles.push({
@@ -13208,22 +13275,16 @@
 
     function createEnemyTracerBeam(startPos, endPos, isCannon = false) {
       if (!startPos || !endPos) return;
-      const dir = new THREE.Vector3().subVectors(endPos, startPos);
-      const dist = dir.length();
+      _vTracerDir.subVectors(endPos, startPos);
+      const dist = _vTracerDir.length();
       if (dist < 0.2) return;
-      const mid = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
+      _vTracerMid.addVectors(startPos, endPos).multiplyScalar(0.5);
 
-      const geo = new THREE.CylinderGeometry(isCannon ? 0.06 : 0.022, isCannon ? 0.06 : 0.022, dist, 6);
-      geo.rotateX(Math.PI / 2);
-      const mat = new THREE.MeshBasicMaterial({
-        color: isCannon ? 0xff5500 : 0xffcc33,
-        transparent: true,
-        opacity: isCannon ? 1.0 : 0.85,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(mid);
+      const radius = isCannon ? 0.06 : 0.022;
+      const mat = isCannon ? enemyTracerMatCannon : enemyTracerMatSmall;
+      const mesh = new THREE.Mesh(tracerUnitGeo, mat);
+      mesh.scale.set(radius, radius, dist);
+      mesh.position.copy(_vTracerMid);
       mesh.lookAt(endPos);
       scene.add(mesh);
       state.particles.push({
@@ -13235,17 +13296,27 @@
     }
 
     const sparkGeo = new THREE.SphereGeometry(0.045, 6, 5);
+    const sparkPool = [];
+
     function spawnBurstParticles(pos, colorHex, count = 12, speedScale = 8) {
       if (!pos) return;
       for (let i = 0; i < count; i++) {
-        const mat = new THREE.MeshBasicMaterial({
-          color: colorHex,
-          transparent: true,
-          opacity: 1,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending
-        });
-        const mesh = new THREE.Mesh(sparkGeo, mat);
+        let mesh;
+        if (sparkPool.length > 0) {
+          mesh = sparkPool.pop();
+          mesh.material.color.setHex(colorHex);
+          mesh.material.opacity = 1.0;
+          mesh.scale.set(1, 1, 1);
+        } else {
+          const mat = new THREE.MeshBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: 1,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          mesh = new THREE.Mesh(sparkGeo, mat);
+        }
         mesh.position.copy(pos);
         const vel = new THREE.Vector3(
           (Math.random() - 0.5) * speedScale,
@@ -13255,6 +13326,7 @@
         scene.add(mesh);
         state.particles.push({
           type: 'spark',
+          isPooled: true,
           mesh,
           vel,
           life: 0.40 + Math.random() * 0.30,
@@ -13644,21 +13716,13 @@
     }
 
     function createHeavyCannonTracer(startPt, endPt) {
-      const dir = new THREE.Vector3().subVectors(endPt, startPt);
-      const dist = dir.length();
-      const mid = new THREE.Vector3().addVectors(startPt, endPt).multiplyScalar(0.5);
+      _vTracerDir.subVectors(endPt, startPt);
+      const dist = _vTracerDir.length();
+      _vTracerMid.addVectors(startPt, endPt).multiplyScalar(0.5);
 
-      const geo = new THREE.CylinderGeometry(0.08, 0.08, dist, 8);
-      geo.rotateX(Math.PI / 2);
-      const mat = new THREE.MeshBasicMaterial({
-        color: 0xff9922,
-        transparent: true,
-        opacity: 0.95,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(mid);
+      const mesh = new THREE.Mesh(tracerUnitGeo, heavyCannonTracerMat);
+      mesh.scale.set(0.08, 0.08, dist);
+      mesh.position.copy(_vTracerMid);
       mesh.lookAt(endPt);
       scene.add(mesh);
 
@@ -13700,22 +13764,22 @@
       muzzleLight.position.copy(muzzleWorld);
 
       raycaster.setFromCamera(state.mouseNDC, camera);
-      const targetMeshes = [];
-      state.enemies.forEach(e => { if (!e.dead && !e.isDying) targetMeshes.push(...e.hitboxes); });
-      state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) targetMeshes.push(...b.hitboxes); });
+      _reusableTargetMeshes.length = 0;
+      state.enemies.forEach(e => { if (!e.dead && !e.isDying) _reusableTargetMeshes.push(...e.hitboxes); });
+      state.boats.forEach(b => { if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) _reusableTargetMeshes.push(...b.hitboxes); });
       if (state.zeppelins) {
         state.zeppelins.forEach(z => {
-          if (!z.dead && !z.falling) targetMeshes.push(...z.hitboxes);
+          if (!z.dead && !z.falling) _reusableTargetMeshes.push(...z.hitboxes);
         });
       }
       state.supplyDrops.forEach(d => {
         if (d.active) {
-          if (d.hitboxes) targetMeshes.push(...d.hitboxes);
-          else targetMeshes.push(d.crateMesh, d.canopy);
+          if (d.hitboxes) _reusableTargetMeshes.push(...d.hitboxes);
+          else _reusableTargetMeshes.push(d.crateMesh, d.canopy);
         }
       });
 
-      const hits = raycaster.intersectObjects(targetMeshes, false);
+      const hits = raycaster.intersectObjects(_reusableTargetMeshes, false);
       const envHits = raycaster.intersectObjects(environmentTargets, false);
       const hitPoint = (hits.length > 0) ? hits[0].point.clone() : (envHits.length > 0 ? envHits[0].point.clone() : state.aimWorldPoint.clone());
 
@@ -13927,29 +13991,29 @@
       // Raycast from camera through crosshair NDC
       raycaster.setFromCamera(state.mouseNDC, camera);
 
-      // Collect all active enemy hitboxes, supply drops & destructible landing craft boats
-      const targetMeshes = [];
+      // Collect all active enemy hitboxes, supply drops & destructible landing craft boats (reusable buffer)
+      _reusableTargetMeshes.length = 0;
       state.enemies.forEach(e => {
-        if (!e.dead && !e.isDying) targetMeshes.push(...e.hitboxes);
+        if (!e.dead && !e.isDying) _reusableTargetMeshes.push(...e.hitboxes);
       });
       state.supplyDrops.forEach(d => {
         if (d.active) {
-          if (d.hitboxes) targetMeshes.push(...d.hitboxes);
-          else targetMeshes.push(d.crateMesh, d.canopy);
+          if (d.hitboxes) _reusableTargetMeshes.push(...d.hitboxes);
+          else _reusableTargetMeshes.push(d.crateMesh, d.canopy);
         }
       });
       state.boats.forEach(b => {
         if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) {
-          targetMeshes.push(...b.hitboxes);
+          _reusableTargetMeshes.push(...b.hitboxes);
         }
       });
       if (state.zeppelins) {
         state.zeppelins.forEach(z => {
-          if (!z.dead && !z.falling) targetMeshes.push(...z.hitboxes);
+          if (!z.dead && !z.falling) _reusableTargetMeshes.push(...z.hitboxes);
         });
       }
 
-      const hits = raycaster.intersectObjects(targetMeshes, false);
+      const hits = raycaster.intersectObjects(_reusableTargetMeshes, false);
 
       if (hits.length > 0) {
         const hit = hits[0];
@@ -14329,7 +14393,10 @@
         if (e.hpBar) { e.hpBar.visible = false; scene.remove(e.hpBar); }
       });
       state.grenadeObjs.forEach(g => scene.remove(g.mesh));
-      state.particles.forEach(p => scene.remove(p.mesh));
+      state.particles.forEach(p => {
+        scene.remove(p.mesh);
+        if (p.isPooled && sparkPool.length < 160) sparkPool.push(p.mesh);
+      });
       state.supplyDrops.forEach(d => scene.remove(d.group));
       state.rockets.forEach(r => scene.remove(r.mesh));
       if (state.zeppelins) {
@@ -14856,14 +14923,21 @@
     }
 
     // --- 11. INPUT HANDLERS (MOUSE, KEYBOARD & TOUCH) ---
-    function updateAimFromClientXY(clientX, clientY) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      state.mouseNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-      state.mouseNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    const crosshairEl = document.getElementById('crosshair-ui');
+    const targetReadoutEl = document.getElementById('target-readout');
+    const reticleRingEl = document.getElementById('reticle-ring');
+    const targetNameEl = document.getElementById('target-name');
+    const targetArmorBadgeEl = document.getElementById('target-armor-badge');
+    const targetHpBarEl = document.getElementById('target-hp-bar');
 
-      const crosshair = document.getElementById('crosshair-ui');
-      crosshair.style.left = `${clientX}px`;
-      crosshair.style.top = `${clientY}px`;
+    function updateAimFromClientXY(clientX, clientY) {
+      state.mouseNDC.x = ((clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+      state.mouseNDC.y = -((clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+
+      if (crosshairEl) {
+        crosshairEl.style.left = `${clientX}px`;
+        crosshairEl.style.top = `${clientY}px`;
+      }
 
       // Subtle camera pan following cursor for immersive 3D first-person bunker look
       state.aimYaw = -state.mouseNDC.x * 0.42;
@@ -14879,25 +14953,27 @@
         state.aimWorldPoint.copy(ray.origin).addScaledVector(ray.direction, 120);
       }
 
-      // Check if hovering over an enemy to display armor/HP scanner
-      const enemyMeshes = [];
-      state.enemies.forEach(e => { if (!e.dead && !e.isDying) enemyMeshes.push(...e.hitboxes); });
-      const eHits = raycaster.intersectObjects(enemyMeshes, false);
-      const readout = document.getElementById('target-readout');
-      const reticleRing = document.getElementById('reticle-ring');
+      // Check if hovering over an enemy to display armor/HP scanner (reusable buffer)
+      _hoverHitboxes.length = 0;
+      state.enemies.forEach(e => { if (!e.dead && !e.isDying) _hoverHitboxes.push(...e.hitboxes); });
+      const eHits = raycaster.intersectObjects(_hoverHitboxes, false);
 
       if (eHits.length > 0 && eHits[0].object.userData.enemyRef) {
         const enemy = eHits[0].object.userData.enemyRef;
-        readout.classList.remove('hidden');
-        readout.classList.add('flex');
-        document.getElementById('target-name').textContent = enemy.name;
-        document.getElementById('target-armor-badge').textContent = enemy.armorLabel;
-        document.getElementById('target-hp-bar').style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
-        reticleRing.classList.add('scale-125', 'border-red-400');
+        if (targetReadoutEl) {
+          targetReadoutEl.classList.remove('hidden');
+          targetReadoutEl.classList.add('flex');
+        }
+        if (targetNameEl) targetNameEl.textContent = enemy.name;
+        if (targetArmorBadgeEl) targetArmorBadgeEl.textContent = enemy.armorLabel;
+        if (targetHpBarEl) targetHpBarEl.style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
+        if (reticleRingEl) reticleRingEl.classList.add('scale-125', 'border-red-400');
       } else {
-        readout.classList.add('hidden');
-        readout.classList.remove('flex');
-        reticleRing.classList.remove('scale-125', 'border-red-400');
+        if (targetReadoutEl) {
+          targetReadoutEl.classList.add('hidden');
+          targetReadoutEl.classList.remove('flex');
+        }
+        if (reticleRingEl) reticleRingEl.classList.remove('scale-125', 'border-red-400');
       }
     }
 
@@ -15192,6 +15268,7 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      updateCanvasRect();
     });
 
     // --- 12. MAIN 3D GAME LOOP ---
@@ -15211,10 +15288,13 @@
       }
       if (oceanGeo) {
         const pos = oceanGeo.attributes.position;
+        const arr = pos.array;
+        const count = pos.count;
         const t = nowSec;
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i);
-          const z = pos.getZ(i);
+        for (let i = 0; i < count; i++) {
+          const idx = i * 3;
+          const x = arr[idx];
+          const z = arr[idx + 2];
           // 1. Long deep ocean swell moving in toward the beach (+Z)
           const swell1 = Math.sin(z * 0.038 + t * 1.6) * 0.68;
           // 2. Angled English Channel cross-swell
@@ -15223,8 +15303,7 @@
           const chop = Math.sin(x * 0.075 + z * 0.065 + t * 2.3) * 0.18;
           // 4. Shoaling compression (waves steepen as depth decreases near shore)
           const shallows = Math.max(0, (z + 200) / 400);
-          const waveY = (swell1 + swell2 + chop) * (1.0 + shallows * 0.35);
-          pos.setY(i, waveY);
+          arr[idx + 1] = (swell1 + swell2 + chop) * (1.0 + shallows * 0.35);
         }
         pos.needsUpdate = true;
       }
@@ -15284,9 +15363,8 @@
         const gunSwayX = Math.cos(nowSec * 1.2) * 0.002;
 
         // Viewmodel position anchored to camera yaw with comfortable clearance from camera near-plane
-        const viewOffset = new THREE.Vector3(0.30, -0.94, -1.45);
-        viewOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), camera.rotation.y);
-        gunGroup.position.copy(camera.position).add(viewOffset);
+        _vGunViewOffset.set(0.30, -0.94, -1.45).applyAxisAngle(_vAxisY, camera.rotation.y);
+        gunGroup.position.copy(camera.position).add(_vGunViewOffset);
         gunGroup.position.x += gunSwayX;
         gunGroup.position.y += gunSwayY;
 
@@ -15325,8 +15403,6 @@
         c.life -= dt;
         if (c.life <= 0) {
           scene.remove(c.mesh);
-          if (c.mesh.geometry) c.mesh.geometry.dispose();
-          if (c.mesh.material) c.mesh.material.dispose();
           state.spentCasings.splice(i, 1);
           continue;
         }
@@ -15665,10 +15741,10 @@
             // 6. Sand impact dust puff when body hits beach (~0.35s in)
             if (!enemy.sandPuffed && enemy.dyingTime >= 0.35) {
               enemy.sandPuffed = true;
-              const puffPos = enemy.group.position.clone();
-              puffPos.y = groundY + 0.1;
-              puffPos.z += (enemy.deathBackward ? -0.4 : 0.6);
-              spawnBurstParticles(puffPos, 0xd4b483, 10, 2.5);
+              _vPuffPos.copy(enemy.group.position);
+              _vPuffPos.y = groundY + 0.1;
+              _vPuffPos.z += (enemy.deathBackward ? -0.4 : 0.6);
+              spawnBurstParticles(_vPuffPos, 0xd4b483, 10, 2.5);
             }
 
             enemy.group.position.y = groundY;
@@ -15754,12 +15830,12 @@
             if (currentStep !== enemy.lastFootstepStep) {
               enemy.lastFootstepStep = currentStep;
               const footSide = (swingL > 0 ? -0.22 : 0.22);
-              const footPos = new THREE.Vector3(
+              _vFootPos.set(
                 enemy.group.position.x + footSide,
                 groundY + 0.05,
                 enemy.group.position.z
               );
-              spawnBurstParticles(footPos, 0xd4b483, 3, 0.8);
+              spawnBurstParticles(_vFootPos, 0xd4b483, 3, 0.8);
             }
           } else if (enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed * 2.2);
@@ -15784,8 +15860,7 @@
 
           // heavy amphibious tank turret tracking player's bunker
           if (enemy.tankTurret) {
-            const bunkerPos = new THREE.Vector3(0, 8.5, 42);
-            enemy.tankTurret.lookAt(bunkerPos);
+            enemy.tankTurret.lookAt(_vBunkerAim);
           }
 
           // Active Enemy Return Fire System (Infantry rifles/SMGs, Vehicle MGs & Tank Cannons)
@@ -15796,48 +15871,48 @@
               if (enemy.unitType === 'tank' || enemy.unitType === 'boss_tank') {
                 // Tank Cannon Main Gun Fire
                 const isBoss = (enemy.unitType === 'boss_tank');
-                const cannonTip = new THREE.Vector3(0, 2.55, isBoss ? 6.2 : 3.8);
-                if (enemy.tankTurret) cannonTip.applyQuaternion(enemy.tankTurret.quaternion);
-                cannonTip.add(enemy.group.position);
+                _vCannonTip.set(0, 2.55, isBoss ? 6.2 : 3.8);
+                if (enemy.tankTurret) _vCannonTip.applyQuaternion(enemy.tankTurret.quaternion);
+                _vCannonTip.add(enemy.group.position);
 
-                const targetPos = new THREE.Vector3((Math.random() - 0.5) * 3.5, 7.8 + (Math.random() - 0.5) * 1.5, 39.5);
-                createEnemyTracerBeam(cannonTip, targetPos, true);
-                spawnBurstParticles(cannonTip, 0xf97316, 20, 12);
-                spawnBurstParticles(cannonTip, 0x64748b, 8, 6);
+                _vTargetPos.set((Math.random() - 0.5) * 3.5, 7.8 + (Math.random() - 0.5) * 1.5, 39.5);
+                createEnemyTracerBeam(_vCannonTip, _vTargetPos, true);
+                spawnBurstParticles(_vCannonTip, 0xf97316, 20, 12);
+                spawnBurstParticles(_vCannonTip, 0x64748b, 8, 6);
                 sfx.playCannonBlast();
                 setTimeout(() => sfx.playExplosion(), 90);
 
                 // Direct bunker shell trauma
-                spawnBurstParticles(targetPos, 0xf97316, 18, 12);
-                spawnBurstParticles(targetPos, 0x94a3b8, 12, 8);
+                spawnBurstParticles(_vTargetPos, 0xf97316, 18, 12);
+                spawnBurstParticles(_vTargetPos, 0x94a3b8, 12, 8);
                 state.cameraRecoilPitch = Math.min(0.075, (state.cameraRecoilPitch || 0) + (isBoss ? 0.048 : 0.034));
                 flashScreen('rgba(239, 68, 68, 0.35)');
-                spawnFloatingCallout(new THREE.Vector3(0, 8.2, 38), isBoss ? '💥 COLOSSUS 90mm DIRECT HIT!' : '💥 75mm HE SHELL STRIKE!', 'text-red-200 border-red-500 bg-red-950/95 font-bold');
+                spawnFloatingCallout(_vBunkerDirectHit, isBoss ? '💥 COLOSSUS 90mm DIRECT HIT!' : '💥 75mm HE SHELL STRIKE!', 'text-red-200 border-red-500 bg-red-950/95 font-bold');
                 updateHUD();
 
               } else if (enemy.unitType === 'scout_car' || enemy.unitType === 'halftrack') {
                 // Mounted Machine Gun 3-round burst
-                const muzzlePos = new THREE.Vector3(enemy.group.position.x, enemy.group.position.y + 2.1, enemy.group.position.z + 1.8);
-                const targetPos = new THREE.Vector3((Math.random() - 0.5) * 4.5, 7.8 + (Math.random() - 0.5) * 1.8, 39.8);
-                createEnemyTracerBeam(muzzlePos, targetPos, false);
-                spawnBurstParticles(muzzlePos, 0xfacc15, 3, 2);
-                spawnBurstParticles(targetPos, 0x94a3b8, 4, 3);
+                _vMuzzlePos.set(enemy.group.position.x, enemy.group.position.y + 2.1, enemy.group.position.z + 1.8);
+                _vTargetPos.set((Math.random() - 0.5) * 4.5, 7.8 + (Math.random() - 0.5) * 1.8, 39.8);
+                createEnemyTracerBeam(_vMuzzlePos, _vTargetPos, false);
+                spawnBurstParticles(_vMuzzlePos, 0xfacc15, 3, 2);
+                spawnBurstParticles(_vTargetPos, 0x94a3b8, 4, 3);
                 sfx.playEnemyMG();
                 state.cameraRecoilPitch = Math.min(0.035, (state.cameraRecoilPitch || 0) + 0.010);
 
               } else if (enemy.unitType === 'rifle' || enemy.unitType === 'storm') {
                 // Infantry rifle/SMG shot
                 const isStorm = (enemy.unitType === 'storm');
-                const muzzlePos = new THREE.Vector3(enemy.group.position.x + 0.16, enemy.group.position.y + 1.35, enemy.group.position.z + 0.8);
-                const targetPos = new THREE.Vector3((Math.random() - 0.5) * 5.2, 7.8 + (Math.random() - 0.5) * 1.8, 39.8);
-                createEnemyTracerBeam(muzzlePos, targetPos, false);
-                spawnBurstParticles(muzzlePos, 0xfacc15, 3, 2);
-                spawnBurstParticles(targetPos, 0x94a3b8, 3, 2);
+                _vMuzzlePos.set(enemy.group.position.x + 0.16, enemy.group.position.y + 1.35, enemy.group.position.z + 0.8);
+                _vTargetPos.set((Math.random() - 0.5) * 5.2, 7.8 + (Math.random() - 0.5) * 1.8, 39.8);
+                createEnemyTracerBeam(_vMuzzlePos, _vTargetPos, false);
+                spawnBurstParticles(_vMuzzlePos, 0xfacc15, 3, 2);
+                spawnBurstParticles(_vTargetPos, 0x94a3b8, 3, 2);
                 sfx.playEnemyRifleShot(isStorm);
                 if (enemy.soldierWeapon) {
                   enemy.soldierWeaponRecoil = 0.9;
                 }
-                if (Math.abs(targetPos.x) < 1.4 && Math.abs(targetPos.y - 7.8) < 0.9) {
+                if (Math.abs(_vTargetPos.x) < 1.4 && Math.abs(_vTargetPos.y - 7.8) < 0.9) {
                   sfx.playPillboxImpact();
                   state.cameraRecoilPitch = Math.min(0.024, (state.cameraRecoilPitch || 0) + 0.005);
                 }
@@ -15872,8 +15947,9 @@
             state.cameraRecoilPitch = Math.min(0.09, (state.cameraRecoilPitch || 0) + 0.045);
 
             const unitDisplayName = enemy.unitType === 'rifle' ? 'RIFLEMAN' : enemy.unitType === 'storm' ? 'STORMTROOPER' : enemy.unitType === 'scout_car' ? 'SCOUT CAR' : enemy.unitType === 'halftrack' ? 'HALF-TRACK' : enemy.unitType === 'boss_tank' ? 'COLOSSUS DREADNOUGHT' : 'SHERMAN TANK';
+            _vBreachPos.set(enemy.group.position.x, 8.0, 37);
             spawnFloatingCallout(
-              new THREE.Vector3(enemy.group.position.x, 8.0, 37),
+              _vBreachPos,
               `⚠️ ${unitDisplayName} BREACHED! -${dmgPercent}% HP (${state.bunkerHealth}% LEFT)`,
               'text-red-200 border-red-500 bg-red-950/95 font-bold shadow-[0_0_25px_rgba(239,68,68,0.8)]'
             );
@@ -15915,8 +15991,14 @@
         p.life -= dt;
         if (p.life <= 0) {
           scene.remove(p.mesh);
-          if (p.mesh.geometry && p.mesh.geometry !== sparkGeo) p.mesh.geometry.dispose();
-          if (p.mesh.material) p.mesh.material.dispose();
+          if (p.type === 'tracer') {
+            // Reusable unit geometry and static materials are preserved
+          } else if (p.isPooled) {
+            if (sparkPool.length < 160) sparkPool.push(p.mesh);
+          } else {
+            if (p.mesh.geometry && p.mesh.geometry !== sparkGeo) p.mesh.geometry.dispose();
+            if (p.mesh.material) p.mesh.material.dispose();
+          }
           state.particles.splice(i, 1);
           continue;
         }
