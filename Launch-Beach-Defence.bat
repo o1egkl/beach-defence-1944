@@ -1,9 +1,9 @@
 @echo off
-title Beach Defence 1944
+title Pacific Defence
 echo ============================================================
-echo   BEACH DEFENCE 1944 - WINDOWS DESKTOP APP LAUNCHER
+echo   PACIFIC DEFENCE - WINDOWS DESKTOP APP LAUNCHER
 echo ============================================================
-echo Starting Beach Defence in dedicated desktop window...
+echo Starting Pacific Defence in dedicated desktop window...
 
 :: Check for local Electron desktop application
 if exist "%~dp0node_modules\.bin\electron.cmd" (

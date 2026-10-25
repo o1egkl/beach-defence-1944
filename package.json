@@ -1,8 +1,8 @@
 {
-  "name": "beach-defence-1944",
-  "productName": "Beach Defence 1944",
+  "name": "pacific-defence",
+  "productName": "Pacific Defence",
   "version": "1.0.0",
-  "description": "WW2 3D First-Person Coastal Bunker Defense Arcade Game",
+  "description": "3D First-Person Coastal Bunker Defense Arcade Game",
   "main": "main.js",
   "author": "Oleg",
   "license": "MIT",
@@ -18,9 +18,9 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.beachdefence.game",
-    "productName": "Beach Defence 1944",
-    "copyright": "Copyright © 2026 Beach Defence 1944",
+    "appId": "com.pacificdefence.game",
+    "productName": "Pacific Defence",
+    "copyright": "Copyright © 2026 Pacific Defence",
     "directories": {
       "output": "dist"
     },
@@ -46,7 +46,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Beach Defence 1944"
+      "shortcutName": "Pacific Defence"
     },
     "files": [
       "main.js",

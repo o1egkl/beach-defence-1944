@@ -6,14 +6,14 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Beach Defence</title>
+  <title>Pacific Defence</title>
   <meta name="theme-color" content="#181c14">
   <meta name="color-scheme" content="dark">
-  <meta name="application-name" content="Beach Defence 1944">
+  <meta name="application-name" content="Pacific Defence">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Beach Defence">
+  <meta name="apple-mobile-web-app-title" content="Pacific Defence">
   <meta name="msapplication-TileColor" content="#181c14">
   <meta name="msapplication-TileImage" content="/icons/icon-512.png">
   <link rel="manifest" href="manifest.json">
@@ -667,7 +667,7 @@
           <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 class="font-military text-3xl sm:text-5xl text-stone-100 tracking-wider drop-shadow">
-                BEACH DEFENCE
+                PACIFIC DEFENCE
               </h1>
               <p id="armory-subtitle" class="text-xs sm:text-sm text-stone-300 mt-0.5">
                 Pre-Level Command Bunker & Weapon Upgrade Armory — Prepare for Incoming Landing Craft
@@ -833,7 +833,7 @@
       <div class="p-4 sm:p-5 bg-stone-950 border-b border-stone-800 flex items-center justify-between">
         <div>
           <span class="text-[10px] font-mono-tac uppercase tracking-widest text-amber-400 font-bold">SYSTEM DESIGN & ARCHITECTURE DOCUMENT</span>
-          <h2 class="font-military text-2xl text-stone-100">BEACH DEFENCE — 3D GAME PLAN</h2>
+          <h2 class="font-military text-2xl text-stone-100">PACIFIC DEFENCE — 3D GAME PLAN</h2>
         </div>
         <button id="btn-close-plan" type="button" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-mono-tac font-bold">
           ✕ CLOSE PLAN
@@ -873,7 +873,7 @@
 
   <script>
     // ============================================================================
-    // BEACH DEFENCE — 3D FIRST-PERSON COASTAL DEFENSE GAME
+    // PACIFIC DEFENCE — 3D FIRST-PERSON COASTAL DEFENSE GAME
     // ============================================================================
 
     // --- 1. WEB AUDIO SYNTHESIZER (BATTLEFIELD SOUND EFFECTS & OCEAN AMBIENCE) ---
@@ -9928,7 +9928,7 @@
       textures.camoArmor = new THREE.CanvasTexture(cArm);
       textures.armorNormal = generateNormalMap(cArm, 3.0);
 
-      // 6. German Regelbau Dark Gray Reinforced Concrete (512x512)
+      // 6. Coastal Fortress Dark Gray Reinforced Concrete (512x512)
       const cConc = document.createElement('canvas');
       cConc.width = cConc.height = 512;
       const ctxC = cConc.getContext('2d');
@@ -11108,7 +11108,7 @@
 
       // 8. Reinforced Concrete Bunker Casemate Embrasure (Panoramic View Aperture)
       const sillMat = new THREE.MeshStandardMaterial({
-        color: 0x2e3236, // True dark charcoal/slate gray German pillbox concrete
+        color: 0x2e3236, // True dark charcoal/slate gray fortress pillbox concrete
         map: textures.concrete,
         normalMap: textures.concreteNormal,
         roughness: 0.94,
@@ -11184,7 +11184,7 @@
       const gunMetal = new THREE.MeshStandardMaterial({
         map: textures.metal,
         normalMap: textures.metalNormal,
-        color: 0x2c3238, // Deep blued German ordnance steel matching reference photo
+        color: 0x2c3238, // Deep blued heavy ordnance steel matching reference photo
         roughness: 0.32,
         metalness: 0.82
       });
@@ -11212,7 +11212,7 @@
       const drumMat = new THREE.MeshStandardMaterial({
         map: textures.tankHull,
         normalMap: textures.armorNormal,
-        color: 0x4c583e, // Authentic olive-green Gurttrommel 34 lacquer
+        color: 0x4c583e, // Authentic olive-green drum magazine lacquer
         roughness: 0.50,
         metalness: 0.52
       });
@@ -11220,7 +11220,7 @@
       const walnutWoodMat = new THREE.MeshStandardMaterial({
         map: textures.wood,
         normalMap: textures.woodNormal,
-        color: 0x5a361e, // Rich authentic German walnut timber matching reference photo
+        color: 0x5a361e, // Rich authentic walnut timber matching reference photo
         roughness: 0.48,
         metalness: 0.06
       });
@@ -11676,16 +11676,16 @@
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
 
-    // Procedural WW2 Soldier System (High-Definition 1944 Textures & 60 FPS Fluid Running Kinematics)
+    // Procedural Soldier System (High-Definition Textures & 60 FPS Fluid Running Kinematics)
     let soldierGLBTemplate = null;
 
     function initSoldierGLBLoader() {
-      // Kept disabled for soldiers: procedural WW2 soldier provides authentic 1944 uniform, M1 helmet, and fluid 60 FPS skeletal running strides
+      // Kept disabled for soldiers: procedural soldier provides authentic uniform, combat helmet, and fluid 60 FPS skeletal running strides
       soldierGLBTemplate = null;
     }
 
     function applySoldierGLB(enemy) {
-      // No-op: using upgraded procedural WW2 soldier with 2-segment articulated limbs
+      // No-op: using upgraded procedural soldier with 2-segment articulated limbs
     }
 
     function createFloatingHPBar(width = 1.8) {
@@ -12106,7 +12106,7 @@
         boatObj.props.push(blades);
       }
 
-      // 7. High-Definition WW2 Passenger Troops inside the cargo hold waiting to beach!
+      // 7. High-Definition Passenger Troops inside the cargo hold waiting to beach!
       boatSpec.cargo.forEach((cType, cIdx) => {
         if (cType !== 'rifle' && cType !== 'storm') return;
         const isStorm = (cType === 'storm');
@@ -14711,7 +14711,7 @@
         const cfg = WAVE_CONFIGS[Math.min(state.waveIndex, WAVE_CONFIGS.length - 1)];
         const vicTitle = isCampaignWin ? 'CAMPAIGN VICTORY!' : `WAVE ${state.waveIndex + 1} CLEARED!`;
         const vicSub = isCampaignWin 
-          ? 'ALL CAMPAIGN WAVES CLEARED — BEACH DEFENCE SECURED!' 
+          ? 'ALL CAMPAIGN WAVES CLEARED — PACIFIC DEFENCE SECURED!' 
           : `WAVE ${state.waveIndex + 1}: ${cfg.name.toUpperCase()} REPULSED`;
 
         const badgeEl = document.getElementById('vic-badge-text');
@@ -15521,7 +15521,7 @@
       // 3. Fallback advisory alert if running in standard browser tab
       setTimeout(() => {
         if (!document.hidden) {
-          alert("Mission Aborted. To exit Beach Defence 1944 completely, please close this browser tab or window, or press Alt+F4 / Ctrl+Q.");
+          alert("Mission Aborted. To exit Pacific Defence completely, please close this browser tab or window, or press Alt+F4 / Ctrl+Q.");
         }
       }, 350);
     }
@@ -16103,7 +16103,7 @@
 
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
-          // Authentic 60 FPS WW2 infantry running biomechanics
+          // Authentic 60 FPS infantry running biomechanics
           if (enemy.pelvis && enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + eDt * (enemy.speed * 2.2);
             const phase = enemy.stridePhase + enemy.wobbleSeed;
@@ -16428,7 +16428,7 @@
 
     async function triggerPwaInstall() {
       if (!deferredInstallPrompt) {
-        alert('To install on Windows: In Microsoft Edge or Chrome, click the App Install icon in the address bar, or open the browser menu and select "Apps" -> "Install Beach Defence 1944 as an app".');
+        alert('To install on Windows: In Microsoft Edge or Chrome, click the App Install icon in the address bar, or open the browser menu and select "Apps" -> "Install Pacific Defence as an app".');
         return;
       }
       deferredInstallPrompt.prompt();

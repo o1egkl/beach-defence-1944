@@ -1,7 +1,7 @@
 {
-  "name": "Beach Defence 1944",
-  "short_name": "Beach Defence",
-  "description": "WW2 3D First-Person Coastal Bunker Defense Arcade Game",
+  "name": "Pacific Defence",
+  "short_name": "Pacific Defence",
+  "description": "3D First-Person Coastal Bunker Defense Arcade Game",
   "start_url": "/?source=pwa",
   "id": "/?source=pwa",
   "scope": "/",
@@ -74,7 +74,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Beach Defence 1944 Coastal Defense"
+      "label": "Pacific Defence Coastal Defense"
     }
   ]
 }

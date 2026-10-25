@@ -1,13 +1,13 @@
-# 🎖️ Beach Defence 1944
+# 🎖️ Pacific Defence
 
 <p align="center">
-  <img src="icons/icon-512.png" alt="Beach Defence 1944 Logo" width="160" height="160" style="border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);" />
+  <img src="icons/icon-512.png" alt="Pacific Defence Logo" width="160" height="160" style="border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);" />
 </p>
 
-<h3 align="center">WW2 3D First-Person Coastal Bunker Defense Arcade Game</h3>
+<h3 align="center">3D First-Person Coastal Bunker Defense Arcade Game</h3>
 
 <p align="center">
-  <strong>Hold the Atlantic Wall. Suppress the Landing Craft. Repel the Allied Beachhead Invasion.</strong>
+  <strong>Hold the Coastal Fortress. Suppress the Landing Craft. Repel the Beachhead Invasion.</strong>
 </p>
 
 <p align="center">
@@ -38,14 +38,14 @@
 
 ## 🎮 Game Overview
 
-**Beach Defence 1944** places you behind the reinforced embrasure of a frontline coastal concrete bunker during the peak of the 1944 Allied beachhead landings. 
+**Pacific Defence** places you behind the reinforced embrasure of a frontline coastal concrete bunker during a massive coastal amphibious landing operation. 
 
 Armed with a heavy machine gun, high-explosive anti-tank coastal cannons, anti-armor rocket launchers, and fragmentation grenades, your objective is to eliminate incoming waves of amphibious landing craft, storming infantry squads, mechanized armor, and naval bombardment fleets before they breach your fortifications.
 
 The game features:
 - **Procedural 3D Ocean Simulation**: Realistic multi-speed swells, shore shoaling, breaking surf, and dynamic water foam.
-- **Detailed 3D Viewmodels**: Authentic MG-42 with animated bolt recoil, spent brass casings ejection physics, barrel heat glow, and heavy muzzle flashes.
-- **Anatomical Enemy Soldiers**: Procedural WW2 uniform meshes with running gait animations, strafing, combat fire, and realistic crumple physics upon elimination.
+- **Detailed 3D Viewmodels**: Authentic Heavy Rapid MG with animated bolt recoil, spent brass casings ejection physics, barrel heat glow, and heavy muzzle flashes.
+- **Anatomical Enemy Soldiers**: Procedural uniform meshes with running gait animations, strafing, combat fire, and realistic crumple physics upon elimination.
 - **Capital Naval Fleet**: Offshore battleships and destroyers firing periodic long-range naval bombardment salvos with rising smoke plumes.
 - **Synthetic Battlefield Audio**: Real-time procedural audio synthesis using the Web Audio API for gunshots, cannon blasts, shrapnel explosions, shell casings tinkling, ocean ambience, and mechanical reload clanks.
 
@@ -80,7 +80,7 @@ The game features:
 
 Switch weapons on the fly using number keys `[1]`, `[2]`, `[3]`, or the mouse wheel to match incoming armor profiles.
 
-### 1. 💥 MG-42 Heavy Machine Gun (`Slot 1`)
+### 1. 💥 Heavy Rapid MG Heavy Machine Gun (`Slot 1`)
 - **Role**: Primary sustained suppression against massed infantry and fast-moving foot soldiers.
 - **Fire Rate**: 520 - 1,600 rounds per minute (RPM).
 - **Ammo Capacity**: 45 - 120+ rounds per belt drum.
@@ -158,10 +158,10 @@ Between invasion waves, commanders access the **Command Bunker & Weapon Upgrade 
    - Speed in towards the beach at 21.5+ m/s with visible churning white foam wakes.
    - Upon hitting the shallows, drop steel bow ramps to disembark troops.
    - *Tactical Tip*: Destroying boats with cannons or rockets *before* they drop ramp eliminates all onboard troops simultaneously!
-2. **Allied Riflemen**:
-   - Standard frontline troops armed with M1 Garands. Move in staggered lines up the beach dunes.
+2. **Invasion Riflemen**:
+   - Standard frontline troops armed with service rifles. Move in staggered lines up the beach dunes.
 3. **Assault Stormtroopers**:
-   - Tougher veterans equipped with steel M1 helmets. Possess 12% inherent armor reduction and higher sprint speeds.
+   - Tougher veterans equipped with steel combat helmets. Possess 12% inherent armor reduction and higher sprint speeds.
 4. **Armored Scout Cars & Halftracks**:
    - Fast mechanized vehicles carrying squad reinforcements and providing suppressing fire.
 5. **Amphibious Tanks & Colossus Dreadnoughts**:
@@ -183,7 +183,7 @@ The campaign features 20 hand-crafted, progressively intensifying waves:
 
 ## 🚪 Tactical Exit & Military Discharge Protocol
 
-*Beach Defence 1944* includes a dedicated, authentic **Military Discharge Protocol** system allowing players to exit cleanly at any time:
+*Pacific Defence* includes a dedicated, authentic **Military Discharge Protocol** system allowing players to exit cleanly at any time:
 
 1. **Multiple In-Game Access Points**:
    - **Armory Screen Header**: Tactical `🚪 EXIT GAME` button located at the top-right.
@@ -205,8 +205,8 @@ The campaign features 20 hand-crafted, progressively intensifying waves:
 | Action | Primary Control | Secondary Hotkey | Notes |
 | :--- | :--- | :--- | :--- |
 | **Aim Turret / Camera** | **Mouse Move** | Touch Drag (Mobile) | Direct 3D crosshair aiming with recoil compensation |
-| **Fire Active Weapon** | **Left Mouse Click** | `[Space]` Key / Hold | Continuous automatic fire for MG-42; semi-auto for cannons |
-| **Select MG-42 Machine Gun** | **`[1]` Key** | Mouse Wheel Up / Down | High cyclic fire, anti-infantry |
+| **Fire Active Weapon** | **Left Mouse Click** | `[Space]` Key / Hold | Continuous automatic fire for Heavy Rapid MG; semi-auto for cannons |
+| **Select Heavy Rapid MG Machine Gun** | **`[1]` Key** | Mouse Wheel Up / Down | High cyclic fire, anti-infantry |
 | **Select 75mm AT Cannon** | **`[2]` Key** | Number Pad `[2]` | Heavy armor piercing, anti-tank |
 | **Select Heavy Rocket** | **`[3]` Key** | Number Pad `[3]` | High-explosive burst ordnance |
 | **Manual Reload / Vent** | **`[R]` Key** | HUD Reload Button | Clears drum or chamber before entering forced cooldown |
@@ -261,8 +261,8 @@ npm run dist
 ```
 
 Built distributables are generated inside the `dist/` directory:
-- **`dist/Beach Defence 1944 1.0.0.exe`**: 100% portable standalone executable (no installation required).
-- **`dist/Beach Defence 1944 Setup 1.0.0.exe`**: Standard Windows NSIS installer with desktop and start menu shortcuts.
+- **`dist/Pacific Defence 1.0.0.exe`**: 100% portable standalone executable (no installation required).
+- **`dist/Pacific Defence Setup 1.0.0.exe`**: Standard Windows NSIS installer with desktop and start menu shortcuts.
 
 ### 3. 📱 Progressive Web App (PWA & 100% Offline Play)
 - In Chrome or Edge, click the **Install App icon** in the address bar (or click **"💻 INSTALL WINDOWS APP"** inside the Armory menu).

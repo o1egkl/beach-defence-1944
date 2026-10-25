@@ -9,7 +9,7 @@ function createWindow() {
     height: 720,
     minWidth: 960,
     minHeight: 540,
-    title: 'Beach Defence 1944',
+    title: 'Pacific Defence',
     icon: path.join(__dirname, 'icons', 'icon.ico'),
     backgroundColor: '#0f130d',
     autoHideMenuBar: true,
