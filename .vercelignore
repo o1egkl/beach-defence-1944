@@ -1,0 +1,14 @@
+node_modules
+dist
+tmp_chrome
+.git
+.github
+*.exe
+*.zip
+*.log
+scratch
+Launch-Beach-Defence.bat
+main.js
+preload.js
+package.json
+package-lock.json
