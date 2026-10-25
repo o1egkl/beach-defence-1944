@@ -5,6 +5,12 @@ echo   BEACH DEFENCE 1944 - WINDOWS DESKTOP APP LAUNCHER
 echo ============================================================
 echo Starting Beach Defence in dedicated desktop window...
 
+:: Check for local Electron desktop application
+if exist "%~dp0node_modules\.bin\electron.cmd" (
+  start "" "%~dp0node_modules\.bin\electron.cmd" "%~dp0."
+  exit
+)
+
 :: Check for Microsoft Edge (Standard on Windows 10 & 11)
 where msedge >nul 2>nul
 if %ERRORLEVEL% equ 0 (

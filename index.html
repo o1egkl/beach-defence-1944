@@ -260,9 +260,14 @@
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <button id="btn-mute" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition shadow" title="Toggle Sound">
-              <span id="mute-icon">🔊</span>
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-mute" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition shadow" title="Toggle Sound">
+                <span id="mute-icon">🔊</span>
+              </button>
+              <button id="btn-hud-quit" type="button" class="bg-red-950/85 hover:bg-red-900 border border-red-600/80 hover:border-red-500 text-red-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-mono-tac font-bold flex items-center justify-center gap-1 transition shadow shadow-red-950/50" title="Quit Game to Desktop (Esc / Ctrl+Q)">
+                <span>🚪 QUIT</span>
+              </button>
+            </div>
             <button id="btn-open-armory-mid" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-amber-500/50 text-amber-300 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition shadow flex items-center justify-center gap-1" title="Pause Mission (Esc / P)">
               <span>⏸ PAUSE</span>
             </button>
@@ -381,15 +386,19 @@
             </div>
           </button>
 
-          <!-- Time Booster Button (T) -->
-          <button id="btn-use-timeboost" type="button" class="bg-stone-950/90 hover:bg-emerald-950/80 active:scale-95 border-2 border-emerald-400/70 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[135px]" title="Field Repair Kit (Hotkey: T)">
+          <!-- Tactical Overdrive / Bullet-Time & Emergency Repair Button (T) -->
+          <button id="btn-use-timeboost" type="button" class="relative overflow-hidden bg-stone-950/90 hover:bg-cyan-950/80 active:scale-95 border-2 border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[145px]" title="Tactical Overdrive: Adrenaline Bullet-Time Slow-Mo + Field Repair + Instant Weapon Vent & Ammo (Hotkey: T)">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">❤️ REPAIR KIT</span>
-              <span class="text-[10px] font-mono-tac bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 px-1.5 py-0.5 rounded">KEY [T]</span>
+              <span id="hud-timeboost-title" class="text-xs font-bold uppercase tracking-wider text-cyan-300">⚡ TACTICAL</span>
+              <span class="text-[10px] font-mono-tac bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 px-1.5 py-0.5 rounded font-bold">KEY [T]</span>
             </div>
             <div class="flex items-baseline justify-between mt-1">
               <span id="hud-timeboost-count" class="font-mono-tac text-2xl font-extrabold text-stone-100">3</span>
-              <span class="text-[10px] text-emerald-300 font-semibold">+25% Health</span>
+              <span id="hud-timeboost-sub" class="text-[10px] text-cyan-300 font-semibold">Slow-Mo+Heal</span>
+            </div>
+            <!-- Active Bullet Time Countdown Progress Bar -->
+            <div id="hud-timeboost-bar-wrap" class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden hidden">
+              <div id="hud-timeboost-bar" class="h-full bg-cyan-400 rounded transition-all duration-75" style="width: 100%;"></div>
             </div>
           </button>
 
@@ -468,12 +477,15 @@
         </div>
       </div>
 
-      <!-- Action Button: OK -> Go to Armory / Next Wave Screen -->
-      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex flex-col gap-2.5 shrink-0">
-        <button id="btn-victory-ok" type="button" class="w-full py-3.5 px-6 rounded-xl font-military text-lg sm:text-xl text-stone-950 bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500 hover:from-emerald-300 hover:to-amber-400 shadow-[0_0_30px_rgba(16,185,129,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2">
+      <!-- Action Buttons: OK -> Go to Armory / Next Wave Screen + Exit Game -->
+      <div class="p-4 sm:p-5 bg-stone-950 border-t border-stone-800 flex flex-col sm:flex-row gap-2.5 shrink-0">
+        <button id="btn-victory-ok" type="button" class="flex-1 py-3.5 px-6 rounded-xl font-military text-lg sm:text-xl text-stone-950 bg-gradient-to-r from-emerald-400 via-amber-400 to-amber-500 hover:from-emerald-300 hover:to-amber-400 shadow-[0_0_30px_rgba(16,185,129,0.5)] transition transform active:scale-95 flex items-center justify-center gap-2">
           <span>OK — PROCEED TO NEXT SCREEN</span>
           <span class="text-xs font-mono-tac opacity-80">(ENTER / SPACE)</span>
           <span class="text-lg">➔</span>
+        </button>
+        <button id="btn-victory-exit" type="button" class="py-3.5 px-5 rounded-xl font-military text-base sm:text-lg text-stone-300 hover:text-red-300 bg-stone-900 hover:bg-red-950/50 border border-stone-800 transition flex items-center justify-center gap-2" title="Exit Game to Desktop">
+          <span>🚪 EXIT GAME</span>
         </button>
       </div>
 
@@ -1263,6 +1275,43 @@
           gain.connect(this.ctx.destination);
           osc.start(now + idx * 0.05);
           osc.stop(now + idx * 0.05 + 0.22);
+        });
+      }
+
+      playBulletTime() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // Deep sub-bass adrenaline whoosh sweep
+        try {
+          const subOsc = this.ctx.createOscillator();
+          const subGain = this.ctx.createGain();
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(145, now);
+          subOsc.frequency.exponentialRampToValueAtTime(36, now + 0.65);
+          subGain.gain.setValueAtTime(0.32, now);
+          subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+          subOsc.connect(subGain);
+          subGain.connect(this.ctx.destination);
+          subOsc.start(now);
+          subOsc.stop(now + 0.72);
+        } catch (e) {}
+
+        // Harmonic tactical surge arpeggio
+        [329.63, 440.0, 554.37, 659.25, 880.0].forEach((freq, idx) => {
+          try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+            gain.gain.setValueAtTime(0.16, now + idx * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.05);
+            osc.stop(now + idx * 0.05 + 0.38);
+          } catch (e) {}
         });
       }
 
@@ -9440,6 +9489,11 @@
       timeRemaining: 180,
       grenades: 5,
       timeBoosters: 4,
+      bulletTimeActive: false,
+      bulletTimeTimer: 0,
+      bulletTimeDuration: 6.0,
+      bulletTimeScale: 0.35,
+      tacticalCooldown: 0,
       shotsFired: 0,
       shotsHit: 0,
       oneShotKills: 0,
@@ -14404,35 +14458,83 @@
       });
     }
 
-    // Use Limited Level Time Booster
-    function useRepairKit() {
+    // Tactical Time Booster & Emergency Adrenaline Overdrive (Activated via [T] Key or HUD Button)
+    function useTimeBooster() {
       if (state.mode !== 'PLAYING') return;
-      const count = state.repairKits !== undefined ? state.repairKits : state.timeBoosters;
-      if (count <= 0) {
-        spawnFloatingCallout(state.aimWorldPoint, 'NO REPAIR KITS REMAINING!', 'text-emerald-300 border-emerald-500 bg-stone-950/90');
+
+      if (state.bulletTimeActive) {
+        spawnFloatingCallout(state.aimWorldPoint, `⚡ OVERDRIVE ACTIVE! (${state.bulletTimeTimer.toFixed(1)}s)`, 'text-cyan-300 border-cyan-500 bg-stone-950/90 font-bold');
         return;
       }
-      if (state.bunkerHealth >= 100) {
-        spawnFloatingCallout(state.aimWorldPoint, 'BUNKER ALREADY AT 100% INTEGRITY!', 'text-emerald-300 border-emerald-500 bg-stone-950/90');
+
+      const availableBoosts = state.timeBoosters !== undefined ? state.timeBoosters : (state.repairKits || 0);
+
+      if (availableBoosts <= 0 && (!state.tacticalCooldown || state.tacticalCooldown > 0)) {
+        const cdSec = state.tacticalCooldown ? state.tacticalCooldown.toFixed(1) : '10.0';
+        spawnFloatingCallout(state.aimWorldPoint, `⚡ TACTICAL RECHARGING: ${cdSec}s`, 'text-amber-300 border-amber-500 bg-stone-950/90 font-bold');
         return;
       }
-      if (state.repairKits !== undefined) state.repairKits--;
-      else state.timeBoosters--;
 
-      // Restores +25% Bunker Health!
-      state.bunkerHealth = Math.min(100, (state.bunkerHealth || 0) + 25);
-      state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+      // Consume charge or trigger recharge cooldown
+      if (availableBoosts > 0) {
+        if (state.timeBoosters !== undefined) state.timeBoosters--;
+        if (state.repairKits !== undefined) state.repairKits = state.timeBoosters;
+      } else {
+        state.tacticalCooldown = 15.0; // 15s recharge when fired from reserve
+      }
 
-      if (sfx.playHealthRestore) sfx.playHealthRestore();
-      else sfx.playTimeBoost();
+      // 1. Activate Adrenaline Bullet-Time Slow Motion (6.0 seconds, 65% slow-mo)
+      state.bulletTimeActive = true;
+      state.bulletTimeTimer = 6.0;
+      state.bulletTimeDuration = 6.0;
+      state.bulletTimeScale = 0.35;
 
-      flashScreen('rgba(34, 197, 94, 0.28)');
-      spawnFloatingCallout(state.aimWorldPoint, `❤️ FIELD REPAIR! +25% HEALTH (${state.bunkerHealth}% HP)`, 'text-emerald-200 border-emerald-400 bg-emerald-950/95 font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]');
+      // 2. Bunker Structural Integrity Repair & Over-Armor Fortification (+25% HP)
+      const curHp = state.bunkerHealth !== undefined ? state.bunkerHealth : 100;
+      if (curHp < 100) {
+        state.bunkerHealth = Math.min(100, curHp + 25);
+        state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+      } else {
+        // Bunker already at 100% -> Provide +20% Fortified Armor Shield (up to 120%)!
+        state.bunkerHealth = Math.min(120, curHp + 20);
+      }
+
+      // 3. Instant Weapon Drum Vent & Full Ammo Reload
+      if (state.weapon) {
+        state.weapon.curAmmo = state.weapon.maxAmmo;
+        state.weapon.isCooling = false;
+        state.weapon.cooldownTimer = 0;
+      }
+      state.barrelHeat = 0; // Clear barrel overheating instantly
+
+      // 4. Concussive Shockwave: Stagger advancing enemy infantry on the beach
+      if (state.enemies && state.enemies.length > 0) {
+        state.enemies.forEach(e => {
+          if (!e.dead && !e.isDying && e.group) {
+            if (e.group.position.z > -85) {
+              e.staggerTimer = 2.8; // Stumble and pause advancing fire
+            }
+          }
+        });
+      }
+
+      // 5. Epic Audio & Screen Surge
+      if (sfx.playBulletTime) {
+        sfx.playBulletTime();
+      } else if (sfx.playTimeBoost) {
+        sfx.playTimeBoost();
+      }
+      flashScreen('rgba(6, 182, 212, 0.35)');
+
+      const hpStatus = state.bunkerHealth > 100 ? `FORTIFIED ARMOR ${state.bunkerHealth}% HP` : `+25% REPAIR (${state.bunkerHealth}% HP)`;
+      spawnFloatingCallout(state.aimWorldPoint, `⚡ TACTICAL OVERDRIVE! BULLET-TIME • ${hpStatus} • AMMO VENTED! ⚡`, 'text-cyan-200 border-cyan-400 bg-cyan-950/95 font-bold shadow-[0_0_30px_rgba(6,182,212,0.7)]');
+
       updateHUD();
     }
-    // Backward compatibility alias
-    function useTimeBooster() {
-      useRepairKit();
+
+    // Alias for repair kit callers
+    function useRepairKit() {
+      useTimeBooster();
     }
 
     // --- 10. WAVE LIFECYCLE, SCORING & ARMORY UI ---
@@ -14464,6 +14566,8 @@
       state.particles = [];
       state.supplyDrops = [];
       state.rockets = [];
+      state.bulletTimeActive = false;
+      state.bulletTimeTimer = 0;
     }
 
     function startWave(waveIdx) {
@@ -14489,6 +14593,9 @@
       state.timeRemaining = cfg.timeLimit;
       state.grenades = cfg.grenades;
       state.timeBoosters = state.repairKits;
+      state.bulletTimeActive = false;
+      state.bulletTimeTimer = 0;
+      state.tacticalCooldown = 0;
       state.shotsFired = 0;
       state.shotsHit = 0;
       state.oneShotKills = 0;
@@ -14972,7 +15079,45 @@
       }
 
       document.getElementById('hud-grenades-count').textContent = state.grenades;
-      document.getElementById('hud-timeboost-count').textContent = (state.repairKits !== undefined ? state.repairKits : state.timeBoosters);
+
+      const boostCountEl = document.getElementById('hud-timeboost-count');
+      const boostSubEl = document.getElementById('hud-timeboost-sub');
+      const boostBarWrap = document.getElementById('hud-timeboost-bar-wrap');
+      const boostBar = document.getElementById('hud-timeboost-bar');
+      const boostTitleEl = document.getElementById('hud-timeboost-title');
+      const boostBtnEl = document.getElementById('btn-use-timeboost');
+
+      const charges = (state.timeBoosters !== undefined ? state.timeBoosters : state.repairKits) || 0;
+
+      if (state.bulletTimeActive) {
+        if (boostCountEl) boostCountEl.textContent = `${state.bulletTimeTimer.toFixed(1)}s`;
+        if (boostSubEl) boostSubEl.textContent = 'SLOW-MO ACTIVE';
+        if (boostTitleEl) boostTitleEl.textContent = '⚡ OVERDRIVE';
+        if (boostBarWrap) boostBarWrap.classList.remove('hidden');
+        if (boostBar) {
+          const pct = Math.max(0, Math.min(100, (state.bulletTimeTimer / (state.bulletTimeDuration || 6.0)) * 100));
+          boostBar.style.width = `${pct}%`;
+        }
+        if (boostBtnEl) {
+          boostBtnEl.className = 'relative overflow-hidden bg-cyan-950/95 border-2 border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.6)] rounded-xl px-3.5 py-2.5 text-left transition flex flex-col justify-between min-w-[145px] animate-pulse';
+        }
+      } else {
+        if (boostBarWrap) boostBarWrap.classList.add('hidden');
+        if (boostCountEl) boostCountEl.textContent = charges;
+        if (boostSubEl) {
+          if (charges > 0) {
+            boostSubEl.textContent = 'Slow-Mo+Heal';
+          } else if (state.tacticalCooldown > 0) {
+            boostSubEl.textContent = `Recharge ${state.tacticalCooldown.toFixed(0)}s`;
+          } else {
+            boostSubEl.textContent = 'Ready';
+          }
+        }
+        if (boostTitleEl) boostTitleEl.textContent = '⚡ TACTICAL';
+        if (boostBtnEl) {
+          boostBtnEl.className = 'relative overflow-hidden bg-stone-950/90 hover:bg-cyan-950/80 active:scale-95 border-2 border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[145px]';
+        }
+      }
     }
 
     // --- 11. INPUT HANDLERS (MOUSE, KEYBOARD & TOUCH) ---
@@ -15078,6 +15223,13 @@
     window.addEventListener('keydown', e => {
       state.keys[e.code] = true;
 
+      // Windows Desktop Instant Quit Shortcut: Ctrl+Q
+      if (e.ctrlKey && (e.code === 'KeyQ' || e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        showExitModal();
+        return;
+      }
+
       // Global Pause / Resume or Exit shortcut toggle on Escape or P
       if (e.code === 'Escape' || e.code === 'KeyP') {
         e.preventDefault();
@@ -15127,11 +15279,12 @@
         selectWeapon(2);
       } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
         selectWeapon(3);
-      } else if (e.code === 'KeyG') {
+      } else if (e.code === 'KeyG' || e.key === 'g' || e.key === 'G') {
         throwGrenade();
-      } else if (e.code === 'KeyT') {
+      } else if (e.code === 'KeyT' || e.key === 't' || e.key === 'T') {
+        e.preventDefault();
         useTimeBooster();
-      } else if (e.code === 'KeyR') {
+      } else if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
         if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
           startGunCooldown();
         } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
@@ -15345,15 +15498,26 @@
     }
 
     function executeExitGame() {
+      // 1. Electron IPC Quit for Windows standalone desktop application
       if (window.electronAPI && typeof window.electronAPI.quitApp === 'function') {
         window.electronAPI.quitApp();
         return;
       }
+      // 2. Desktop window close (Chrome / Edge --app mode)
       try {
+        window.open('', '_self', '');
         window.close();
       } catch (e) {}
+      setTimeout(() => {
+        try { window.close(); } catch (e) {}
+      }, 50);
       hideExitModal();
-      alert("Mission Aborted. To exit Beach Defence 1944 completely, please close this browser tab or window.");
+      // 3. Fallback advisory alert if running in standard browser tab
+      setTimeout(() => {
+        if (!document.hidden) {
+          alert("Mission Aborted. To exit Beach Defence 1944 completely, please close this browser tab or window, or press Alt+F4 / Ctrl+Q.");
+        }
+      }, 350);
     }
 
     const btnPauseExit = document.getElementById('btn-pause-exit');
@@ -15367,6 +15531,15 @@
 
     const btnDefeatExit = document.getElementById('btn-defeat-exit');
     if (btnDefeatExit) btnDefeatExit.addEventListener('click', showExitModal);
+
+    const btnVictoryExit = document.getElementById('btn-victory-exit');
+    if (btnVictoryExit) btnVictoryExit.addEventListener('click', showExitModal);
+
+    const btnHudQuit = document.getElementById('btn-hud-quit');
+    if (btnHudQuit) btnHudQuit.addEventListener('click', showExitModal);
+
+    const btnWinAppQuit = document.getElementById('btn-winapp-quit');
+    if (btnWinAppQuit) btnWinAppQuit.addEventListener('click', showExitModal);
 
     const btnCancelExit = document.getElementById('btn-cancel-exit');
     if (btnCancelExit) btnCancelExit.addEventListener('click', hideExitModal);
@@ -15581,10 +15754,42 @@
 
       // 3. Active Gameplay Updates
       if (state.mode === 'PLAYING') {
-        waveElapsed += dt;
+        // Bullet-Time Slow-Motion & Tactical Overdrive Simulation Update
+        let simDt = dt;
+        if (state.bulletTimeActive) {
+          state.bulletTimeTimer = Math.max(0, state.bulletTimeTimer - dt);
+          if (state.bulletTimeTimer <= 0) {
+            state.bulletTimeActive = false;
+            flashScreen('rgba(6, 182, 212, 0.15)');
+            spawnFloatingCallout(state.aimWorldPoint, '⚡ TACTICAL SLOW-MO NORMALIZED', 'text-stone-300 border-stone-600 bg-stone-950/90 font-bold');
+            updateHUD();
+          } else {
+            simDt = dt * (state.bulletTimeScale || 0.35);
+            // Real-time smooth update of countdown bar and timer
+            const bBar = document.getElementById('hud-timeboost-bar');
+            if (bBar) bBar.style.width = `${((state.bulletTimeTimer / 6.0) * 100).toFixed(1)}%`;
+            const bCnt = document.getElementById('hud-timeboost-count');
+            if (bCnt) bCnt.textContent = `${state.bulletTimeTimer.toFixed(1)}s`;
+          }
+        }
 
-        // Countdown Mission Timer
-        state.timeRemaining -= dt;
+        // Automatic tactical recharge when depleted
+        if (state.tacticalCooldown > 0) {
+          state.tacticalCooldown = Math.max(0, state.tacticalCooldown - dt);
+          if (state.tacticalCooldown <= 0) {
+            if ((state.timeBoosters || 0) <= 0) {
+              state.timeBoosters = 1;
+              if (state.repairKits !== undefined) state.repairKits = 1;
+              spawnFloatingCallout(state.aimWorldPoint, '⚡ TACTICAL CHARGE RECHARGED! [KEY T]', 'text-cyan-300 border-cyan-500 bg-stone-950/90 font-bold');
+              updateHUD();
+            }
+          }
+        }
+
+        waveElapsed += simDt;
+
+        // Countdown Mission Timer (slowed down during bullet time!)
+        state.timeRemaining -= simDt;
         if (state.timeRemaining <= 0) {
           state.timeRemaining = 0;
           updateHUD();
@@ -15734,7 +15939,7 @@
           }
 
           if (boat.state === 'SAILING') {
-            boat.group.position.z += boat.speed * dt;
+            boat.group.position.z += boat.speed * simDt;
             if (boat.group.position.z >= boat.beachZ) {
               boat.state = 'BEACHED';
               boat.disembarkedCount = 0;
@@ -15882,15 +16087,19 @@
           }
 
           // Advance forward along the beach towards the bunker
-          enemy.group.position.z += enemy.speed * dt;
+          if (enemy.staggerTimer > 0) {
+            enemy.staggerTimer = Math.max(0, enemy.staggerTimer - dt);
+          }
+          const eDt = (enemy.staggerTimer > 0) ? simDt * 0.22 : simDt;
+          enemy.group.position.z += enemy.speed * eDt;
           // Very gentle natural dispersion across beach lanes
-          enemy.group.position.x += Math.sin(enemy.group.position.z * 0.04 + enemy.wobbleSeed) * dt * 0.2;
+          enemy.group.position.x += Math.sin(enemy.group.position.z * 0.04 + enemy.wobbleSeed) * eDt * 0.2;
 
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
           // Authentic 60 FPS WW2 infantry running biomechanics
           if (enemy.pelvis && enemy.legs && enemy.legs.length === 2) {
-            enemy.stridePhase = (enemy.stridePhase || 0) + dt * (enemy.speed * 2.2);
+            enemy.stridePhase = (enemy.stridePhase || 0) + eDt * (enemy.speed * 2.2);
             const phase = enemy.stridePhase + enemy.wobbleSeed;
             const swingL = Math.sin(phase);
             const swingR = -swingL;

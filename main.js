@@ -33,13 +33,14 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Hotkeys: F11 for fullscreen toggle, Ctrl+Q to quit
+  // Hotkeys: F11 for fullscreen toggle, Ctrl+Q or Alt+F4 to quit
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'F11' && input.type === 'keyDown') {
       mainWindow.setFullScreen(!mainWindow.isFullScreen());
       event.preventDefault();
     }
-    if ((input.key === 'q' || input.key === 'Q') && input.control && input.type === 'keyDown') {
+    if (((input.key === 'q' || input.key === 'Q') && input.control && input.type === 'keyDown') ||
+        (input.key === 'F4' && input.alt && input.type === 'keyDown')) {
       app.quit();
       event.preventDefault();
     }
