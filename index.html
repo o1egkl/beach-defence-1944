@@ -9588,9 +9588,9 @@
     scene.fog = new THREE.Fog(0x688ea8, 160, 780); // Linear atmospheric sea haze (crisp fleet visibility)
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 950);
-    // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.5, 42) looking out toward -Z (the ocean)
-    camera.position.set(0, 8.5, 42);
-    camera.lookAt(0, 3, -30);
+    // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.3, 41.2) looking out toward -Z (the ocean)
+    camera.position.set(0, 8.3, 41.2);
+    camera.lookAt(0, 2.8, -30);
 
     // Realistic Coastal Atmospheric Skydome
     const cSky = document.createElement('canvas');
@@ -11117,12 +11117,19 @@
 
       const bunkerEmbrasureGroup = new THREE.Group();
 
-      // Lower sill bench (thick reinforced concrete parapet shelf below gun extending far to flanks)
-      // Spans from X = -50 to +50, Y from 4.6 to 6.8 (top face is at Y = 6.8), Z from 35.0 to 48.0
-      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(100, 2.2, 13.0), sillMat);
-      sillMesh.position.set(0, 5.7, 41.5);
+      // Lower sill bench: Sleek reinforced concrete parapet shelf (~11% bottom lip)
+      // Top face sits at Y = 5.75, front edge at Z = 36.6, extending back to Z = 48.0
+      const sillMesh = new THREE.Mesh(new THREE.BoxGeometry(100, 2.5, 11.4), sillMat);
+      sillMesh.position.set(0, 4.5, 42.3);
       sillMesh.receiveShadow = true;
       bunkerEmbrasureGroup.add(sillMesh);
+
+      // Authentic downward-sloping embrasure chamfer lip (slopes from Y=5.75 to Y=4.4 toward beach)
+      const chamferMesh = new THREE.Mesh(new THREE.BoxGeometry(100, 1.4, 1.6), sillMat);
+      chamferMesh.position.set(0, 4.9, 36.0);
+      chamferMesh.rotation.x = -0.52; // ~30 deg downward bevel toward sand dunes
+      chamferMesh.receiveShadow = true;
+      bunkerEmbrasureGroup.add(chamferMesh);
 
       // Overhead concrete lintel (high ceiling slab extending far to flanks and back past player)
       // Spans from X = -50 to +50, Y from 10.6 to 13.6 (bottom face is at Y = 10.6), Z from 35.0 to 48.0
@@ -11132,17 +11139,16 @@
       lintelMesh.receiveShadow = true;
       bunkerEmbrasureGroup.add(lintelMesh);
 
-      // Monolithic Flanking Casemate Blast Cheeks (Completely sealing the sides with ZERO gaps)
-      // Central embrasure opening is X from -8.0 to +8.0, Y from 6.8 to 10.6
-      // Left Blast Wall: Spans from X = -50.0 to -8.0 (width 42.0), Y from 6.8 to 10.6 (height 3.8), Z from 35.0 to 48.0 (depth 13.0)
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(42.0, 3.8, 13.0), sillMat);
-      leftWall.position.set(-29.0, 8.7, 41.5);
+      // Monolithic Flanking Casemate Blast Cheeks (Extending down seamlessly to Y = 5.75)
+      // Left Blast Wall: Spans from X = -50.0 to -8.5 (width 41.5), Y from 5.7 to 10.6 (height 5.1), Z from 35.0 to 48.0
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(41.5, 5.1, 13.0), sillMat);
+      leftWall.position.set(-29.25, 8.15, 41.5);
       leftWall.castShadow = true;
       leftWall.receiveShadow = true;
 
-      // Right Blast Wall: Spans from X = +8.0 to +50.0 (width 42.0), Y from 6.8 to 10.6 (height 3.8), Z from 35.0 to 48.0 (depth 13.0)
-      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(42.0, 3.8, 13.0), sillMat);
-      rightWall.position.set(29.0, 8.7, 41.5);
+      // Right Blast Wall: Spans from X = +8.5 to +50.0 (width 41.5), Y from 5.7 to 10.6 (height 5.1), Z from 35.0 to 48.0
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(41.5, 5.1, 13.0), sillMat);
+      rightWall.position.set(29.25, 8.15, 41.5);
       rightWall.castShadow = true;
       rightWall.receiveShadow = true;
 
@@ -11631,7 +11637,7 @@
       gunBarrelGroup.add(mg42Group, cannonGroup, rocketGroup, muzzleFlashMesh);
       gunGroup.add(gunBarrelGroup, mountPivot, elevWheel);
 
-      gunGroup.position.set(0.38, 7.55, 40.7);
+      gunGroup.position.set(0.32, 7.28, 39.8);
       scene.add(gunGroup);
     }
 
@@ -15655,7 +15661,7 @@
         const gunSwayX = Math.cos(nowSec * 1.2) * 0.002;
 
         // Viewmodel position anchored to camera yaw with comfortable clearance from camera near-plane
-        _vGunViewOffset.set(0.30, -0.94, -1.45).applyAxisAngle(_vAxisY, camera.rotation.y);
+        _vGunViewOffset.set(0.28, -1.02, -1.45).applyAxisAngle(_vAxisY, camera.rotation.y);
         gunGroup.position.copy(camera.position).add(_vGunViewOffset);
         gunGroup.position.x += gunSwayX;
         gunGroup.position.y += gunSwayY;
