@@ -9969,7 +9969,7 @@
       textures.concreteNormal.wrapS = textures.concreteNormal.wrapT = THREE.RepeatWrapping;
       textures.concreteNormal.repeat.set(6, 4);
 
-      // 7. US Army M1941 Olive Drab Uniform Fabric with 29th Div Patch (512x512)
+      // 7. Tactical Olive Drab Uniform Fabric with Crest Patch (512x512)
       const cUni = document.createElement('canvas');
       cUni.width = cUni.height = 512;
       const ctxU = cUni.getContext('2d');
@@ -9995,16 +9995,12 @@
       ctxU.fillStyle = '#14260d';
       ctxU.beginPath(); ctxU.arc(135, 192, 6, 0, Math.PI * 2); ctxU.fill();
       ctxU.beginPath(); ctxU.arc(375, 192, 6, 0, Math.PI * 2); ctxU.fill();
-      // 29th Infantry Division Blue & Gray Shoulder Patch
+      // Tactical Division Shoulder Patch Crest
       ctxU.save();
       ctxU.translate(110, 80);
       ctxU.beginPath(); ctxU.arc(0, 0, 34, 0, Math.PI * 2); ctxU.fillStyle = '#1c2218'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, 0, 30, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, 0, 30, Math.PI * 0.5, Math.PI * 1.5); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, -15, 15, 0, Math.PI * 2); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, 15, 15, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, -15, 5, 0, Math.PI * 2); ctxU.fillStyle = '#94a3b8'; ctxU.fill();
-      ctxU.beginPath(); ctxU.arc(0, 15, 5, 0, Math.PI * 2); ctxU.fillStyle = '#1d4ed8'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 0, 30, 0, Math.PI * 2); ctxU.fillStyle = '#f59e0b'; ctxU.fill();
+      ctxU.beginPath(); ctxU.arc(0, 0, 24, 0, Math.PI * 2); ctxU.fillStyle = '#1e3a5f'; ctxU.fill();
       ctxU.restore();
       textures.infantryUniform = new THREE.CanvasTexture(cUni);
 
@@ -10028,7 +10024,7 @@
       }
       textures.helmetNet = new THREE.CanvasTexture(cNet);
 
-      // 9. American Walnut Rifle Stock Wood (256x256)
+      // 9. Polished Walnut Rifle Stock Wood (256x256)
       const cWood = document.createElement('canvas');
       cWood.width = cWood.height = 256;
       const ctxWd = cWood.getContext('2d');
@@ -10579,8 +10575,8 @@
         });
       });
 
-      // B. Capital Yamato-Class Dreadnought Battleships (IJN Yamato / IJN Musashi / IJN Shinano Bombardment Group)
-      // Authentic Imperial Japanese Navy Materials (Yamato / Musashi Profile)
+      // B. Capital Fleet Dreadnought Battleships (Offshore Heavy Bombardment Armada)
+      // Coastal Defense Fleet Materials (Dreadnought Profile)
       const yamatoHullMat = new THREE.MeshStandardMaterial({
         map: textures.metal,
         normalMap: textures.metalNormal,
@@ -10625,7 +10621,7 @@
         metalness: 0.40
       });
       const yamatoGoldMat = new THREE.MeshStandardMaterial({
-        color: 0xd4af37, // Golden Imperial Chrysanthemum crest
+        color: 0xd4af37, // Golden Fleet Bow Crest
         roughness: 0.25,
         metalness: 0.85
       });
@@ -10655,40 +10651,39 @@
         metalness: 0.25
       });
       const yamatoHinomaruMat = new THREE.MeshStandardMaterial({
-        color: 0xb31d1d, // Hinomaru red roundel
+        color: 0x2563eb, // Cobalt Blue Aviation Roundel
         roughness: 0.50,
         metalness: 0.10
       });
 
-      // Procedural 16-Ray Imperial Japanese Navy Rising Sun Ensign
+      // Procedural Fleet Armada Pennant Ensign
       const cEnsign = document.createElement('canvas');
       cEnsign.width = 128;
       cEnsign.height = 80;
       const ctxE = cEnsign.getContext('2d');
-      ctxE.fillStyle = '#f8f8f4';
+      // Deep navy maritime blue base
+      ctxE.fillStyle = '#0f1d33';
       ctxE.fillRect(0, 0, 128, 80);
-      const sunX = 48, sunY = 40, sunR = 18;
-      ctxE.fillStyle = '#b81e1e';
-      for (let i = 0; i < 16; i++) {
-        const a1 = (i * Math.PI) / 8 - (Math.PI / 32);
-        const a2 = (i * Math.PI) / 8 + (Math.PI / 32);
-        ctxE.beginPath();
-        ctxE.moveTo(sunX, sunY);
-        ctxE.lineTo(sunX + Math.cos(a1) * 150, sunY + Math.sin(a1) * 150);
-        ctxE.lineTo(sunX + Math.cos(a2) * 150, sunY + Math.sin(a2) * 150);
-        ctxE.closePath();
-        ctxE.fill();
-      }
+      // Crimson tactical cross / chevron
+      ctxE.fillStyle = '#b91c1c';
+      ctxE.fillRect(0, 32, 128, 16);
+      ctxE.fillRect(40, 0, 16, 80);
+      // Gold armada star insignia
+      ctxE.fillStyle = '#f59e0b';
       ctxE.beginPath();
-      ctxE.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+      ctxE.arc(48, 40, 14, 0, Math.PI * 2);
+      ctxE.fill();
+      ctxE.fillStyle = '#0f1d33';
+      ctxE.beginPath();
+      ctxE.arc(48, 40, 8, 0, Math.PI * 2);
       ctxE.fill();
       const ensignTex = new THREE.CanvasTexture(cEnsign);
       const yamatoEnsignMat = new THREE.MeshBasicMaterial({ map: ensignTex, side: THREE.DoubleSide });
 
       const battleshipConfigs = [
-        { x: -52, z: -195, rotY: 0.04, name: 'IJN Yamato' },
-        { x: 18, z: -235, rotY: -0.02, name: 'IJN Musashi' },
-        { x: 142, z: -275, rotY: -0.05, name: 'IJN Shinano (Battleship Spec)' }
+        { x: -52, z: -195, rotY: 0.04, name: 'Dreadnought Leviathan' },
+        { x: 18, z: -235, rotY: -0.02, name: 'Armada Flagship Titan' },
+        { x: 142, z: -275, rotY: -0.05, name: 'Heavy Battlecruiser Goliath' }
       ];
 
       battleshipConfigs.forEach((cfg, idx) => {
@@ -10960,7 +10955,7 @@
         funnelGroup.add(funnel, cap, pipeFwd, slPlat);
         ship.add(funnelGroup);
 
-        // 9. Mainmast & Imperial Japanese Navy Ensign
+        // 9. Mainmast & Fleet Armada Ensign
         const mastGroup = new THREE.Group();
         const mastLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.55, 18, 8), yamatoHullMat);
         mastLeg.rotateZ(-0.25);
@@ -12289,7 +12284,7 @@
         aidPouch.position.set(-0.44, 0, 0);
         torsoGroup.add(canteen, canteenCap, aidPouch);
 
-        // Torso: M1941 Field Jacket chest
+        // Torso: Tactical Field Jacket chest
         const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.36, 1.15, 8), uniformMat);
         chest.position.y = 0.47;
         chest.scale.set(1.15, 1.0, 0.7);
