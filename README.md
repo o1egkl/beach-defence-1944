@@ -261,8 +261,8 @@ npm run dist
 ```
 
 Built distributables are generated inside the `dist/` directory:
-- **`dist/Pacific Defence 1.0.0.exe`**: 100% portable standalone executable (no installation required).
-- **`dist/Pacific Defence Setup 1.0.0.exe`**: Standard Windows NSIS installer with desktop and start menu shortcuts.
+- **`dist/Pacific-Defence-1.1.0.exe`**: 100% portable standalone executable (no installation required).
+- **`dist/Pacific-Defence-Setup-1.1.0.exe`**: Standard Windows NSIS installer with desktop and start menu shortcuts.
 
 ### 3. 📱 Progressive Web App (PWA & 100% Offline Play)
 - In Chrome or Edge, click the **Install App icon** in the address bar (or click **"💻 INSTALL WINDOWS APP"** inside the Armory menu).

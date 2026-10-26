@@ -1,7 +1,7 @@
 {
   "name": "pacific-defence",
   "productName": "Pacific Defence",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "3D First-Person Coastal Bunker Defense Arcade Game",
   "main": "main.js",
   "author": "Oleg",

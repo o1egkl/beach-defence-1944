@@ -1,4 +1,4 @@
-## 🎖️ Pacific Defence v1.0.0 — Official Windows Release
+## 🎖️ Pacific Defence v1.1.0 — Streamlined HUD & Desktop Update
 
 **Pacific Defence** is a high-octane 3D first-person coastal bunker defense arcade game built with Three.js and packaged as a native desktop application with Electron.
 
@@ -10,8 +10,18 @@ Hold the coastal fortress against incoming waves of amphibious landing craft, as
 
 | Asset | Type | Description |
 | :--- | :--- | :--- |
-| **`Pacific Defence 1.0.0.exe`** | **Portable** | **No installation required.** Download and run immediately anywhere. |
-| **`Pacific Defence Setup 1.0.0.exe`** | **Installer** | Windows NSIS installer with desktop shortcut and start menu integration. |
+| **`Pacific-Defence-1.1.0.exe`** | **Portable** | **No installation required.** Download and run immediately anywhere. |
+| **`Pacific-Defence-Setup-1.1.0.exe`** | **Installer** | Windows NSIS installer with desktop shortcut and start menu integration. |
+
+---
+
+### 🚀 What's New in v1.1.0 (Full Parity with Vercel Web Build)
+
+- **Overhauled, Streamlined HUD:** Completely removed bulky floating mid-screen cards that obstructed battlefield sightlines.
+- **Ultra-Compact Tactical Top Bar:** Single-row status strip (~34px height) displaying Wave counter, Bunker Health bar, Ammo readout, and Score.
+- **Unified Low-Profile Bottom Tactical Dock:** Integrated active weapon selector tabs, heat gauge, grenade & tactical overdrive quick-triggers, plus ergonomic touch fire controls.
+- **Desktop Executable Refresh:** Synchronized native Windows binaries with the latest Vercel production deployment (`https://beach-defence-1944.vercel.app`).
+- **Cleaned Launcher Scripts:** Streamlined Windows batch launcher (`Launch-Pacific-Defence.bat`).
 
 ---
 
