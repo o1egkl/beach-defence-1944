@@ -189,222 +189,189 @@
   <div id="screen-flash" class="fixed inset-0 pointer-events-none z-25 opacity-0 transition-opacity duration-200"></div>
 
   <!-- ================= IN-GAME TACTICAL HUD ================= -->
-  <div id="hud-overlay" class="fixed inset-0 pointer-events-none z-30 flex flex-col justify-between p-2.5 sm:p-5 hidden">
+  <div id="hud-overlay" class="fixed inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-3 hidden">
     
-    <!-- Top Tactical Section (Top-Aligned) -->
-    <div class="w-full flex flex-col items-center gap-1.5 pointer-events-none">
-      <div class="flex flex-wrap items-start justify-between gap-2 w-full max-w-7xl mx-auto pointer-events-auto">
-        <!-- Left: Wave Status & Enemy Progress -->
-        <div class="bg-stone-950/85 backdrop-blur-md border border-stone-700/80 rounded-xl px-3.5 py-2.5 shadow-xl min-w-[210px] sm:min-w-[260px]">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <div class="text-[10px] uppercase tracking-widest text-amber-400/90 font-bold">Sector Shore-Alpha</div>
-              <div class="font-military text-lg sm:text-xl text-stone-100 flex items-center gap-2">
-                <span>WAVE <span id="hud-wave-num">1</span>/20</span>
-                <span id="hud-wave-title" class="text-xs font-sans font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">Recon Patrol</span>
-              </div>
-            </div>
+    <!-- Top Tactical Strip (Ultra-Compact, Single-Row Bar - Zero Sky/Fleet Obstruction) -->
+    <div class="w-full max-w-6xl mx-auto pointer-events-auto">
+      <div class="bg-stone-950/85 backdrop-blur-md border border-stone-800/80 rounded-xl px-2.5 sm:px-4 py-1.5 shadow-2xl flex items-center justify-between gap-2 sm:gap-4 text-xs">
+        
+        <!-- Left: Wave & Enemies Remaining -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="font-military text-amber-400 text-sm sm:text-base tracking-wide">W<span id="hud-wave-num">1</span><span class="text-stone-500 font-sans text-xs">/20</span></span>
+            <span id="hud-wave-title" class="hidden md:inline-block text-[10px] font-mono-tac uppercase text-amber-300/90 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">Recon Patrol</span>
           </div>
-          <!-- Enemies Remaining Progress Bar -->
-          <div class="mt-2">
-            <div class="flex justify-between text-xs font-mono-tac mb-1">
-              <span class="text-stone-400">HOSTILES REMAINING</span>
-              <span class="text-red-400 font-bold"><span id="hud-enemies-left">10</span> / <span id="hud-enemies-total">10</span></span>
-            </div>
-            <div class="w-full h-2 bg-stone-800 rounded-full overflow-hidden border border-stone-700">
+          <div class="flex items-center gap-1.5 font-mono-tac text-[11px] sm:text-xs">
+            <span class="text-stone-400 hidden sm:inline">HOSTILES:</span>
+            <span class="text-red-400 font-bold"><span id="hud-enemies-left">10</span>/<span id="hud-enemies-total">10</span></span>
+            <div class="w-12 sm:w-16 h-1.5 bg-stone-800 rounded-full overflow-hidden border border-stone-700/60">
               <div id="hud-enemies-bar" class="h-full bg-gradient-to-r from-red-600 to-amber-500 transition-all duration-200" style="width: 100%;"></div>
             </div>
           </div>
         </div>
 
-        <!-- Center: Mission Countdown Clock (Lose if not cleared in time) -->
-        <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Bunker Integrity Gauge -->
-          <div id="hud-health-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-emerald-500/80 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200">
-            <div class="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold">
-              <span class="text-stone-300">🛡️ BUNKER INTEGRITY</span>
-              <span id="hud-health-text" class="font-mono-tac text-emerald-400 text-sm font-extrabold">100% HP</span>
-            </div>
-            <div class="w-full h-2.5 bg-black/35 rounded-full overflow-hidden border border-stone-700/60 mt-1 p-0.5">
+        <!-- Center: Bunker Health & Mission Timer (Clean Minimal Badges) -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <!-- Bunker Integrity Pill -->
+          <div id="hud-health-box" class="flex items-center gap-1.5 bg-stone-900/90 border border-emerald-500/70 rounded-lg px-2 sm:px-2.5 py-1 shadow-md transition-all">
+            <span class="text-[11px] sm:text-xs text-stone-300">🛡️</span>
+            <span id="hud-health-text" class="font-mono-tac text-emerald-400 font-extrabold text-[11px] sm:text-xs">100%</span>
+            <div class="w-10 sm:w-14 h-1.5 bg-black/40 rounded-full overflow-hidden border border-stone-700/60 hidden xs:block sm:block">
               <div id="hud-health-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
             </div>
-            <div class="text-[9.5px] text-stone-400 mt-0.5 flex justify-between font-mono-tac">
-              <span>Damage: <strong id="hud-damage-pct" class="text-stone-200">0%</strong></span>
-              <span class="text-red-400 font-bold">Defeat at 100%</span>
-            </div>
+            <span id="hud-damage-pct" class="hidden">0%</span>
           </div>
 
-          <!-- Mission Countdown Clock -->
-          <div id="hud-timer-box" class="bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/70 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[140px] sm:min-w-[160px]">
-            <div class="text-[10px] uppercase tracking-widest text-stone-400 font-bold">WAVE TIMER</div>
-            <div id="hud-timer-text" class="font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">03:00.0</div>
-            <div class="text-[9.5px] text-stone-400 font-mono-tac">Hold Coastal Perimeter</div>
+          <!-- Mission Timer Pill -->
+          <div id="hud-timer-box" class="flex items-center gap-1 bg-stone-900/90 border border-amber-500/60 rounded-lg px-2 sm:px-2.5 py-1 shadow-md">
+            <span class="text-[10px] text-stone-400 font-bold hidden sm:inline">⏱️</span>
+            <span id="hud-timer-text" class="font-mono-tac text-amber-400 font-extrabold text-xs sm:text-sm tracking-tight">03:00.0</span>
           </div>
         </div>
 
-        <!-- Right: Score, Accuracy & Audio/Pause Controls -->
-        <div class="flex items-start gap-2 pointer-events-auto">
-          <div class="bg-stone-950/85 backdrop-blur-md border border-stone-700/80 rounded-xl px-3.5 py-2 shadow-xl text-right min-w-[175px]">
-            <div class="flex items-center justify-between gap-3 text-xs">
-              <span class="text-stone-400">SCORE</span>
-              <span id="hud-score" class="font-mono-tac font-bold text-amber-400 text-sm sm:text-base">400</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-xs mt-0.5">
-              <span class="text-stone-400">ACCURACY</span>
-              <span id="hud-accuracy" class="font-mono-tac font-bold text-emerald-400">100%</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-[11px] mt-0.5 text-stone-400">
-              <span>ONE-SHOT KILLS</span>
-              <span id="hud-oneshots" class="font-mono-tac text-amber-300 font-bold">0 (+0 GREN)</span>
-            </div>
+        <!-- Right: Score, Sound & Action Buttons -->
+        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div class="text-right font-mono-tac hidden sm:block">
+            <div class="text-xs font-bold text-amber-400 leading-none"><span id="hud-score">400</span> <span class="text-[9px] text-stone-400 font-normal">PTS</span></div>
+            <div class="text-[10px] text-stone-400 leading-tight mt-0.5"><span id="hud-accuracy" class="text-emerald-400">100%</span> | <span id="hud-oneshots" class="text-amber-300">0</span></div>
+          </div>
+          <div class="sm:hidden font-mono-tac text-xs font-bold text-amber-400">
+            <span id="hud-score-mobile">400</span>
           </div>
 
-          <div class="flex flex-col gap-1.5">
-            <div class="flex items-center gap-1.5">
-              <button id="btn-mute" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition shadow" title="Toggle Sound">
-                <span id="mute-icon">🔊</span>
-              </button>
-              <button id="btn-hud-quit" type="button" class="bg-red-950/85 hover:bg-red-900 border border-red-600/80 hover:border-red-500 text-red-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-mono-tac font-bold flex items-center justify-center gap-1 transition shadow shadow-red-950/50" title="Quit Game to Desktop (Esc / Ctrl+Q)">
-                <span>🚪 QUIT</span>
-              </button>
-            </div>
-            <button id="btn-open-armory-mid" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-amber-500/50 text-amber-300 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition shadow flex items-center justify-center gap-1" title="Pause Mission (Esc / P)">
-              <span>⏸ PAUSE</span>
-            </button>
-          </div>
+          <button id="btn-mute" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs flex items-center justify-center transition shadow cursor-pointer" title="Toggle Sound">
+            <span id="mute-icon">🔊</span>
+          </button>
+          <button id="btn-open-armory-mid" type="button" class="bg-stone-900/90 hover:bg-stone-800 border border-amber-500/50 text-amber-300 h-7 sm:h-8 px-2 rounded-lg text-[11px] font-bold transition shadow flex items-center justify-center gap-1 cursor-pointer" title="Pause Mission (Esc / P)">
+            <span>⏸</span>
+          </button>
+          <button id="btn-hud-quit" type="button" class="bg-red-950/80 hover:bg-red-900 border border-red-600/70 text-red-200 h-7 sm:h-8 px-2 rounded-lg text-[11px] font-mono-tac font-bold flex items-center justify-center gap-1 transition shadow cursor-pointer" title="Quit Game (Esc / Ctrl+Q)">
+            <span>🚪</span>
+          </button>
         </div>
+
       </div>
 
-      <!-- Center-Top Target Scanner / Enemy Armor Readout -->
-      <div id="target-readout" class="mx-auto bg-stone-950/80 border border-stone-700/80 px-3 py-1 rounded-full text-xs font-mono-tac text-stone-300 hidden items-center gap-2 pointer-events-none">
+      <!-- Center-Top Target Scanner / Enemy Armor Readout (Ultra-compact badge) -->
+      <div id="target-readout" class="mx-auto mt-1 bg-stone-950/85 border border-stone-700/80 px-2.5 py-0.5 rounded-full text-[11px] font-mono-tac text-stone-300 hidden items-center gap-2 pointer-events-none w-max shadow-lg">
         <span id="target-name" class="font-bold text-amber-300">Rifleman</span>
-        <span id="target-armor-badge" class="px-1.5 py-0.2 rounded text-[10px] bg-stone-800 text-stone-300">Unarmored</span>
-        <div class="w-20 h-2 bg-black/35 rounded-full overflow-hidden border border-stone-600/40">
+        <span id="target-armor-badge" class="px-1 py-0.2 rounded text-[9px] bg-stone-800 text-stone-300">Unarmored</span>
+        <div class="w-16 h-1.5 bg-black/40 rounded-full overflow-hidden border border-stone-600/40">
           <div id="target-hp-bar" class="h-full bg-red-500" style="width:100%"></div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Tactical Section (Pinned to Bottom Edge - Middle 80% Screen 100% Clear!) -->
-    <div class="w-full max-w-7xl mx-auto flex flex-col gap-2 pointer-events-auto">
-      
-      <!-- 3-Weapon Arsenal Selector Dock (Keys 1 - 3) - Compact Low-Profile Bar -->
-      <div class="w-full max-w-2xl mx-auto">
-        <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
-          <!-- Weapon 1: MG-42 Machine Gun -->
-          <button id="weapon-slot-1" type="button" class="weapon-tab-btn relative bg-stone-950/95 hover:bg-stone-900 border-2 border-amber-500 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1 py-0.2 rounded">[1] RAPID MG</span>
-              <span id="wtab-badge-1" class="text-[9px] font-mono-tac font-bold text-amber-400">● ACTIVE</span>
+    <!-- Bottom Tactical Dock (Single Unified Low-Profile Bar, Height ~46px-52px - Center Battlefield 100% Free!) -->
+    <div class="w-full max-w-6xl mx-auto pointer-events-auto">
+      <div class="bg-stone-950/85 backdrop-blur-md border border-stone-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between gap-1.5 sm:gap-3">
+
+        <!-- 1. Active Weapon & Ammo Counter (Left) -->
+        <div class="flex items-center gap-2 sm:gap-3 bg-stone-900/90 border border-stone-700/80 rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 shrink-0 min-w-[115px] sm:min-w-[160px]">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span id="hud-mg-tier" class="text-[9px] sm:text-[10px] font-mono-tac font-bold text-amber-300 uppercase leading-none">RAPID MG</span>
+              <span id="hud-mg-status-label" class="hidden sm:inline text-[9px] text-emerald-400 font-semibold leading-none">READY</span>
             </div>
-            <div class="flex items-baseline justify-between mt-0.5">
-              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">RAPID MG</span>
-              <span id="wtab-ammo-1" class="font-mono-tac text-xs font-bold text-amber-400">45 RDS</span>
+            <!-- Large Crisp Ammo Digits -->
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="hud-ammo-cur" class="font-mono-tac text-lg sm:text-2xl font-black text-amber-400 leading-none">30</span>
+              <span class="text-[9px] sm:text-xs text-stone-500 font-mono-tac leading-none">/ <span id="hud-ammo-max">30</span></span>
             </div>
-            <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
+            <!-- Micro Ammo / Overheat Bar -->
+            <div class="w-full h-1 sm:h-1.5 bg-stone-950 rounded-full overflow-hidden border border-stone-700/50 mt-1">
+              <div id="hud-ammo-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded transition-all duration-75" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- Reload / Cool Button (Small Icon/Text Button) -->
+          <button id="btn-manual-reload" type="button" class="bg-stone-800 hover:bg-stone-700 active:scale-95 border border-stone-600/80 text-stone-300 hover:text-amber-300 rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 text-[9px] sm:text-[10px] font-mono-tac font-bold flex flex-col items-center justify-center leading-tight transition cursor-pointer" title="Cool Barrel / Reload (R)">
+            <span>🔄</span>
+            <span class="text-[8px] text-amber-400">[R]</span>
+          </button>
+
+          <!-- Hidden elements preserved for JS references without layout clutter -->
+          <span id="hud-mg-dmg" class="hidden">28</span>
+          <span id="hud-mg-ap" class="hidden">15%</span>
+          <span id="hud-cooldown-timer" class="hidden font-mono-tac text-[9px] text-red-400"></span>
+        </div>
+
+        <!-- 2. The 3 Weapon Tabs (Center: Compact Low-Profile Segmented Switcher) -->
+        <div class="flex items-center gap-1 sm:gap-1.5 flex-1 max-w-sm justify-center">
+          <!-- Weapon 1 Tab: Rapid MG -->
+          <button id="weapon-slot-1" type="button" class="weapon-tab-btn flex-1 bg-stone-900/95 border-2 border-amber-500 rounded-xl py-1 px-1 sm:px-2 text-center transition shadow-md cursor-pointer flex flex-col items-center justify-center min-h-[36px] sm:min-h-[42px]">
+            <div class="flex items-center justify-center gap-1 w-full">
+              <span class="text-[9px] sm:text-[10px] font-mono-tac font-bold text-amber-300 bg-amber-500/20 px-1 rounded leading-none">1</span>
+              <span class="font-military text-[10px] sm:text-xs text-stone-100 truncate leading-none">MG</span>
+            </div>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span id="wtab-ammo-1" class="font-mono-tac text-[9px] sm:text-[11px] font-bold text-amber-400 leading-none">45</span>
+              <span id="wtab-badge-1" class="text-[8px] font-mono-tac text-amber-400 leading-none hidden xs:inline">●</span>
+            </div>
+            <div class="w-full h-0.5 sm:h-1 bg-stone-800 rounded mt-0.5 overflow-hidden">
               <div id="wtab-bar-1" class="h-full bg-amber-500 rounded transition-all duration-75" style="width: 100%;"></div>
             </div>
           </button>
 
-          <!-- Weapon 2: 75mm Anti-Tank Cannon -->
-          <button id="weapon-slot-2" type="button" class="weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-orange-400 bg-orange-500/20 border border-orange-500/40 px-1 py-0.2 rounded">[2] AT CANNON</span>
-              <span id="wtab-badge-2" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
+          <!-- Weapon 2 Tab: AT Cannon -->
+          <button id="weapon-slot-2" type="button" class="weapon-tab-btn flex-1 bg-stone-950/80 hover:bg-stone-900 border border-stone-800 rounded-xl py-1 px-1 sm:px-2 text-center transition shadow-md cursor-pointer flex flex-col items-center justify-center min-h-[36px] sm:min-h-[42px]">
+            <div class="flex items-center justify-center gap-1 w-full">
+              <span class="text-[9px] sm:text-[10px] font-mono-tac font-bold text-orange-400 bg-orange-500/20 px-1 rounded leading-none">2</span>
+              <span class="font-military text-[10px] sm:text-xs text-stone-100 truncate leading-none">CANNON</span>
             </div>
-            <div class="flex items-baseline justify-between mt-0.5">
-              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">AT CANNON</span>
-              <span id="wtab-ammo-2" class="font-mono-tac text-xs font-bold text-orange-400">24 SHELLS</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span id="wtab-ammo-2" class="font-mono-tac text-[9px] sm:text-[11px] font-bold text-orange-400 leading-none">24</span>
+              <span id="wtab-badge-2" class="text-[8px] font-mono-tac text-stone-500 leading-none hidden xs:inline"></span>
             </div>
-            <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
+            <div class="w-full h-0.5 sm:h-1 bg-stone-800 rounded mt-0.5 overflow-hidden">
               <div id="wtab-bar-2" class="h-full bg-orange-500 rounded transition-all duration-75" style="width: 100%;"></div>
             </div>
           </button>
 
-          <!-- Weapon 3: Heavy Rocket Launcher -->
-          <button id="weapon-slot-3" type="button" class="weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono-tac font-bold text-rose-400 bg-rose-500/20 border border-rose-500/40 px-1 py-0.2 rounded">[3] ROCKET</span>
-              <span id="wtab-badge-3" class="text-[9px] font-mono-tac font-bold text-stone-500">READY</span>
+          <!-- Weapon 3 Tab: Rocket Launcher -->
+          <button id="weapon-slot-3" type="button" class="weapon-tab-btn flex-1 bg-stone-950/80 hover:bg-stone-900 border border-stone-800 rounded-xl py-1 px-1 sm:px-2 text-center transition shadow-md cursor-pointer flex flex-col items-center justify-center min-h-[36px] sm:min-h-[42px]">
+            <div class="flex items-center justify-center gap-1 w-full">
+              <span class="text-[9px] sm:text-[10px] font-mono-tac font-bold text-rose-400 bg-rose-500/20 px-1 rounded leading-none">3</span>
+              <span class="font-military text-[10px] sm:text-xs text-stone-100 truncate leading-none">ROCKET</span>
             </div>
-            <div class="flex items-baseline justify-between mt-0.5">
-              <span class="font-military text-xs sm:text-sm text-stone-100 tracking-wide">AT ROCKET</span>
-              <span id="wtab-ammo-3" class="font-mono-tac text-xs font-bold text-rose-400">10 ROCKETS</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span id="wtab-ammo-3" class="font-mono-tac text-[9px] sm:text-[11px] font-bold text-rose-400 leading-none">10</span>
+              <span id="wtab-badge-3" class="text-[8px] font-mono-tac text-stone-500 leading-none hidden xs:inline"></span>
             </div>
-            <div class="w-full h-1 bg-stone-800 rounded mt-1 overflow-hidden">
+            <div class="w-full h-0.5 sm:h-1 bg-stone-800 rounded mt-0.5 overflow-hidden">
               <div id="wtab-bar-3" class="h-full bg-rose-500 rounded transition-all duration-75" style="width: 100%;"></div>
             </div>
           </button>
         </div>
-      </div>
 
-      <!-- Bottom Tactical Bar: Weapon Ammo / Cooldown + Grenades + Time Boosters + Touch Controls -->
-      <div class="flex flex-wrap items-end justify-between gap-2.5 w-full">
-        
-        <!-- Left: Heavy Machine Gun Status & Cooldown Gauge -->
-        <div class="bg-stone-950/90 backdrop-blur-md border border-stone-700/90 rounded-xl p-3 shadow-2xl min-w-[250px] sm:min-w-[310px] flex-1 sm:flex-initial">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-2">
-              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-mono-tac font-bold" id="hud-mg-tier">RAPID MG MK I</span>
-              <span class="text-xs font-semibold text-stone-300" id="hud-mg-status-label">BELT READY</span>
-            </div>
-            <span class="font-mono-tac text-xs text-stone-400">DMG <strong id="hud-mg-dmg" class="text-stone-200">28</strong> | AP <strong id="hud-mg-ap" class="text-amber-300">15%</strong></span>
-          </div>
-
-          <!-- Ammo Count & Cooldown Progress Bar -->
-          <div class="flex items-baseline justify-between mb-1.5">
-            <div class="font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400">
-              <span id="hud-ammo-cur">30</span>
-              <span class="text-sm text-stone-500 font-normal">/ <span id="hud-ammo-max">30</span> RDS</span>
-            </div>
-            <div id="hud-cooldown-timer" class="hidden font-mono-tac text-xs font-bold text-red-400 animate-pulse">
-              COOLING BARREL: 3.5s
-            </div>
-          </div>
-
-          <div class="w-full h-3 bg-stone-900 rounded-lg overflow-hidden border border-stone-700 p-0.5">
-            <div id="hud-ammo-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded transition-all duration-75" style="width: 100%;"></div>
-          </div>
-          <div class="flex justify-between items-center mt-1.5 text-[11px] text-stone-400">
-            <span>Hold <strong class="text-stone-200">LMB / SPACE</strong> to fire</span>
-            <button id="btn-manual-reload" type="button" class="text-amber-300 hover:text-amber-200 font-mono-tac font-semibold underline">[R] Cool / Reload Belt</button>
-          </div>
-        </div>
-
-        <!-- Center/Right: Tactical Consumables (Grenades & Time Boosters) + Touch Fire Button -->
-        <div class="flex items-stretch gap-2 flex-wrap">
-          
-          <!-- Grenade Button (G / Right Click) -->
-          <button id="btn-use-grenade" type="button" class="bg-stone-950/90 hover:bg-red-950/80 active:scale-95 border-2 border-red-500/70 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[135px]">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-red-300">💣 GRENADE</span>
-              <span class="text-[10px] font-mono-tac bg-red-500/20 border border-red-500/40 text-red-200 px-1.5 py-0.5 rounded">G / RMB</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-1">
-              <span id="hud-grenades-count" class="font-mono-tac text-2xl font-extrabold text-stone-100">3</span>
-              <span class="text-[10px] text-amber-300 font-semibold">+1 per 1-Shot Kill!</span>
+        <!-- 3. Tactical Actions & Mobile Fire Button (Right) -->
+        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+          <!-- Grenade Button (G / RMB) -->
+          <button id="btn-use-grenade" type="button" class="bg-stone-900/90 hover:bg-red-950/80 active:scale-95 border border-red-500/70 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 transition shadow-md flex items-center gap-1.5 cursor-pointer min-h-[36px] sm:min-h-[42px]" title="Throw Fragmentation Grenade (G / Right-Click)">
+            <span class="text-sm sm:text-base">💣</span>
+            <div class="text-left">
+              <div class="text-[8px] sm:text-[9px] font-bold text-red-300 uppercase leading-none hidden xs:block">GRENADE</div>
+              <div class="font-mono-tac text-sm sm:text-base font-black text-stone-100 leading-none mt-0.5"><span id="hud-grenades-count">3</span></div>
             </div>
           </button>
 
-          <!-- Tactical Overdrive / Bullet-Time & Emergency Repair Button (T) -->
-          <button id="btn-use-timeboost" type="button" class="relative overflow-hidden bg-stone-950/90 hover:bg-cyan-950/80 active:scale-95 border-2 border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[145px]" title="Tactical Overdrive: Adrenaline Bullet-Time Slow-Mo + Field Repair + Instant Weapon Vent & Ammo (Hotkey: T)">
-            <div class="flex items-center justify-between gap-2">
-              <span id="hud-timeboost-title" class="text-xs font-bold uppercase tracking-wider text-cyan-300">⚡ TACTICAL</span>
-              <span class="text-[10px] font-mono-tac bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 px-1.5 py-0.5 rounded font-bold">KEY [T]</span>
+          <!-- Tactical Overdrive Button (T) -->
+          <button id="btn-use-timeboost" type="button" class="relative overflow-hidden bg-stone-900/90 hover:bg-cyan-950/80 active:scale-95 border border-cyan-400/70 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 transition shadow-md flex items-center gap-1.5 cursor-pointer min-h-[36px] sm:min-h-[42px]" title="Tactical Overdrive: Slow-Mo + Heal (Hotkey: T)">
+            <span class="text-sm sm:text-base">⚡</span>
+            <div class="text-left">
+              <div id="hud-timeboost-title" class="text-[8px] sm:text-[9px] font-bold text-cyan-300 uppercase leading-none hidden xs:block">TACTICAL</div>
+              <div class="font-mono-tac text-sm sm:text-base font-black text-stone-100 leading-none mt-0.5"><span id="hud-timeboost-count">3</span></div>
             </div>
-            <div class="flex items-baseline justify-between mt-1">
-              <span id="hud-timeboost-count" class="font-mono-tac text-2xl font-extrabold text-stone-100">3</span>
-              <span id="hud-timeboost-sub" class="text-[10px] text-cyan-300 font-semibold">Slow-Mo+Heal</span>
-            </div>
-            <!-- Active Bullet Time Countdown Progress Bar -->
-            <div id="hud-timeboost-bar-wrap" class="w-full h-1 bg-stone-800 rounded mt-1.5 overflow-hidden hidden">
-              <div id="hud-timeboost-bar" class="h-full bg-cyan-400 rounded transition-all duration-75" style="width: 100%;"></div>
+            <span id="hud-timeboost-sub" class="hidden">Slow-Mo+Heal</span>
+            <div id="hud-timeboost-bar-wrap" class="absolute bottom-0 left-0 right-0 h-1 bg-stone-800 overflow-hidden hidden">
+              <div id="hud-timeboost-bar" class="h-full bg-cyan-400" style="width: 100%;"></div>
             </div>
           </button>
 
-          <!-- Touch / Click Hold Fire Button for Mobile/Tablet Convenience -->
-          <button id="btn-touch-fire" type="button" class="sm:hidden bg-amber-600 active:bg-amber-500 text-stone-950 font-military text-base px-5 py-3 rounded-xl shadow-xl border-2 border-amber-300">
-            🔥 HOLD FIRE
+          <!-- Ergonomic Mobile Fire Button (Large touch target, only visible on touch / mobile) -->
+          <button id="btn-touch-fire" type="button" class="sm:hidden bg-gradient-to-b from-amber-500 to-amber-600 active:from-amber-400 active:to-amber-500 text-stone-950 font-military text-xs px-3 py-1.5 rounded-xl shadow-lg border-2 border-amber-300 flex items-center gap-1 shrink-0 font-bold tracking-wider cursor-pointer min-h-[36px]">
+            <span>🔥</span>
+            <span>FIRE</span>
           </button>
         </div>
 
@@ -14983,13 +14950,13 @@
         hpBarEl.style.width = `${hp}%`;
         if (hp > 55) {
           hpBarEl.className = 'h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-300';
-          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-emerald-500/80 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200';
+          if (hpBoxEl) hpBoxEl.className = 'flex items-center gap-1.5 bg-stone-900/90 border border-emerald-500/70 rounded-lg px-2 sm:px-2.5 py-1 shadow-md transition-all';
         } else if (hp > 25) {
           hpBarEl.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-300';
-          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/90 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] transition-all duration-200';
+          if (hpBoxEl) hpBoxEl.className = 'flex items-center gap-1.5 bg-stone-900/90 border border-amber-500/80 rounded-lg px-2 sm:px-2.5 py-1 shadow-md transition-all';
         } else {
           hpBarEl.className = 'h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-300 animate-pulse';
-          if (hpBoxEl) hpBoxEl.className = 'bg-stone-950/90 backdrop-blur-md border-2 border-red-500 rounded-xl px-3.5 py-2 text-center shadow-2xl min-w-[175px] sm:min-w-[215px] animate-pulse ring-2 ring-red-500/50 transition-all duration-200';
+          if (hpBoxEl) hpBoxEl.className = 'flex items-center gap-1.5 bg-stone-900/90 border border-red-500 rounded-lg px-2 sm:px-2.5 py-1 shadow-md animate-pulse ring-1 ring-red-500/50 transition-all';
         }
       }
 
@@ -15001,12 +14968,15 @@
       const timerEl = document.getElementById('hud-timer-text');
       timerEl.textContent = `${minsStr}:${secs}`;
       if (t <= 15) {
-        timerEl.className = 'font-mono-tac text-2xl sm:text-3xl font-extrabold text-red-500 animate-pulse tracking-tight';
+        timerEl.className = 'font-mono-tac text-xs sm:text-sm font-extrabold text-red-500 animate-pulse tracking-tight';
       } else {
-        timerEl.className = 'font-mono-tac text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight';
+        timerEl.className = 'font-mono-tac text-xs sm:text-sm font-extrabold text-amber-400 tracking-tight';
       }
 
-      document.getElementById('hud-score').textContent = state.score.toLocaleString();
+      const scoreStr = state.score.toLocaleString();
+      document.getElementById('hud-score').textContent = scoreStr;
+      const scoreMob = document.getElementById('hud-score-mobile');
+      if (scoreMob) scoreMob.textContent = scoreStr;
       document.getElementById('hud-accuracy').textContent = `${getAccuracyPercent()}%`;
       document.getElementById('hud-oneshots').textContent = `${state.oneShotKills} (+${state.oneShotKills} GREN)`;
 
@@ -15021,23 +14991,23 @@
 
         const isSel = (state.selectedWeapon === s);
         if (isSel) {
-          slotBtn.className = 'weapon-tab-btn relative bg-stone-900/95 border-2 border-amber-500 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer ring-2 ring-amber-500/40';
+          slotBtn.className = 'weapon-tab-btn flex-1 bg-stone-900/95 border-2 border-amber-500 rounded-xl py-1 px-1 sm:px-2 text-center transition shadow-md cursor-pointer flex flex-col items-center justify-center min-h-[36px] sm:min-h-[42px] ring-2 ring-amber-500/40';
           if (badgeEl) {
-            badgeEl.textContent = '● ACTIVE';
-            badgeEl.className = 'text-[9px] font-mono-tac font-bold text-amber-400';
+            badgeEl.textContent = '●';
+            badgeEl.className = 'text-[8px] font-mono-tac text-amber-400 leading-none hidden xs:inline';
           }
         } else {
-          slotBtn.className = 'weapon-tab-btn relative bg-stone-950/90 hover:bg-stone-900 border border-stone-800 rounded-lg py-1.5 px-2.5 text-left transition shadow-lg cursor-pointer opacity-85 hover:opacity-100';
+          slotBtn.className = 'weapon-tab-btn flex-1 bg-stone-950/80 hover:bg-stone-900 border border-stone-800 rounded-xl py-1 px-1 sm:px-2 text-center transition shadow-md cursor-pointer flex flex-col items-center justify-center min-h-[36px] sm:min-h-[42px] opacity-80 hover:opacity-100';
           if (badgeEl) {
-            badgeEl.textContent = (w.isCooling || w.cooldownTimer > 0) ? 'RELOADING' : 'READY';
-            badgeEl.className = (w.isCooling || w.cooldownTimer > 0) ? 'text-[9px] font-mono-tac font-bold text-red-400' : 'text-[9px] font-mono-tac font-bold text-stone-500';
+            badgeEl.textContent = (w.isCooling || w.cooldownTimer > 0) ? '⏳' : '';
+            badgeEl.className = (w.isCooling || w.cooldownTimer > 0) ? 'text-[8px] font-mono-tac text-red-400 leading-none hidden xs:inline' : 'text-[8px] font-mono-tac text-stone-500 leading-none hidden xs:inline';
           }
         }
 
         if (ammoEl) {
           if (s === 1) ammoEl.textContent = `${w.curAmmo} RDS`;
-          else if (s === 2) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} SHELLS`;
-          else if (s === 3) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} ROCKETS`;
+          else if (s === 2) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} SH`;
+          else if (s === 3) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} RK`;
         }
 
         if (barEl) {
@@ -15065,17 +15035,17 @@
         ammoBar.style.width = `${Math.max(0, Math.min(100, progress * 100))}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-red-600 to-orange-400 rounded transition-all duration-75';
         coolLabel.classList.remove('hidden');
-        coolLabel.textContent = `RELOADING / COOLING: ${state.weapon.cooldownTimer.toFixed(1)}s`;
-        statusLabel.textContent = 'RELOADING / COOLDOWN';
-        statusLabel.className = 'text-xs font-bold text-red-400';
+        coolLabel.textContent = `RELOADING: ${state.weapon.cooldownTimer.toFixed(1)}s`;
+        statusLabel.textContent = 'RELOADING';
+        statusLabel.className = 'hidden sm:inline text-[9px] font-bold text-red-400 leading-none';
         reticleReload.classList.remove('hidden');
       } else if (state.weapon) {
         const pctAmmo = (state.weapon.curAmmo / state.weapon.maxAmmo) * 100;
         ammoBar.style.width = `${pctAmmo}%`;
         ammoBar.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded transition-all duration-75';
         coolLabel.classList.add('hidden');
-        statusLabel.textContent = 'WEAPON ARMED & READY';
-        statusLabel.className = 'text-xs font-semibold text-emerald-400';
+        statusLabel.textContent = 'READY';
+        statusLabel.className = 'hidden sm:inline text-[9px] font-semibold text-emerald-400 leading-none';
         reticleReload.classList.add('hidden');
       }
 
@@ -15092,15 +15062,15 @@
 
       if (state.bulletTimeActive) {
         if (boostCountEl) boostCountEl.textContent = `${state.bulletTimeTimer.toFixed(1)}s`;
-        if (boostSubEl) boostSubEl.textContent = 'SLOW-MO ACTIVE';
-        if (boostTitleEl) boostTitleEl.textContent = '⚡ OVERDRIVE';
+        if (boostSubEl) boostSubEl.textContent = 'SLOW-MO';
+        if (boostTitleEl) boostTitleEl.textContent = 'OVERDRIVE';
         if (boostBarWrap) boostBarWrap.classList.remove('hidden');
         if (boostBar) {
           const pct = Math.max(0, Math.min(100, (state.bulletTimeTimer / (state.bulletTimeDuration || 6.0)) * 100));
           boostBar.style.width = `${pct}%`;
         }
         if (boostBtnEl) {
-          boostBtnEl.className = 'relative overflow-hidden bg-cyan-950/95 border-2 border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.6)] rounded-xl px-3.5 py-2.5 text-left transition flex flex-col justify-between min-w-[145px] animate-pulse';
+          boostBtnEl.className = 'relative overflow-hidden bg-cyan-950/95 border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.6)] rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 transition flex items-center gap-1.5 cursor-pointer min-h-[36px] sm:min-h-[42px] animate-pulse';
         }
       } else {
         if (boostBarWrap) boostBarWrap.classList.add('hidden');
@@ -15114,9 +15084,9 @@
             boostSubEl.textContent = 'Ready';
           }
         }
-        if (boostTitleEl) boostTitleEl.textContent = '⚡ TACTICAL';
+        if (boostTitleEl) boostTitleEl.textContent = 'TACTICAL';
         if (boostBtnEl) {
-          boostBtnEl.className = 'relative overflow-hidden bg-stone-950/90 hover:bg-cyan-950/80 active:scale-95 border-2 border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-left transition shadow-xl flex flex-col justify-between min-w-[145px]';
+          boostBtnEl.className = 'relative overflow-hidden bg-stone-900/90 hover:bg-cyan-950/80 active:scale-95 border border-cyan-400/70 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 transition shadow-md flex items-center gap-1.5 cursor-pointer min-h-[36px] sm:min-h-[42px]';
         }
       }
     }
