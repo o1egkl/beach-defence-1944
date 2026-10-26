@@ -20,6 +20,7 @@
   "build": {
     "appId": "com.pacificdefence.game",
     "productName": "Pacific Defence",
+    "executableName": "Pacific-Defence",
     "copyright": "Copyright © 2026 Pacific Defence",
     "directories": {
       "output": "dist"
@@ -42,11 +43,15 @@
       ]
     },
     "nsis": {
+      "artifactName": "Pacific-Defence-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Pacific Defence"
+    },
+    "portable": {
+      "artifactName": "Pacific-Defence-${version}.${ext}"
     },
     "files": [
       "main.js",
