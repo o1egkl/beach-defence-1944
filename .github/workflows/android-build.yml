@@ -22,10 +22,10 @@ jobs:
           chmod +x android/gradlew
           chmod -R +x android/gradle/wrapper
 
-      - name: Set up Node.js
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Set up Java JDK 21
@@ -39,10 +39,7 @@ jobs:
         run: npm install --include=dev
 
       - name: Build web assets and sync Capacitor
-        run: |
-          node scripts/prepare-android.js
-          npx --yes @capacitor/cli copy android
-          npx --yes @capacitor/cli update android
+        run: npm run build:android
 
       - name: Build Android Debug APK
         working-directory: android
