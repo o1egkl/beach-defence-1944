@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://beach-defence-1944.vercel.app"><img src="https://img.shields.io/badge/Play_Online-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Play on Vercel" /></a>
   <a href="https://o1egkl.github.io/beach-defence-1944/"><img src="https://img.shields.io/badge/Play_Online-GitHub_Pages-181717?style=for-the-badge&logo=github&logoColor=white" alt="Play on GitHub Pages" /></a>
-  <img src="https://img.shields.io/badge/Platform-Windows_%7C_Web_%7C_PWA-blue?style=for-the-badge&logo=windows&logoColor=white" alt="Platform Support" />
+  <img src="https://img.shields.io/badge/Platform-Windows_%7C_Android_%7C_Web_%7C_PWA-blue?style=for-the-badge&logo=windows&logoColor=white" alt="Platform Support" />
   <img src="https://img.shields.io/badge/3D_Engine-Three.js_r128-049EF4?style=for-the-badge&logo=three.js&logoColor=white" alt="Three.js" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
 </p>
@@ -267,6 +267,19 @@ Built distributables are generated inside the `dist/` directory:
 ### 3. 📱 Progressive Web App (PWA & 100% Offline Play)
 - In Chrome or Edge, click the **Install App icon** in the address bar (or click **"💻 INSTALL WINDOWS APP"** inside the Armory menu).
 - Bundled offline libraries ([`lib/three.min.js`](file:///d:/agravity/beach%20defence/lib/three.min.js), [`lib/GLTFLoader.js`](file:///d:/agravity/beach%20defence/lib/GLTFLoader.js), and [`lib/tailwindcss.js`](file:///d:/agravity/beach%20defence/lib/tailwindcss.js)) ensure the game runs completely offline without any internet connection.
+
+### 4. 🤖 Native Android Application (APK)
+Pacific Defence is fully packaged as a native Android app using Capacitor:
+- **Locked Landscape & Sticky Immersive Fullscreen:** Navigation and status bars automatically retract for an arcade view.
+- **Hardware Acceleration:** Native WebGL rendering pipeline for high frame-rate rendering on mobile GPUs.
+- **Ergonomic Touch Controls:** Dedicated touch fire trigger, weapon quick-selector tabs, and consumables dock.
+- **Automated CI/CD Builds:** Every push to `main` builds `Pacific-Defence.apk` via GitHub Actions and attaches it to [GitHub Releases](https://github.com/o1egkl/beach-defence-1944/releases).
+
+To build or open in Android Studio locally:
+```bash
+npm run build:android    # Sync web assets to Android project
+npm run open:android     # Open in Android Studio
+```
 
 ---
 
