@@ -60,8 +60,14 @@ jobs:
       - name: Prepare APK Output
         run: |
           mkdir -p build-output
-          APK_PATH=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
-          echo "Found APK at: $APK_PATH"
+          echo "=== Searching for generated APK files ==="
+          find . -name "*.apk"
+          APK_PATH=$(find . -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: No .apk found in project!"
+            exit 1
+          fi
+          echo "Using APK from: $APK_PATH"
           cp "$APK_PATH" build-output/Pacific-Defence.apk
           cp "$APK_PATH" build-output/Pacific-Defence-1.1.0.apk
           ls -lh build-output/
