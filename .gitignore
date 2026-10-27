@@ -21,3 +21,5 @@ scratch/
 # Node & Electron build outputs
 node_modules/
 dist/
+www/
+build-output/
