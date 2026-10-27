@@ -12,8 +12,8 @@
     "dist": "electron-builder --win",
     "dist:portable": "electron-builder --win portable",
     "dist:installer": "electron-builder --win nsis",
-    "build:android": "node scripts/prepare-android.js && npx cap sync android",
-    "open:android": "npx cap open android"
+    "build:android": "node scripts/prepare-android.js && cap sync android",
+    "open:android": "cap open android"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.3",
