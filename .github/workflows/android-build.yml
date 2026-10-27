@@ -17,6 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Ensure gradlew permissions
+        run: |
+          chmod +x android/gradlew
+          chmod -R +x android/gradle/wrapper
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,10 +41,8 @@ jobs:
       - name: Build web assets and sync Capacitor
         run: |
           node scripts/prepare-android.js
-          npx --yes @capacitor/cli sync android
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x android/gradlew
+          npx --yes @capacitor/cli copy android
+          npx --yes @capacitor/cli update android
 
       - name: Build Android Debug APK
         working-directory: android
