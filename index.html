@@ -141,6 +141,17 @@
     #exit-modal.hidden {
       display: none !important;
     }
+    /* Mobile Controls Styling & Tactical Feedback */
+    .fire-active {
+      transform: scale(0.92) translateY(2px) !important;
+      box-shadow: 0 0 35px rgba(239, 68, 68, 0.9), inset 0 0 25px rgba(245, 158, 11, 0.9) !important;
+      border-color: #ef4444 !important;
+    }
+    .touch-none {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
   </style>
 </head>
 <body class="bg-[#0f130d] text-stone-100 select-none overflow-hidden">
@@ -369,7 +380,7 @@
           </button>
 
           <!-- Ergonomic Mobile Fire Button (Large touch target, only visible on touch / mobile) -->
-          <button id="btn-touch-fire" type="button" class="sm:hidden bg-gradient-to-b from-amber-500 to-amber-600 active:from-amber-400 active:to-amber-500 text-stone-950 font-military text-xs px-3 py-1.5 rounded-xl shadow-lg border-2 border-amber-300 flex items-center gap-1 shrink-0 font-bold tracking-wider cursor-pointer min-h-[36px]">
+          <button id="btn-touch-fire" type="button" class="hidden bg-gradient-to-b from-amber-500 to-amber-600 active:from-amber-400 active:to-amber-500 text-stone-950 font-military text-xs px-3 py-1.5 rounded-xl shadow-lg border-2 border-amber-300 flex items-center gap-1 shrink-0 font-bold tracking-wider cursor-pointer min-h-[36px]">
             <span>🔥</span>
             <span>FIRE</span>
           </button>
@@ -377,6 +388,49 @@
 
       </div>
     </div>
+  </div>
+
+  <!-- ================= MOBILE TOUCH CONTROLS (ANDROID / TOUCHSCREEN) ================= -->
+  <div id="mobile-controls-layer" class="fixed inset-0 pointer-events-none z-40 hidden select-none touch-none">
+    
+    <!-- 1. Left Virtual Aim Joystick (Circle on the Left) -->
+    <div id="mobile-joystick-wrap" class="absolute bottom-3 left-3 sm:bottom-6 sm:left-6 pointer-events-auto flex flex-col items-center select-none touch-none">
+      <div class="text-[8px] sm:text-[9px] font-mono-tac text-amber-400/90 uppercase tracking-wider font-bold mb-1 text-center bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 w-max shadow pointer-events-none">
+        🕹️ AIM
+      </div>
+      <div id="mobile-joystick-base" class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-stone-950/70 border-2 border-amber-500/60 backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(245,158,11,0.2)] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none">
+        <div class="absolute w-full h-[1px] bg-amber-500/25 pointer-events-none"></div>
+        <div class="absolute h-full w-[1px] bg-amber-500/25 pointer-events-none"></div>
+        <div class="absolute inset-2 rounded-full border border-stone-700/40 border-dashed pointer-events-none"></div>
+        <span class="absolute top-1 text-[8px] font-mono-tac text-amber-500/70 font-bold pointer-events-none">▲</span>
+        <span class="absolute bottom-1 text-[8px] font-mono-tac text-amber-500/70 font-bold pointer-events-none">▼</span>
+        <span class="absolute left-1 text-[8px] font-mono-tac text-amber-500/70 font-bold pointer-events-none">◀</span>
+        <span class="absolute right-1 text-[8px] font-mono-tac text-amber-500/70 font-bold pointer-events-none">▶</span>
+        <div id="mobile-joystick-knob" class="absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-stone-800 via-stone-900 to-stone-950 border-2 border-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.25)] flex items-center justify-center pointer-events-none transition-transform duration-75">
+          <div class="w-5 h-5 rounded-full border border-amber-400/50 bg-stone-950 flex items-center justify-center">
+            <div class="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Right Tactical Fire Trigger (Fire Button on the Right) -->
+    <div id="mobile-fire-wrap" class="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 pointer-events-auto flex flex-col items-center select-none touch-none">
+      <div class="flex items-center gap-2 mb-2">
+        <button id="btn-mobile-grenade" type="button" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-90 border border-red-500/70 text-sm flex items-center justify-center shadow-lg transition cursor-pointer" title="Throw Grenade">
+          💣
+        </button>
+        <button id="btn-mobile-reload" type="button" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-90 border border-stone-600 text-xs flex items-center justify-center shadow-lg transition cursor-pointer font-bold text-amber-300" title="Reload / Cool Weapon">
+          🔄
+        </button>
+      </div>
+      <button id="btn-mobile-fire" type="button" class="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-b from-red-600 via-red-700 to-amber-700 border-4 border-amber-400 shadow-[0_8px_25px_rgba(239,68,68,0.6),inset_0_3px_8px_rgba(255,255,255,0.4)] flex flex-col items-center justify-center active:scale-95 transition-all duration-75 cursor-pointer touch-none select-none">
+        <div class="absolute inset-0 rounded-full border-2 border-yellow-300/40 pointer-events-none"></div>
+        <span class="text-2xl sm:text-3xl leading-none filter drop-shadow pointer-events-none">🔥</span>
+        <span class="font-military font-black text-stone-950 text-xs sm:text-sm tracking-widest uppercase mt-0.5 pointer-events-none">FIRE</span>
+      </button>
+    </div>
+
   </div>
 
   <!-- ================= WAVE COMPLETED / VICTORY STATS MODAL ================= -->
@@ -578,6 +632,10 @@
             <span>↺ RESTART WAVE</span>
           </button>
         </div>
+        <button id="btn-toggle-mobile-controls" type="button" class="w-full py-2.5 px-3 rounded-xl font-mono-tac text-xs text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+          <span>📱</span>
+          <span id="label-toggle-mobile-controls">ON-SCREEN CONTROLS: AUTO</span>
+        </button>
         <button id="btn-pause-exit" type="button" class="w-full py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-stone-300 hover:text-red-300 bg-stone-900 hover:bg-red-950/50 border border-stone-700 hover:border-red-700 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer" title="Exit to Desktop">
           <span>🚪 EXIT GAME TO DESKTOP</span>
         </button>
@@ -14609,6 +14667,7 @@
       document.getElementById('crosshair-ui').classList.remove('hidden');
       document.body.style.cursor = 'none';
       updateHUD();
+      updateMobileControlsVisibility();
     }
 
     function getAccuracyPercent() {
@@ -14648,6 +14707,7 @@
       document.getElementById('pause-modal').classList.remove('flex');
       document.getElementById('hud-overlay').classList.add('hidden');
       document.getElementById('crosshair-ui').classList.add('hidden');
+      updateMobileControlsVisibility();
 
       const accPct = getAccuracyPercent();
       const timeLeft = Math.max(0, +state.timeRemaining.toFixed(1));
@@ -14779,6 +14839,7 @@
       document.body.style.cursor = 'default';
       document.getElementById('hud-overlay').classList.add('hidden');
       document.getElementById('crosshair-ui').classList.add('hidden');
+      updateMobileControlsVisibility();
       document.getElementById('armory-modal').classList.add('hidden');
       document.getElementById('armory-modal').classList.remove('flex');
       document.getElementById('pause-modal').classList.remove('hidden');
@@ -14803,6 +14864,7 @@
       document.getElementById('crosshair-ui').classList.remove('hidden');
       sfx.playReadyClank();
       updateHUD();
+      updateMobileControlsVisibility();
     }
 
     function togglePause() {
@@ -15099,9 +15161,12 @@
     const targetArmorBadgeEl = document.getElementById('target-armor-badge');
     const targetHpBarEl = document.getElementById('target-hp-bar');
 
-    function updateAimFromClientXY(clientX, clientY) {
-      state.mouseNDC.x = ((clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-      state.mouseNDC.y = -((clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    function updateAimFromNDC(ndcX, ndcY) {
+      state.mouseNDC.x = Math.max(-0.95, Math.min(0.95, ndcX));
+      state.mouseNDC.y = Math.max(-0.85, Math.min(0.85, ndcY));
+
+      const clientX = canvasRect.left + ((state.mouseNDC.x + 1) / 2) * canvasRect.width;
+      const clientY = canvasRect.top + ((-state.mouseNDC.y + 1) / 2) * canvasRect.height;
 
       if (crosshairEl) {
         crosshairEl.style.left = `${clientX}px`;
@@ -15146,6 +15211,193 @@
       }
     }
 
+    function updateAimFromClientXY(clientX, clientY) {
+      const ndcX = ((clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+      const ndcY = -((clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+      updateAimFromNDC(ndcX, ndcY);
+    }
+
+    // --- 11.1 ON-SCREEN MOBILE CONTROLS (ANDROID / TOUCH) ---
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.Capacitor && window.Capacitor.isNativePlatform());
+
+    const mobileControls = {
+      enabled: isTouchDevice,
+      activePointerId: null,
+      center: { x: 0, y: 0 },
+      delta: { x: 0, y: 0 },
+      maxRadius: 44, // px max displacement
+      speedMultiplier: 1.55,
+      isFiring: false,
+      firePointerId: null
+    };
+
+    const mobileControlsLayer = document.getElementById('mobile-controls-layer');
+    const mobileJoystickBase = document.getElementById('mobile-joystick-base');
+    const mobileJoystickKnob = document.getElementById('mobile-joystick-knob');
+    const btnMobileFire = document.getElementById('btn-mobile-fire');
+    const btnMobileGrenade = document.getElementById('btn-mobile-grenade');
+    const btnMobileReload = document.getElementById('btn-mobile-reload');
+    const btnToggleMobile = document.getElementById('btn-toggle-mobile-controls');
+    const labelToggleMobile = document.getElementById('label-toggle-mobile-controls');
+
+    function updateMobileControlsVisibility() {
+      if (!mobileControlsLayer) return;
+      if (mobileControls.enabled && state.mode === 'PLAYING') {
+        mobileControlsLayer.classList.remove('hidden');
+      } else {
+        mobileControlsLayer.classList.add('hidden');
+        if (mobileControls.isFiring) {
+          stopMobileFiring();
+        }
+        resetMobileJoystick();
+      }
+      if (labelToggleMobile) {
+        labelToggleMobile.textContent = `ON-SCREEN CONTROLS: ${mobileControls.enabled ? 'ON' : 'OFF'}`;
+      }
+    }
+
+    function updateJoystickFromPointer(clientX, clientY) {
+      const dx = clientX - mobileControls.center.x;
+      const dy = clientY - mobileControls.center.y;
+      const dist = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx);
+
+      const clampedDist = Math.min(dist, mobileControls.maxRadius);
+      const knobX = Math.cos(angle) * clampedDist;
+      const knobY = Math.sin(angle) * clampedDist;
+
+      if (mobileJoystickKnob) {
+        mobileJoystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+      }
+
+      const normDist = clampedDist / mobileControls.maxRadius;
+      if (normDist > 0.08) {
+        const curvedDist = Math.pow((normDist - 0.08) / 0.92, 1.4);
+        mobileControls.delta.x = Math.cos(angle) * curvedDist;
+        mobileControls.delta.y = Math.sin(angle) * curvedDist;
+      } else {
+        mobileControls.delta.x = 0;
+        mobileControls.delta.y = 0;
+      }
+    }
+
+    function resetMobileJoystick() {
+      mobileControls.activePointerId = null;
+      mobileControls.delta.x = 0;
+      mobileControls.delta.y = 0;
+      if (mobileJoystickKnob) {
+        mobileJoystickKnob.style.transform = 'translate(0px, 0px)';
+      }
+    }
+
+    if (mobileJoystickBase) {
+      mobileJoystickBase.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        sfx.init();
+        if (mobileControls.activePointerId !== null) return;
+        mobileControls.activePointerId = e.pointerId;
+        try { mobileJoystickBase.setPointerCapture(e.pointerId); } catch(err) {}
+
+        const rect = mobileJoystickBase.getBoundingClientRect();
+        mobileControls.center.x = rect.left + rect.width / 2;
+        mobileControls.center.y = rect.top + rect.height / 2;
+        updateJoystickFromPointer(e.clientX, e.clientY);
+      });
+
+      mobileJoystickBase.addEventListener('pointermove', e => {
+        if (e.pointerId !== mobileControls.activePointerId) return;
+        updateJoystickFromPointer(e.clientX, e.clientY);
+      });
+
+      function onJoystickEnd(e) {
+        if (e.pointerId === mobileControls.activePointerId) {
+          try { mobileJoystickBase.releasePointerCapture(e.pointerId); } catch(err) {}
+          resetMobileJoystick();
+        }
+      }
+
+      mobileJoystickBase.addEventListener('pointerup', onJoystickEnd);
+      mobileJoystickBase.addEventListener('pointercancel', onJoystickEnd);
+      mobileJoystickBase.addEventListener('lostpointercapture', onJoystickEnd);
+    }
+
+    function stopMobileFiring(e) {
+      if (e && e.pointerId !== mobileControls.firePointerId) return;
+      if (btnMobileFire && e) {
+        try { btnMobileFire.releasePointerCapture(e.pointerId); } catch(err) {}
+      }
+      mobileControls.firePointerId = null;
+      mobileControls.isFiring = false;
+      state.isFiring = false;
+      if (btnMobileFire) {
+        btnMobileFire.classList.remove('fire-active');
+      }
+    }
+
+    if (btnMobileFire) {
+      btnMobileFire.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        sfx.init();
+        if (mobileControls.firePointerId !== null) return;
+        mobileControls.firePointerId = e.pointerId;
+        try { btnMobileFire.setPointerCapture(e.pointerId); } catch(err) {}
+
+        mobileControls.isFiring = true;
+        state.isFiring = true;
+        btnMobileFire.classList.add('fire-active');
+
+        if (navigator.vibrate) {
+          try { navigator.vibrate(15); } catch(err) {}
+        }
+      });
+
+      btnMobileFire.addEventListener('pointerup', stopMobileFiring);
+      btnMobileFire.addEventListener('pointercancel', stopMobileFiring);
+      btnMobileFire.addEventListener('lostpointercapture', stopMobileFiring);
+    }
+
+    window.addEventListener('pointerup', e => {
+      if (e.pointerId === mobileControls.firePointerId) {
+        stopMobileFiring(e);
+      }
+      if (e.pointerId === mobileControls.activePointerId) {
+        resetMobileJoystick();
+      }
+    });
+
+    if (btnMobileGrenade) {
+      btnMobileGrenade.addEventListener('click', e => {
+        e.preventDefault();
+        sfx.init();
+        throwGrenade();
+      });
+    }
+
+    if (btnMobileReload) {
+      btnMobileReload.addEventListener('click', e => {
+        e.preventDefault();
+        sfx.init();
+        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
+          startGunCooldown();
+        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
+          state.weapons[2].isCooling = true;
+          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
+          sfx.playReadyClank();
+        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
+          state.weapons[3].isCooling = true;
+          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
+          sfx.playReadyClank();
+        }
+      });
+    }
+
+    if (btnToggleMobile) {
+      btnToggleMobile.addEventListener('click', () => {
+        mobileControls.enabled = !mobileControls.enabled;
+        updateMobileControlsVisibility();
+      });
+    }
+
     window.addEventListener('mousemove', e => {
       if (state.mode === 'PLAYING') {
         updateAimFromClientXY(e.clientX, e.clientY);
@@ -15170,24 +15422,30 @@
       if (state.mode === 'PLAYING') e.preventDefault();
     });
 
-    // Touch controls for mobile/tablet
+    // Touch controls for mobile/tablet (only active when on-screen virtual stick is disabled)
     renderer.domElement.addEventListener('touchstart', e => {
       if (state.mode !== 'PLAYING') return;
-      const touch = e.touches[0];
-      if (touch) {
-        updateAimFromClientXY(touch.clientX, touch.clientY);
-        state.isFiring = true;
+      if (!mobileControls.enabled) {
+        const touch = e.touches[0];
+        if (touch) {
+          updateAimFromClientXY(touch.clientX, touch.clientY);
+          state.isFiring = true;
+        }
       }
     }, { passive: true });
 
     renderer.domElement.addEventListener('touchmove', e => {
       if (state.mode !== 'PLAYING') return;
-      const touch = e.touches[0];
-      if (touch) updateAimFromClientXY(touch.clientX, touch.clientY);
+      if (!mobileControls.enabled) {
+        const touch = e.touches[0];
+        if (touch) updateAimFromClientXY(touch.clientX, touch.clientY);
+      }
     }, { passive: true });
 
     window.addEventListener('touchend', () => {
-      state.isFiring = false;
+      if (!mobileControls.enabled) {
+        state.isFiring = false;
+      }
     });
 
     // Keyboard shortcuts
@@ -15610,6 +15868,14 @@
             }
           }
         });
+      }
+
+      // Mobile Aim Joystick Continuous Panning
+      if (state.mode === 'PLAYING' && mobileControls.enabled && (Math.abs(mobileControls.delta.x) > 0.001 || Math.abs(mobileControls.delta.y) > 0.001)) {
+        const speed = mobileControls.speedMultiplier * dt;
+        const newNdcX = state.mouseNDC.x + mobileControls.delta.x * speed;
+        const newNdcY = state.mouseNDC.y - mobileControls.delta.y * speed;
+        updateAimFromNDC(newNdcX, newNdcY);
       }
 
       // 2. Smoothly Rotate Camera & First-Person Machine Gun toward Aim Target
