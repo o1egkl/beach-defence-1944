@@ -274,8 +274,8 @@
     </div>
 
     <!-- Bottom Tactical Dock (Single Unified Low-Profile Bar, Height ~46px-52px - Center Battlefield 100% Free!) -->
-    <div class="w-full max-w-6xl mx-auto pointer-events-auto">
-      <div class="bg-stone-950/85 backdrop-blur-md border border-stone-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between gap-1.5 sm:gap-3">
+    <div class="w-auto max-w-max md:max-w-6xl mx-auto pointer-events-auto px-1 sm:px-2">
+      <div class="bg-stone-950/90 backdrop-blur-md border border-stone-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-center sm:justify-between gap-1.5 sm:gap-3">
 
         <!-- 1. Active Weapon & Ammo Counter (Left) -->
         <div class="flex items-center gap-2 sm:gap-3 bg-stone-900/90 border border-stone-700/80 rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 shrink-0 min-w-[115px] sm:min-w-[160px]">
@@ -390,15 +390,18 @@
     </div>
   </div>
 
-  <!-- ================= MOBILE TOUCH CONTROLS (ANDROID / TOUCHSCREEN) ================= -->
+  <!-- ================= MOBILE TOUCH CONTROLS (OPTION A: DYNAMIC FLOATING JOYSTICK) ================= -->
   <div id="mobile-controls-layer" class="fixed inset-0 pointer-events-none z-40 hidden select-none touch-none">
     
-    <!-- 1. Left Virtual Aim Joystick (Circle on the Left) -->
-    <div id="mobile-joystick-wrap" class="absolute bottom-3 left-3 sm:bottom-6 sm:left-6 pointer-events-auto flex flex-col items-center select-none touch-none">
+    <!-- Dynamic Aiming Touch Zone (Left 46% of viewport, below top HUD) -->
+    <div id="mobile-aim-zone" class="absolute top-12 bottom-0 left-0 w-[46%] pointer-events-auto touch-none select-none z-30"></div>
+
+    <!-- 1. Left Dynamic Floating Aim Joystick (Rests in corner, anchors under thumb on touch) -->
+    <div id="mobile-joystick-wrap" class="absolute bottom-3 left-3 sm:bottom-6 sm:left-6 pointer-events-auto flex flex-col items-center select-none touch-none z-35 transition-opacity duration-200 opacity-60">
       <div class="text-[8px] sm:text-[9px] font-mono-tac text-amber-400/90 uppercase tracking-wider font-bold mb-1 text-center bg-stone-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 w-max shadow pointer-events-none">
         🕹️ AIM
       </div>
-      <div id="mobile-joystick-base" class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-stone-950/70 border-2 border-amber-500/60 backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(245,158,11,0.2)] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none">
+      <div id="mobile-joystick-base" class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-stone-950/75 border-2 border-amber-500/60 backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(245,158,11,0.25)] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none">
         <div class="absolute w-full h-[1px] bg-amber-500/25 pointer-events-none"></div>
         <div class="absolute h-full w-[1px] bg-amber-500/25 pointer-events-none"></div>
         <div class="absolute inset-2 rounded-full border border-stone-700/40 border-dashed pointer-events-none"></div>
@@ -15217,7 +15220,7 @@
       updateAimFromNDC(ndcX, ndcY);
     }
 
-    // --- 11.1 ON-SCREEN MOBILE CONTROLS (ANDROID / TOUCH) ---
+    // --- 11.1 ON-SCREEN MOBILE CONTROLS (OPTION A: DYNAMIC FLOATING JOYSTICK) ---
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.Capacitor && window.Capacitor.isNativePlatform());
 
     const mobileControls = {
@@ -15225,13 +15228,15 @@
       activePointerId: null,
       center: { x: 0, y: 0 },
       delta: { x: 0, y: 0 },
-      maxRadius: 44, // px max displacement
-      speedMultiplier: 1.55,
+      maxRadius: 46, // px max displacement
+      speedMultiplier: 1.65,
       isFiring: false,
       firePointerId: null
     };
 
     const mobileControlsLayer = document.getElementById('mobile-controls-layer');
+    const mobileAimZone = document.getElementById('mobile-aim-zone');
+    const mobileJoystickWrap = document.getElementById('mobile-joystick-wrap');
     const mobileJoystickBase = document.getElementById('mobile-joystick-base');
     const mobileJoystickKnob = document.getElementById('mobile-joystick-knob');
     const btnMobileFire = document.getElementById('btn-mobile-fire');
@@ -15272,6 +15277,7 @@
 
       const normDist = clampedDist / mobileControls.maxRadius;
       if (normDist > 0.08) {
+        // High-precision quadratic response curve
         const curvedDist = Math.pow((normDist - 0.08) / 0.92, 1.4);
         mobileControls.delta.x = Math.cos(angle) * curvedDist;
         mobileControls.delta.y = Math.sin(angle) * curvedDist;
@@ -15288,37 +15294,75 @@
       if (mobileJoystickKnob) {
         mobileJoystickKnob.style.transform = 'translate(0px, 0px)';
       }
+      if (mobileJoystickWrap) {
+        // Smoothly return to default corner anchor
+        mobileJoystickWrap.style.left = '';
+        mobileJoystickWrap.style.top = '';
+        mobileJoystickWrap.style.bottom = '';
+        mobileJoystickWrap.classList.remove('opacity-100');
+        mobileJoystickWrap.classList.add('opacity-60');
+      }
+    }
+
+    // Dynamic Floating Joystick: Touch anywhere in left 46% anchors the stick right under thumb!
+    function onAimPointerDown(e) {
+      if (mobileControls.activePointerId !== null) return;
+      if (e.clientY < 48) return; // Don't intercept top tactical strip clicks
+
+      mobileControls.activePointerId = e.pointerId;
+      const captureTarget = mobileAimZone || mobileJoystickBase;
+      if (captureTarget) {
+        try { captureTarget.setPointerCapture(e.pointerId); } catch(err) {}
+      }
+
+      const stickRadius = 58;
+      const margin = 12;
+      const maxLeft = (window.innerWidth * 0.44) - stickRadius;
+      const anchorX = Math.max(stickRadius + margin, Math.min(maxLeft, e.clientX));
+      const anchorY = Math.max(stickRadius + 48, Math.min(window.innerHeight - stickRadius - margin, e.clientY));
+
+      mobileControls.center.x = anchorX;
+      mobileControls.center.y = anchorY;
+
+      if (mobileJoystickWrap) {
+        mobileJoystickWrap.style.left = `${anchorX - stickRadius}px`;
+        mobileJoystickWrap.style.top = `${anchorY - stickRadius}px`;
+        mobileJoystickWrap.style.bottom = 'auto';
+        mobileJoystickWrap.classList.remove('opacity-60');
+        mobileJoystickWrap.classList.add('opacity-100');
+      }
+
+      updateJoystickFromPointer(e.clientX, e.clientY);
+    }
+
+    function onAimPointerMove(e) {
+      if (e.pointerId !== mobileControls.activePointerId) return;
+      updateJoystickFromPointer(e.clientX, e.clientY);
+    }
+
+    function onAimPointerEnd(e) {
+      if (e.pointerId === mobileControls.activePointerId) {
+        const captureTarget = mobileAimZone || mobileJoystickBase;
+        if (captureTarget) {
+          try { captureTarget.releasePointerCapture(e.pointerId); } catch(err) {}
+        }
+        resetMobileJoystick();
+      }
+    }
+
+    if (mobileAimZone) {
+      mobileAimZone.addEventListener('pointerdown', onAimPointerDown);
+      mobileAimZone.addEventListener('pointermove', onAimPointerMove);
+      mobileAimZone.addEventListener('pointerup', onAimPointerEnd);
+      mobileAimZone.addEventListener('pointercancel', onAimPointerEnd);
+      mobileAimZone.addEventListener('lostpointercapture', onAimPointerEnd);
     }
 
     if (mobileJoystickBase) {
-      mobileJoystickBase.addEventListener('pointerdown', e => {
-        e.preventDefault();
-        sfx.init();
-        if (mobileControls.activePointerId !== null) return;
-        mobileControls.activePointerId = e.pointerId;
-        try { mobileJoystickBase.setPointerCapture(e.pointerId); } catch(err) {}
-
-        const rect = mobileJoystickBase.getBoundingClientRect();
-        mobileControls.center.x = rect.left + rect.width / 2;
-        mobileControls.center.y = rect.top + rect.height / 2;
-        updateJoystickFromPointer(e.clientX, e.clientY);
-      });
-
-      mobileJoystickBase.addEventListener('pointermove', e => {
-        if (e.pointerId !== mobileControls.activePointerId) return;
-        updateJoystickFromPointer(e.clientX, e.clientY);
-      });
-
-      function onJoystickEnd(e) {
-        if (e.pointerId === mobileControls.activePointerId) {
-          try { mobileJoystickBase.releasePointerCapture(e.pointerId); } catch(err) {}
-          resetMobileJoystick();
-        }
-      }
-
-      mobileJoystickBase.addEventListener('pointerup', onJoystickEnd);
-      mobileJoystickBase.addEventListener('pointercancel', onJoystickEnd);
-      mobileJoystickBase.addEventListener('lostpointercapture', onJoystickEnd);
+      mobileJoystickBase.addEventListener('pointerdown', onAimPointerDown);
+      mobileJoystickBase.addEventListener('pointermove', onAimPointerMove);
+      mobileJoystickBase.addEventListener('pointerup', onAimPointerEnd);
+      mobileJoystickBase.addEventListener('pointercancel', onAimPointerEnd);
     }
 
     function stopMobileFiring(e) {
