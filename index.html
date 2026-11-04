@@ -122,7 +122,7 @@
       background: rgba(217, 155, 38, 0.45);
       border-radius: 9999px;
     }
-    /* Bulletproof Modal Center Alignment Guarantee */
+    /* Bulletproof Modal Center Alignment & Scroll Guarantee */
     #armory-modal,
     #victory-modal,
     #defeat-modal,
@@ -141,6 +141,18 @@
     #exit-modal.hidden {
       display: none !important;
     }
+    /* Guaranteed Modal Viewport Boundaries & Internal Scrolling */
+    #armory-modal > div,
+    #victory-modal > div,
+    #defeat-modal > div,
+    #pause-modal > div,
+    #plan-modal > div,
+    #exit-modal > div {
+      max-height: 94vh !important;
+      max-height: 94dvh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
     /* Mobile Controls Styling & Tactical Feedback */
     .fire-active {
       transform: scale(0.92) translateY(2px) !important;
@@ -151,6 +163,125 @@
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
+    }
+    /* Responsive Viewport Optimizations for Android / Mobile Landscape (Height <= 520px) */
+    @media (max-height: 520px) {
+      .bunker-frame {
+        border-top-width: 4px !important;
+        border-bottom-width: 4px !important;
+        border-left-width: 6px !important;
+        border-right-width: 6px !important;
+        box-shadow: inset 0 0 16px rgba(10, 12, 14, 0.7) !important;
+      }
+      #hud-overlay {
+        padding: 2px 4px !important;
+      }
+      #hud-overlay .max-w-6xl > div:first-child {
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        gap: 4px !important;
+      }
+      #hud-wave-title {
+        display: none !important;
+      }
+      #btn-mute, #btn-open-armory-mid, #btn-hud-quit {
+        width: 1.6rem !important;
+        height: 1.6rem !important;
+        font-size: 0.65rem !important;
+      }
+      #hud-timer-box, #hud-health-box {
+        padding: 1px 4px !important;
+      }
+      /* Bottom tactical dock */
+      #hud-overlay .max-w-max > div,
+      #hud-overlay .max-w-6xl > div {
+        padding: 2px 4px !important;
+        border-radius: 0.75rem !important;
+      }
+      .weapon-tab-btn {
+        min-height: 28px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+      }
+      #btn-use-grenade, #btn-use-timeboost {
+        min-height: 28px !important;
+        padding: 2px 6px !important;
+      }
+      #hud-ammo-cur {
+        font-size: 1.25rem !important;
+      }
+      /* Mobile Controls Compact Dimensions */
+      #mobile-joystick-wrap {
+        bottom: 4px !important;
+        left: 4px !important;
+      }
+      #mobile-joystick-base {
+        width: 84px !important;
+        height: 84px !important;
+      }
+      #mobile-joystick-knob {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      #mobile-fire-wrap {
+        bottom: 4px !important;
+        right: 4px !important;
+      }
+      #btn-mobile-fire {
+        width: 64px !important;
+        height: 64px !important;
+      }
+      #btn-mobile-fire span:first-child {
+        font-size: 1.35rem !important;
+      }
+      #btn-mobile-grenade, #btn-mobile-reload {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.75rem !important;
+      }
+      /* Modal Containers & Scrolling */
+      #armory-modal .relative.h-36,
+      #armory-modal .relative.sm\:h-44 {
+        height: 3.6rem !important;
+      }
+      #armory-modal h1 {
+        font-size: 1.25rem !important;
+      }
+      #armory-subtitle {
+        display: none !important;
+      }
+      #armory-score-bank {
+        font-size: 1.15rem !important;
+        padding: 2px 6px !important;
+      }
+      #armory-modal .overflow-y-auto {
+        padding: 0.5rem !important;
+      }
+      #btn-deploy-wave {
+        padding: 0.5rem 1.2rem !important;
+        font-size: 1.05rem !important;
+      }
+      /* Victory / Defeat / Pause Modals Compact Padding */
+      #victory-modal h2, #defeat-modal h2, #pause-modal h2 {
+        font-size: 1.35rem !important;
+      }
+      #victory-modal .p-5, #defeat-modal .p-5, #pause-modal .p-5,
+      #victory-modal .sm\:p-6, #defeat-modal .sm\:p-6, #pause-modal .sm\:p-6 {
+        padding: 0.5rem 0.75rem !important;
+      }
+      #victory-modal .space-y-4, #defeat-modal .space-y-4, #pause-modal .space-y-4 {
+        margin-top: 0.25rem !important;
+      }
+      #pause-modal .space-y-4 > * + * {
+        margin-top: 0.35rem !important;
+      }
+      #btn-resume-game {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        font-size: 1rem !important;
+      }
     }
   </style>
 </head>
@@ -635,10 +766,16 @@
             <span>↺ RESTART WAVE</span>
           </button>
         </div>
-        <button id="btn-toggle-mobile-controls" type="button" class="w-full py-2.5 px-3 rounded-xl font-mono-tac text-xs text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
-          <span>📱</span>
-          <span id="label-toggle-mobile-controls">ON-SCREEN CONTROLS: AUTO</span>
-        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-toggle-mobile-controls" type="button" class="py-2.5 px-2 rounded-xl font-mono-tac text-[11px] sm:text-xs text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition flex items-center justify-center gap-1 active:scale-95 cursor-pointer">
+            <span>📱</span>
+            <span id="label-toggle-mobile-controls">CONTROLS: ON</span>
+          </button>
+          <button id="btn-toggle-aim-sensitivity" type="button" class="py-2.5 px-2 rounded-xl font-mono-tac text-[11px] sm:text-xs text-amber-300 bg-stone-900 hover:bg-stone-800 border border-stone-700 transition flex items-center justify-center gap-1 active:scale-95 cursor-pointer">
+            <span>🎯</span>
+            <span id="label-toggle-aim-sensitivity">AIM: NORMAL</span>
+          </button>
+        </div>
         <button id="btn-pause-exit" type="button" class="w-full py-2.5 px-3 rounded-xl font-military text-sm sm:text-base text-stone-300 hover:text-red-300 bg-stone-900 hover:bg-red-950/50 border border-stone-700 hover:border-red-700 transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer" title="Exit to Desktop">
           <span>🚪 EXIT GAME TO DESKTOP</span>
         </button>
@@ -9615,7 +9752,15 @@
     scene.background = new THREE.Color(0x6288a5); // Deep coastal maritime blue
     scene.fog = new THREE.Fog(0x688ea8, 160, 780); // Linear atmospheric sea haze (crisp fleet visibility)
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 950);
+    function getOptimalCameraFOV() {
+      // In mobile landscape mode (height <= 520px or aspect ratio > 1.8), standard 60deg vertical FOV
+      // produces an ultra-wide ~105deg horizontal FOV, shrinking distant enemies to tiny dots.
+      // 42deg vertical FOV provides ~1.5x zoom magnification, making distant troops crisp & targetable!
+      const isMobileScreen = (window.innerHeight <= 520) || (window.innerWidth / window.innerHeight > 1.8 && window.innerHeight < 600) || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerHeight < 600);
+      return isMobileScreen ? 42 : 60;
+    }
+
+    const camera = new THREE.PerspectiveCamera(getOptimalCameraFOV(), window.innerWidth / window.innerHeight, 0.1, 950);
     // Player is positioned inside the elevated coastal concrete pillbox at (0, 8.3, 41.2) looking out toward -Z (the ocean)
     camera.position.set(0, 8.3, 41.2);
     camera.lookAt(0, 2.8, -30);
@@ -12231,6 +12376,11 @@
       group.add(hpBar);
       boatObj.hpBar = hpBar;
 
+      const isMobileBoatSizing = (window.innerHeight <= 520) || (window.innerWidth / window.innerHeight > 1.8 && window.innerHeight < 600) || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerHeight < 600);
+      if (isMobileBoatSizing) {
+        group.scale.set(1.28, 1.28, 1.28);
+      }
+
       group.position.set(laneX, 0, startZ);
       scene.add(group);
       state.boats.push(boatObj);
@@ -13140,6 +13290,15 @@
       const hpBar = createFloatingHPBar(unitType === 'boss_tank' ? 4.8 : unitType === 'tank' ? 3.0 : unitType === 'halftrack' ? 2.4 : 1.6);
       hpBar.position.y = hpBarY;
       group.add(hpBar);
+
+      // Tactical Unit Sizing for Mobile: scale models up so enemies are clearly visible and targetable on phone screens
+      const isMobileEnemySizing = (window.innerHeight <= 520) || (window.innerWidth / window.innerHeight > 1.8 && window.innerHeight < 600) || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerHeight < 600);
+      const mobileUnitScale = isMobileEnemySizing ? 1.38 : 1.0;
+      if (unitType === 'boss_tank') {
+        group.scale.set(1.42 * mobileUnitScale, 1.42 * mobileUnitScale, 1.42 * mobileUnitScale);
+      } else {
+        group.scale.set(mobileUnitScale, mobileUnitScale, mobileUnitScale);
+      }
 
       const startY = getBeachHeightAt(x, z);
       group.position.set(x, startY, z);
@@ -15228,11 +15387,28 @@
       activePointerId: null,
       center: { x: 0, y: 0 },
       delta: { x: 0, y: 0 },
-      maxRadius: 46, // px max displacement
-      speedMultiplier: 1.65,
+      smoothDelta: { x: 0, y: 0 },
+      maxRadius: 40, // px max displacement (calibrated for 84px base)
+      speedMultiplier: 0.45, // Calibrated for smooth, precise aiming (was 1.65, which was way too fast!)
+      sensitivityLevel: 'NORMAL', // 'LOW' (0.28), 'NORMAL' (0.45), 'HIGH' (0.70)
       isFiring: false,
       firePointerId: null
     };
+
+    // Restore saved sensitivity preference from localStorage
+    try {
+      const savedSensitivity = localStorage.getItem('beach_aim_sensitivity');
+      if (savedSensitivity === 'LOW') {
+        mobileControls.sensitivityLevel = 'LOW';
+        mobileControls.speedMultiplier = 0.28;
+      } else if (savedSensitivity === 'HIGH') {
+        mobileControls.sensitivityLevel = 'HIGH';
+        mobileControls.speedMultiplier = 0.70;
+      } else {
+        mobileControls.sensitivityLevel = 'NORMAL';
+        mobileControls.speedMultiplier = 0.45;
+      }
+    } catch(err) {}
 
     const mobileControlsLayer = document.getElementById('mobile-controls-layer');
     const mobileAimZone = document.getElementById('mobile-aim-zone');
@@ -15244,6 +15420,35 @@
     const btnMobileReload = document.getElementById('btn-mobile-reload');
     const btnToggleMobile = document.getElementById('btn-toggle-mobile-controls');
     const labelToggleMobile = document.getElementById('label-toggle-mobile-controls');
+    const btnToggleSensitivity = document.getElementById('btn-toggle-aim-sensitivity');
+    const labelToggleSensitivity = document.getElementById('label-toggle-aim-sensitivity');
+
+    function updateSensitivityLabel() {
+      if (labelToggleSensitivity) {
+        labelToggleSensitivity.textContent = `AIM: ${mobileControls.sensitivityLevel}`;
+      }
+    }
+    updateSensitivityLabel();
+
+    if (btnToggleSensitivity) {
+      btnToggleSensitivity.addEventListener('click', () => {
+        if (mobileControls.sensitivityLevel === 'NORMAL') {
+          mobileControls.sensitivityLevel = 'HIGH';
+          mobileControls.speedMultiplier = 0.70;
+        } else if (mobileControls.sensitivityLevel === 'HIGH') {
+          mobileControls.sensitivityLevel = 'LOW';
+          mobileControls.speedMultiplier = 0.28;
+        } else {
+          mobileControls.sensitivityLevel = 'NORMAL';
+          mobileControls.speedMultiplier = 0.45;
+        }
+        try {
+          localStorage.setItem('beach_aim_sensitivity', mobileControls.sensitivityLevel);
+        } catch(err) {}
+        updateSensitivityLabel();
+        showScreenCallout(`AIM SENSITIVITY: ${mobileControls.sensitivityLevel}`, '#f59e0b');
+      });
+    }
 
     function updateMobileControlsVisibility() {
       if (!mobileControlsLayer) return;
@@ -15276,9 +15481,11 @@
       }
 
       const normDist = clampedDist / mobileControls.maxRadius;
-      if (normDist > 0.08) {
-        // High-precision quadratic response curve
-        const curvedDist = Math.pow((normDist - 0.08) / 0.92, 1.4);
+      // 0.18 deadzone eliminates resting finger jitter on touch screens
+      if (normDist > 0.18) {
+        // High-precision power curve with power 2.4:
+        // Micro-deflections allow pixel-perfect headshot sniping; full deflection pans across beachhead!
+        const curvedDist = Math.pow((normDist - 0.18) / 0.82, 2.4);
         mobileControls.delta.x = Math.cos(angle) * curvedDist;
         mobileControls.delta.y = Math.sin(angle) * curvedDist;
       } else {
@@ -15291,6 +15498,8 @@
       mobileControls.activePointerId = null;
       mobileControls.delta.x = 0;
       mobileControls.delta.y = 0;
+      mobileControls.smoothDelta.x = 0;
+      mobileControls.smoothDelta.y = 0;
       if (mobileJoystickKnob) {
         mobileJoystickKnob.style.transform = 'translate(0px, 0px)';
       }
@@ -15315,11 +15524,11 @@
         try { captureTarget.setPointerCapture(e.pointerId); } catch(err) {}
       }
 
-      const stickRadius = 58;
-      const margin = 12;
+      const stickRadius = 46;
+      const margin = 10;
       const maxLeft = (window.innerWidth * 0.44) - stickRadius;
       const anchorX = Math.max(stickRadius + margin, Math.min(maxLeft, e.clientX));
-      const anchorY = Math.max(stickRadius + 48, Math.min(window.innerHeight - stickRadius - margin, e.clientY));
+      const anchorY = Math.max(stickRadius + 44, Math.min(window.innerHeight - stickRadius - margin, e.clientY));
 
       mobileControls.center.x = anchorX;
       mobileControls.center.y = anchorY;
@@ -15830,6 +16039,7 @@
     }
 
     window.addEventListener('resize', () => {
+      camera.fov = getOptimalCameraFOV();
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -15914,12 +16124,19 @@
         });
       }
 
-      // Mobile Aim Joystick Continuous Panning
-      if (state.mode === 'PLAYING' && mobileControls.enabled && (Math.abs(mobileControls.delta.x) > 0.001 || Math.abs(mobileControls.delta.y) > 0.001)) {
-        const speed = mobileControls.speedMultiplier * dt;
-        const newNdcX = state.mouseNDC.x + mobileControls.delta.x * speed;
-        const newNdcY = state.mouseNDC.y - mobileControls.delta.y * speed;
-        updateAimFromNDC(newNdcX, newNdcY);
+      // Mobile Aim Joystick Continuous Panning with Exponential Moving Average (EMA) Smoothing
+      if (state.mode === 'PLAYING' && mobileControls.enabled) {
+        // Frame-rate independent exponential smoothing kills touch tremors and jumpiness
+        const smoothLerp = Math.min(1.0, 16.0 * dt);
+        mobileControls.smoothDelta.x += (mobileControls.delta.x - mobileControls.smoothDelta.x) * smoothLerp;
+        mobileControls.smoothDelta.y += (mobileControls.delta.y - mobileControls.smoothDelta.y) * smoothLerp;
+
+        if (Math.abs(mobileControls.smoothDelta.x) > 0.0005 || Math.abs(mobileControls.smoothDelta.y) > 0.0005) {
+          const speed = mobileControls.speedMultiplier * dt;
+          const newNdcX = state.mouseNDC.x + mobileControls.smoothDelta.x * speed;
+          const newNdcY = state.mouseNDC.y - mobileControls.smoothDelta.y * speed;
+          updateAimFromNDC(newNdcX, newNdcY);
+        }
       }
 
       // 2. Smoothly Rotate Camera & First-Person Machine Gun toward Aim Target
