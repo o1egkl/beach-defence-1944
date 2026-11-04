@@ -15807,6 +15807,7 @@
     if (btnMobileFire) {
       btnMobileFire.addEventListener('pointerdown', e => {
         e.preventDefault();
+        e.stopPropagation();
         sfx.init();
         if (mobileControls.firePointerId !== null) return;
         mobileControls.firePointerId = e.pointerId;
@@ -15836,16 +15837,24 @@
     });
 
     if (btnMobileGrenade) {
-      btnMobileGrenade.addEventListener('click', e => {
-        e.preventDefault();
+      const handleGrenadeTap = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         sfx.init();
         throwGrenade();
-      });
+      };
+      btnMobileGrenade.addEventListener('pointerdown', handleGrenadeTap);
+      btnMobileGrenade.addEventListener('click', handleGrenadeTap);
     }
 
     if (btnMobileReload) {
-      btnMobileReload.addEventListener('click', e => {
-        e.preventDefault();
+      const handleReloadTap = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         sfx.init();
         if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
           startGunCooldown();
@@ -15858,7 +15867,9 @@
           state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
           sfx.playReadyClank();
         }
-      });
+      };
+      btnMobileReload.addEventListener('pointerdown', handleReloadTap);
+      btnMobileReload.addEventListener('click', handleReloadTap);
     }
 
     if (btnToggleMobile) {
@@ -15869,6 +15880,8 @@
     }
 
     window.addEventListener('mousemove', e => {
+      // When mobile virtual stick is active, ignore all synthetic mousemove events from button touches
+      if (mobileControls.enabled) return;
       if (state.mode === 'PLAYING') {
         updateAimFromClientXY(e.clientX, e.clientY);
       }
@@ -15876,7 +15889,10 @@
 
     renderer.domElement.addEventListener('mousedown', e => {
       if (state.mode !== 'PLAYING') return;
-      updateAimFromClientXY(e.clientX, e.clientY);
+      // When mobile virtual stick is active, aim is controlled strictly by the virtual stick
+      if (!mobileControls.enabled) {
+        updateAimFromClientXY(e.clientX, e.clientY);
+      }
       if (e.button === 0) {
         state.isFiring = true;
       } else if (e.button === 2) {
@@ -16107,7 +16123,7 @@
       renderArmory();
     });
 
-    document.getElementById('btn-use-grenade').addEventListener('click', () => throwGrenade());
+    document.getElementById('btn-use-grenade').addEventListener('click', (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } throwGrenade(); });
     document.getElementById('btn-use-timeboost').addEventListener('click', () => useTimeBooster());
     document.getElementById('btn-manual-reload').addEventListener('click', () => {
       if (!state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
