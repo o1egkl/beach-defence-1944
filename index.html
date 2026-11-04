@@ -174,7 +174,17 @@
         box-shadow: inset 0 0 16px rgba(10, 12, 14, 0.7) !important;
       }
       #hud-overlay {
-        padding: 2px 4px !important;
+        padding: 2px 6% !important;
+      }
+      #hud-overlay > div:first-child {
+        max-width: 80% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      #hud-overlay > div:last-child {
+        max-width: 84% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
       }
       #hud-overlay .max-w-6xl > div:first-child {
         padding-top: 2px !important;
@@ -487,7 +497,7 @@
   <div id="hud-overlay" class="fixed inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-3 hidden">
     
     <!-- Top Tactical Strip (Ultra-Compact, Single-Row Bar - Zero Sky/Fleet Obstruction) -->
-    <div class="w-full max-w-6xl mx-auto pointer-events-auto">
+    <div class="w-full max-w-5xl mx-auto pointer-events-auto">
       <div class="bg-stone-950/85 backdrop-blur-md border border-stone-800/80 rounded-xl px-2.5 sm:px-4 py-1.5 shadow-2xl flex items-center justify-between gap-2 sm:gap-4 text-xs">
         
         <!-- Left: Wave & Enemies Remaining -->
@@ -14705,15 +14715,66 @@
       state.grenades--;
       updateHUD();
 
-      // Determine target ground point from crosshair raycast
+      // Raycast through crosshair NDC to find exact target
       raycaster.setFromCamera(state.mouseNDC, camera);
-      const envHits = raycaster.intersectObjects(environmentTargets, false);
-      const targetPt = envHits.length > 0
-        ? envHits[0].point.clone()
-        : state.aimWorldPoint.clone();
 
-      // Clamp throw range
-      targetPt.z = Math.max(-75, Math.min(34, targetPt.z));
+      // 1. Check all live targets first (enemies, boats, supply drops)
+      _reusableTargetMeshes.length = 0;
+      state.enemies.forEach(e => {
+        if (!e.dead && !e.isDying) _reusableTargetMeshes.push(...e.hitboxes);
+      });
+      state.boats.forEach(b => {
+        if (!b.dead && (b.state === 'SAILING' || b.state === 'DEPLOYED')) _reusableTargetMeshes.push(...b.hitboxes);
+      });
+      state.supplyDrops.forEach(d => {
+        if (d.active) {
+          if (d.hitboxes) _reusableTargetMeshes.push(...d.hitboxes);
+          else _reusableTargetMeshes.push(d.crateMesh, d.canopy);
+        }
+      });
+
+      const entityHits = raycaster.intersectObjects(_reusableTargetMeshes, false);
+      const envHits = raycaster.intersectObjects(environmentTargets, false);
+
+      let targetPt;
+      if (entityHits.length > 0) {
+        // Direct aim hit on an enemy soldier, boat, or tank: land directly at target's ground/water level
+        targetPt = entityHits[0].point.clone();
+        targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
+      } else if (envHits.length > 0) {
+        // Aim hit on terrain (sand, surf, ocean water)
+        targetPt = envHits[0].point.clone();
+        targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
+      } else {
+        // Aiming toward horizon/sky: intersect ground plane along ray line of sight
+        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const planePt = new THREE.Vector3();
+        const intersectsPlane = raycaster.ray.intersectPlane(groundPlane, planePt);
+        if (intersectsPlane && planePt.z < camera.position.z) {
+          targetPt = planePt;
+          targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
+        } else {
+          const forwardDir = raycaster.ray.direction.clone();
+          if (forwardDir.z >= -0.1) forwardDir.z = -0.1;
+          targetPt = raycaster.ray.origin.clone().addScaledVector(forwardDir, 50);
+          targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
+        }
+      }
+
+      // Proportional range clamp along line of sight from player camera
+      const minZ = -70; // Max forward throw into surf
+      const maxZ = 33;  // Min throw distance (right outside bunker embrasure)
+      if (targetPt.z < minZ) {
+        const ratio = (minZ - camera.position.z) / (targetPt.z - camera.position.z);
+        targetPt.x = camera.position.x + (targetPt.x - camera.position.x) * ratio;
+        targetPt.z = minZ;
+      } else if (targetPt.z > maxZ) {
+        const ratio = (maxZ - camera.position.z) / (targetPt.z - camera.position.z);
+        targetPt.x = camera.position.x + (targetPt.x - camera.position.x) * ratio;
+        targetPt.z = maxZ;
+      }
+      // Clamp X within beach defense bounds
+      targetPt.x = Math.max(-50, Math.min(50, targetPt.x));
       targetPt.y = getBeachHeightAt(targetPt.x, targetPt.z);
 
       const startPt = new THREE.Vector3(0, 7.8, 39.5);
@@ -15477,8 +15538,10 @@
     const targetHpBarEl = document.getElementById('target-hp-bar');
 
     function updateAimFromNDC(ndcX, ndcY) {
-      state.mouseNDC.x = Math.max(-0.95, Math.min(0.95, ndcX));
-      state.mouseNDC.y = Math.max(-0.85, Math.min(0.85, ndcY));
+      // Strict bunker embrasure aperture clamp:
+      // Prevents the aim reticle and gunfire from drifting onto solid concrete side walls or ceiling where enemies cannot exist
+      state.mouseNDC.x = Math.max(-0.75, Math.min(0.75, ndcX));
+      state.mouseNDC.y = Math.max(-0.58, Math.min(0.56, ndcY));
 
       const clientX = canvasRect.left + ((state.mouseNDC.x + 1) / 2) * canvasRect.width;
       const clientY = canvasRect.top + ((-state.mouseNDC.y + 1) / 2) * canvasRect.height;
