@@ -2,9 +2,8 @@
   "appId": "com.pacificdefence.game",
   "appName": "Pacific Defence",
   "webDir": "www",
-  "bundledWebRuntime": false,
   "android": {
-    "allowMixedContent": true,
+    "allowMixedContent": false,
     "captureInput": true,
     "webContentsDebuggingEnabled": false
   },

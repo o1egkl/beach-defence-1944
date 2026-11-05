@@ -24,9 +24,7 @@
   <script src="lib/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com/3.4.17'"></script>
   <script src="lib/three.min.js" onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'"></script>
   <script src="lib/GLTFLoader.js" onerror="this.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="lib/fonts/fonts.css">
   <style>
     :root {
       --olive-dark: #181c14;
@@ -15391,6 +15389,7 @@
             state.upgrades[id]++;
             sfx.playReadyClank();
             renderArmory();
+      polishMobileUI();
           }
         });
       });
@@ -16258,6 +16257,92 @@
       }
     }
 
+    
+    // --- ANDROID HARDWARE / GESTURE BACK BUTTON & LIFECYCLE CONTROLLERS ---
+    function handleAndroidBackButton() {
+      // 1. If Exit Modal is open, close it
+      const exitModal = document.getElementById('exit-modal');
+      if (exitModal && !exitModal.classList.contains('hidden')) {
+        hideExitModal();
+        return;
+      }
+      // 2. If Plan/Intel Modal is open, close it
+      const planModal = document.getElementById('plan-modal');
+      if (planModal && !planModal.classList.contains('hidden')) {
+        planModal.classList.add('hidden');
+        planModal.classList.remove('flex');
+        return;
+      }
+      // 3. If in Active Combat ('PLAYING'), pause game
+      if (state.mode === 'PLAYING') {
+        pauseGame();
+        return;
+      }
+      // 4. If game is PAUSED, resume game
+      if (state.mode === 'PAUSED') {
+        resumeGame();
+        return;
+      }
+      // 5. If in Armory (before wave start), show Exit confirmation modal
+      if (state.mode === 'ARMORY') {
+        showExitModal();
+        return;
+      }
+    }
+
+    document.addEventListener('backbutton', handleAndroidBackButton, false);
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('backButton', () => {
+        handleAndroidBackButton();
+      });
+    }
+
+    // Background State & Audio Context lifecycle (preserves Web Audio & pauses during app switch)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (state.mode === 'PLAYING') {
+          pauseGame();
+        }
+        if (sfx && sfx.ctx && sfx.ctx.state === 'running') {
+          try { sfx.ctx.suspend(); } catch (e) {}
+        }
+      } else {
+        if (sfx && sfx.ctx && sfx.ctx.state === 'suspended') {
+          try { sfx.ctx.resume(); } catch (e) {}
+        }
+      }
+    });
+
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) {
+          if (state.mode === 'PLAYING') pauseGame();
+          if (sfx && sfx.ctx && sfx.ctx.state === 'running') {
+            try { sfx.ctx.suspend(); } catch (e) {}
+          }
+        } else {
+          if (sfx && sfx.ctx && sfx.ctx.state === 'suspended') {
+            try { sfx.ctx.resume(); } catch (e) {}
+          }
+        }
+      });
+    }
+
+    function polishMobileUI() {
+      const isMobile = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isMobile) {
+        const pwaBtn1 = document.getElementById('btn-install-pwa');
+        if (pwaBtn1) pwaBtn1.style.display = 'none';
+        const pwaBtn2 = document.getElementById('btn-pause-install-pwa');
+        if (pwaBtn2) pwaBtn2.style.display = 'none';
+
+        const pauseExitBtn = document.getElementById('btn-pause-exit');
+        if (pauseExitBtn) {
+          pauseExitBtn.innerHTML = '<span>🚪 EXIT GAME</span>';
+        }
+      }
+    }
+
     function hideExitModal() {
       const m = document.getElementById('exit-modal');
       if (m) {
@@ -16272,7 +16357,18 @@
         window.electronAPI.quitApp();
         return;
       }
-      // 2. Desktop window close (Chrome / Edge --app mode)
+      // 2. Capacitor Android Native Exit
+      if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        if (window.Capacitor.Plugins && window.Capacitor.Plugins.App && typeof window.Capacitor.Plugins.App.exitApp === 'function') {
+          window.Capacitor.Plugins.App.exitApp();
+          return;
+        }
+      }
+      if (navigator.app && typeof navigator.app.exitApp === 'function') {
+        navigator.app.exitApp();
+        return;
+      }
+      // 3. Desktop window close (Chrome / Edge --app mode)
       try {
         window.open('', '_self', '');
         window.close();
@@ -16281,9 +16377,10 @@
         try { window.close(); } catch (e) {}
       }, 50);
       hideExitModal();
-      // 3. Fallback advisory alert if running in standard browser tab
+      // 4. Fallback advisory alert if running in standard browser tab (only on desktop web, not mobile)
       setTimeout(() => {
-        if (!document.hidden) {
+        const isMobileOrNative = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || ('ontouchstart' in window);
+        if (!document.hidden && !isMobileOrNative) {
           alert("Mission Aborted. To exit Pacific Defence completely, please close this browser tab or window, or press Alt+F4 / Ctrl+Q.");
         }
       }, 350);
@@ -17149,6 +17246,7 @@
       isGameInitialized = true;
       buildEnvironment();
       renderArmory();
+      polishMobileUI();
       requestAnimationFrame(animate);
     }
 
@@ -17167,7 +17265,7 @@
                             window.matchMedia('(display-mode: fullscreen)').matches ||
                             window.navigator.standalone === true;
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform())) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then((reg) => {
           console.log('[PWA] Service Worker registered:', reg.scope);
@@ -17178,6 +17276,8 @@
     }
 
     function showInstallButtons() {
+      const isMobile = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || ('ontouchstart' in window);
+      if (isMobile) return;
       if (isStandaloneApp) {
         if (btnInstallPwa) {
           btnInstallPwa.innerHTML = '<span>💻 WINDOWS APP ACTIVE</span>';
