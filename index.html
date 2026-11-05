@@ -1578,6 +1578,40 @@
         this.oceanNodes = null;
         this.oceanMasterGain = null;
         this.oceanTargetGain = 0.26;
+        // Audio Polyphony Manager: limit concurrent voices to prevent Web Audio stutters
+        const isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+        this.maxVoices = isMob ? 14 : 22;
+        this.activeVoices = [];
+      }
+
+      requestVoice(priority = 1, duration = 0.5) {
+        if (!this.ctx) return false;
+        const now = this.ctx.currentTime;
+        // 1. Purge finished voices
+        for (let i = this.activeVoices.length - 1; i >= 0; i--) {
+          if (this.activeVoices[i].endTime <= now) {
+            removeAtSwap(this.activeVoices, i);
+          }
+        }
+        // 2. If under limit, allocate slot
+        if (this.activeVoices.length < this.maxVoices) {
+          this.activeVoices.push({ priority, endTime: now + duration });
+          return true;
+        }
+        // 3. If at limit, find lowest priority voice that has lower priority than this request
+        let lowestIdx = -1;
+        let lowestPri = priority;
+        for (let i = 0; i < this.activeVoices.length; i++) {
+          if (this.activeVoices[i].priority < lowestPri) {
+            lowestPri = this.activeVoices[i].priority;
+            lowestIdx = i;
+          }
+        }
+        if (lowestIdx !== -1) {
+          this.activeVoices[lowestIdx] = { priority, endTime: now + duration };
+          return true;
+        }
+        return false;
       }
       get muted() {
         return this._muted;
@@ -1716,6 +1750,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.09)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
 
         // Punchy low-end mechanical thump
@@ -1751,6 +1788,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.45)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.45;
         const noise = this.ctx.createBufferSource();
@@ -1771,6 +1811,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.2)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [520, 780].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1790,6 +1833,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.15)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [880, 1320].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1809,6 +1855,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.56)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
 
         // Sub-bass concussive artillery punch
@@ -1845,6 +1894,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.66)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.65;
         const noise = this.ctx.createBufferSource();
@@ -1886,6 +1938,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.76)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.75;
         const noise = this.ctx.createBufferSource();
@@ -1907,6 +1962,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.3)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [587.33, 880, 1174.66].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1926,6 +1984,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.3)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [440, 554.37, 659.25, 880].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1945,6 +2006,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.6)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         // Deep sub-bass adrenaline whoosh sweep
         try {
@@ -1982,6 +2046,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.4)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -2001,6 +2068,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(3, 0.5)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2019,6 +2089,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.12)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2037,6 +2110,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.08)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2069,6 +2145,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.22)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         for (let b = 0; b < 3; b++) {
           const t = now + b * 0.07;
@@ -2090,6 +2169,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 0.08)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2108,6 +2190,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(2, 1.1)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 1.1;
         const osc = this.ctx.createOscillator();
@@ -2135,6 +2220,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(1, 0.05)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2153,6 +2241,9 @@
         if (this.muted) return;
         this.init();
         if (!this.ctx) return;
+        if (!this.requestVoice(1, 0.55)) return;
+        if (!this.ctx) return;
+        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.55;
         const noise = this.ctx.createBufferSource();
@@ -12397,6 +12488,15 @@
     const _vCasingOffset = new THREE.Vector3(0.22, -0.06, -0.45);
 
     function createSpentCasing(origin) {
+      // Strictly limit active casings to avoid draw call bloat during sustained fire
+      const maxCasings = (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0)) ? 10 : 16;
+      if (state.spentCasings.length >= maxCasings) {
+        const oldest = state.spentCasings[0];
+        if (oldest && oldest.mesh) {
+          removeAndDispose(scene, oldest.mesh);
+        }
+        removeAtSwap(state.spentCasings, 0);
+      }
       const mesh = new THREE.Mesh(sharedCasingGeo, sharedCasingMat);
       // Eject cleanly forward and to the right over the embrasure sill, away from camera
       mesh.position.copy(origin).add(_vCasingOffset);
@@ -17156,6 +17256,11 @@
         // Update Advancing Enemy Units (reverse iteration handles both alive sprint & dying kinematics safely)
         for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
           const enemy = state.enemies[eIdx];
+          // Sector Culling: if unit is outside embrasure viewing bounds (|X| > 175), hide mesh
+          if (enemy.group) {
+            const inSector = Math.abs(enemy.group.position.x) <= 175;
+            if (enemy.group.visible !== inSector) enemy.group.visible = inSector;
+          }
           if (enemy.dead) {
             if (enemy.group) removeAndDispose(scene, enemy.group);
             if (enemy.hpBar) removeAndDispose(scene, enemy.hpBar);
@@ -17258,7 +17363,11 @@
           const groundY = getBeachHeightAt(enemy.group.position.x, enemy.group.position.z);
 
           // Authentic 60 FPS infantry running biomechanics
-          if (enemy.pelvis && enemy.legs && enemy.legs.length === 2) {
+          // Distance LOD: skip fine skeletal animations on alternate frames for distant tiny dots (Z < -110)
+          const isDistant = enemy.group.position.z < -110;
+          if (isDistant && (frameCount % 2 !== 0)) {
+            // Skip skeletal recalculation on alternate frames for distant units
+          } else if (enemy.pelvis && enemy.legs && enemy.legs.length === 2) {
             enemy.stridePhase = (enemy.stridePhase || 0) + eDt * (enemy.speed * 2.2);
             const phase = enemy.stridePhase + enemy.wobbleSeed;
             const swingL = Math.sin(phase);
