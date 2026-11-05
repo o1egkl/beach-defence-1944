@@ -76,30 +76,30 @@ The game features:
 
 ---
 
-## 🔫 The 4-Weapon Tactical Arsenal
+## 🔫 3-Weapon Tactical Arsenal & Support Abilities
 
 Switch weapons on the fly using number keys `[1]`, `[2]`, `[3]`, or the mouse wheel to match incoming armor profiles.
 
 ### 1. 💥 Heavy Rapid MG Heavy Machine Gun (`Slot 1`)
 - **Role**: Primary sustained suppression against massed infantry and fast-moving foot soldiers.
 - **Fire Rate**: 520 - 1,600 rounds per minute (RPM).
-- **Ammo Capacity**: 45 - 120+ rounds per belt drum.
+- **Ammo Capacity**: 45 - 120+ rounds per belt drum (infinite reserve).
 - **Critical Multiplier**: 2.6× - 4.5× damage on headshots and weak points.
-- **Mechanics**: High-cyclic firing builds up **Barrel Heat**, causing the steel shroud to glow fiery red. Depleting the drum triggers an automatic cooling cycle with an authentic metal clank reload.
+- **Mechanics**: High-cyclic firing builds up **Barrel Heat**, causing the steel shroud to glow fiery red. Depleting the drum triggers an automatic cooling/reload cycle (`2.6s` base) with an authentic metal clank reload. Press `[R]` to reload early.
 
 ### 2. 🛡️ 75mm Anti-Tank Coastal Cannon (`Slot 2`)
 - **Role**: Heavy armor-piercing ordnance against landing craft, armored half-tracks, and tanks.
 - **Base Damage**: 540+ (scales with weapon upgrades and wave tech multipliers).
 - **Armor Penetration**: 90% AP, ignoring heavy steel armor plating.
-- **Ammo Capacity**: 24 - 50+ heavy cannon shells.
-- **Blast Radius**: High splash damage capable of destroying entire clusters of landing craft cargo before deployment.
+- **Ammo Allocation**: 4-round ready rack magazine with 20 reserve shells (24 total per wave base, upgradeable).
+- **Reload & Rate of Fire**: Controlled rate of fire (32 RPM) with a `2.2s` breech-reloading cycle via `[R]` or automatically when the magazine empties. Parachute supply crates replenish +4 reserve shells.
 
 ### 3. 🚀 Heavy Anti-Tank Rocket Launcher (`Slot 3`)
 - **Role**: High-velocity explosive projectile launcher designed for long-range vehicle and boat interdiction.
 - **Base Damage**: 480+ (heavy kinetic and concussive blast).
 - **Armor Penetration**: 75% AP.
-- **Ammo Capacity**: 10 - 25+ heavy rockets.
-- **Splash Damage**: Concussive radius that flips light vehicles and clears sandbar footholds.
+- **Ammo Allocation**: 2-rocket twin tube with 8 reserve rockets (10 total per wave base, upgradeable).
+- **Reload**: `2.8s` tube reload cycle via `[R]` or when both tubes are expended. Parachute supply crates replenish +2 reserve rockets.
 
 ### 4. 💣 Tactical Ordnance & Support Abilities
 
@@ -283,6 +283,30 @@ npm run open:android     # Open in Android Studio
 
 ---
 
+## 🧪 Automated Testing & Verification
+
+Pacific Defence includes an automated zero-dependency test suite running on Node.js's native test runner (`node --test`), thoroughly asserting all core rules and cross-platform integrations:
+
+- **Weapon Mechanics (`tests/weapons.test.js`)**: Magazine capacities, wave reserves, fire rate cooldown intervals, zero negative ammo, and non-blocking reload.
+- **Campaign Persistence (`tests/save_system.test.js`)**: Schema v1 serialization, safe parsing of corrupt states, range clamping, and campaign reset.
+- **PWA Scoping (`tests/pwa_base_path.test.js`)**: Relative manifest links and scope-aware service worker registration for both root domains (Vercel) and repository subdirectories (GitHub Pages).
+- **Live In-Engine Weapons (`tests/cdp_weapons_gameplay.test.js`)**: Real Chrome DevTools Protocol automation asserting live 3D engine touch events, weapon firing, and reload cycles.
+- **Live In-Engine Persistence (`tests/cdp_save_restore.test.js`)**: Asserts live localStorage reads and state recovery across browser page reloads.
+
+```bash
+# Run all automated tests
+npm test
+
+# Run individual test suites
+node --test tests/weapons.test.js
+node --test tests/save_system.test.js
+node --test tests/pwa_base_path.test.js
+node --test tests/cdp_weapons_gameplay.test.js
+node --test tests/cdp_save_restore.test.js
+```
+
+---
+
 ## 🧱 Architecture & Technical Stack
 
 ```
@@ -290,9 +314,20 @@ beach-defence-1944/
 ├── index.html           # Unified game application (HTML structure, Tailwind HUD, 3D engine)
 ├── main.js              # Electron desktop main process (window management, IPC, hardware acceleration)
 ├── preload.js           # Secure context-bridge IPC layer exposing native desktop API
-├── sw.js                # Service Worker caching assets for offline PWA operation
-├── manifest.json        # Progressive Web App installation manifest
-├── package.json         # Node.js, Electron, and electron-builder build pipeline
+├── sw.js                # Scope-aware Service Worker caching assets for offline PWA operation
+├── manifest.json        # Relative-scoped Progressive Web App installation manifest
+├── package.json         # Node.js, Electron, Capacitor, and test pipeline configuration
+├── src/                 # Modular architecture core
+│   ├── core/
+│   │   └── SaveManager.js   # Isolated campaign persistence & validation
+│   └── weapons/
+│       └── WeaponManager.js # Weapon state, fire cooldown & reload transitions
+├── tests/               # Comprehensive automated test suite (node --test)
+│   ├── weapons.test.js
+│   ├── save_system.test.js
+│   ├── pwa_base_path.test.js
+│   ├── cdp_weapons_gameplay.test.js
+│   └── cdp_save_restore.test.js
 ├── lib/                 # Standalone offline JavaScript dependencies
 │   ├── three.min.js     # Three.js 3D WebGL graphics engine (r128)
 │   ├── GLTFLoader.js    # 3D GLTF / GLB model loader

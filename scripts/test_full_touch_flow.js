@@ -59,10 +59,15 @@ server.listen(4901, async () => {
     'about:blank'
   ]);
 
-  await new Promise(r => setTimeout(r, 1200));
-
-  const jsonRes = await fetch('http://127.0.0.1:9224/json');
-  const targets = await jsonRes.json();
+  let jsonRes, targets;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      await new Promise(r => setTimeout(r, 600));
+      jsonRes = await fetch('http://127.0.0.1:9224/json');
+      targets = await jsonRes.json();
+      if (targets && targets.length > 0) break;
+    } catch(e) {}
+  }
   const pageTarget = targets.find(t => t.type === 'page') || targets[0];
 
   const ws = new WebSocket(pageTarget.webSocketDebuggerUrl);

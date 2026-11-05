@@ -1,18 +1,32 @@
-// Beach Defence 1944 - Service Worker
-const CACHE_NAME = 'beach-defence-cache-v1';
+// Pacific Defence - Universal Scope-Aware Service Worker
+const CACHE_NAME = 'pacific-defence-cache-v2';
+
+// Resolve base path dynamically from the service worker's registered scope
+const getBasePath = () => {
+  try {
+    const scopePath = new URL(self.registration ? self.registration.scope : self.location.href).pathname;
+    return scopePath.endsWith('/') ? scopePath : scopePath + '/';
+  } catch(e) {
+    return './';
+  }
+};
+
+const BASE = getBasePath();
 
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-192.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/icon.svg',
-  '/lib/three.min.js',
-  '/lib/GLTFLoader.js'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'favicon.ico',
+  BASE + 'favicon.png',
+  BASE + 'icons/icon-192.png',
+  BASE + 'icons/icon-512.png',
+  BASE + 'icons/icon-maskable-192.png',
+  BASE + 'icons/icon-maskable-512.png',
+  BASE + 'icons/icon.svg',
+  BASE + 'lib/three.min.js',
+  BASE + 'lib/GLTFLoader.js',
+  BASE + 'lib/tailwindcss.js'
 ];
 
 // Pre-cache core assets on install
@@ -33,6 +47,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Purging old cache:', key);
             return caches.delete(key);
           }
         })
@@ -54,7 +69,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(req).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached version immediately, optionally fetch update in background
+        // Return cached version immediately, fetch update in background
         fetch(req).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             caches.open(CACHE_NAME).then((cache) => cache.put(req, networkResponse));
@@ -89,7 +104,7 @@ self.addEventListener('fetch', (event) => {
       }).catch((err) => {
         // Fallback for navigation requests when completely offline
         if (req.mode === 'navigate') {
-          return caches.match('/index.html') || caches.match('/');
+          return caches.match(BASE + 'index.html') || caches.match(BASE);
         }
         throw err;
       });

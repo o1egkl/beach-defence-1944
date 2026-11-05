@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pacific Defence">
   <meta name="msapplication-TileColor" content="#181c14">
-  <meta name="msapplication-TileImage" content="/icons/icon-512.png">
+  <meta name="msapplication-TileImage" content="icons/icon-512.png">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -10297,6 +10297,61 @@
       }
     ];
 
+    // --- 2.5. CAMPAIGN PROGRESS STORAGE (PERSISTENCE SYSTEM) ---
+    const SAVE_STORAGE_KEY = 'pacific_defence_save_v1';
+
+    function saveCampaignProgress() {
+      try {
+        if (!state) return false;
+        const data = {
+          version: 1,
+          savedAt: Date.now(),
+          waveIndex: typeof state.waveIndex === 'number' ? state.waveIndex : 0,
+          score: typeof state.score === 'number' ? state.score : 0,
+          upgrades: {
+            damage: (state.upgrades && state.upgrades.damage) || 0,
+            ammo: (state.upgrades && state.upgrades.ammo) || 0,
+            cooldown: (state.upgrades && state.upgrades.cooldown) || 0,
+            firerate: (state.upgrades && state.upgrades.firerate) || 0
+          }
+        };
+        localStorage.setItem(SAVE_STORAGE_KEY, JSON.stringify(data));
+        return true;
+      } catch (err) {
+        console.warn('[SaveManager] Save failed:', err);
+        return false;
+      }
+    }
+
+    function loadCampaignProgress() {
+      try {
+        const raw = localStorage.getItem(SAVE_STORAGE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data || data.version !== 1 || typeof data.waveIndex !== 'number') return null;
+        return {
+          version: 1,
+          waveIndex: Math.max(0, Math.min(19, Math.floor(data.waveIndex))),
+          score: Math.max(0, Math.floor(data.score || 0)),
+          upgrades: {
+            damage: Math.max(0, Math.min(8, Math.floor((data.upgrades && data.upgrades.damage) || 0))),
+            ammo: Math.max(0, Math.min(8, Math.floor((data.upgrades && data.upgrades.ammo) || 0))),
+            cooldown: Math.max(0, Math.min(8, Math.floor((data.upgrades && data.upgrades.cooldown) || 0))),
+            firerate: Math.max(0, Math.min(8, Math.floor((data.upgrades && data.upgrades.firerate) || 0)))
+          }
+        };
+      } catch (err) {
+        console.warn('[SaveManager] Corrupt save handled safely:', err);
+        return null;
+      }
+    }
+
+    function clearCampaignProgress() {
+      try {
+        localStorage.removeItem(SAVE_STORAGE_KEY);
+      } catch (err) {}
+    }
+
     // --- 3. GAME STATE ---
         // Universal responsive touch & click tap handler for mobile & desktop
     function addTapListener(el, callback) {
@@ -10367,14 +10422,20 @@
           type: 'bullet',
           damage: 34,
           armorPen: 0.15,
+          clipSize: 45,
           maxAmmo: 45,
           curAmmo: 45,
+          reserveAmmo: Infinity,
+          reloadDuration: 2.6,
+          reloadTimer: 0,
+          isReloading: false,
           cooldownDuration: 2.6,
           cooldownTimer: 0,
           isCooling: false,
           rpm: 520,
+          fireInterval: 60 / 520,
           critMult: 2.6,
-          lastShotTime: 0
+          lastShotTime: -999
         },
         2: {
           id: 'cannon',
@@ -10384,14 +10445,20 @@
           type: 'cannon',
           damage: 540,
           armorPen: 0.90,
+          clipSize: 4,
           maxAmmo: 24,
-          curAmmo: 24,
+          curAmmo: 4,
+          reserveAmmo: 20,
+          reloadDuration: 2.2,
+          reloadTimer: 0,
+          isReloading: false,
           cooldownDuration: 2.2,
           cooldownTimer: 0,
           isCooling: false,
           rpm: 32,
+          fireInterval: 60 / 32,
           critMult: 1.8,
-          lastShotTime: 0
+          lastShotTime: -999
         },
         3: {
           id: 'rocket',
@@ -10401,14 +10468,20 @@
           type: 'rocket',
           damage: 480,
           armorPen: 0.75,
+          clipSize: 2,
           maxAmmo: 10,
-          curAmmo: 10,
+          curAmmo: 2,
+          reserveAmmo: 8,
+          reloadDuration: 2.8,
+          reloadTimer: 0,
+          isReloading: false,
           cooldownDuration: 2.8,
           cooldownTimer: 0,
           isCooling: false,
           rpm: 25,
+          fireInterval: 60 / 25,
           critMult: 1.5,
-          lastShotTime: 0
+          lastShotTime: -999
         }
       },
       weapon: null,
@@ -10485,23 +10558,34 @@
       const w1 = state.weapons[1];
       w1.damage = Math.round(34 + dLv * 12 * Math.sqrt(techMult));
       w1.armorPen = Math.min(0.92, +(0.15 + dLv * 0.04 * Math.sqrt(techMult)).toFixed(2));
-      w1.maxAmmo = Math.round(45 + aLv * 12 * Math.sqrt(techMult));
-      w1.cooldownDuration = Math.max(0.65, +(2.6 - cLv * 0.16 * Math.sqrt(techMult)).toFixed(2));
+      w1.clipSize = Math.round(45 + aLv * 12 * Math.sqrt(techMult));
+      w1.maxAmmo = w1.clipSize;
+      w1.reloadDuration = Math.max(0.65, +(2.6 - cLv * 0.16 * Math.sqrt(techMult)).toFixed(2));
+      w1.cooldownDuration = w1.reloadDuration;
       w1.rpm = Math.min(1600, Math.round(520 + fLv * 45 * Math.sqrt(techMult)));
+      w1.fireInterval = 60 / w1.rpm;
       w1.critMult = +(2.6 + fLv * 0.15).toFixed(2);
       w1.tierName = `RAPID MG MK ${dLv + 1}`;
 
       // Weapon 2: 75mm Anti-Tank Cannon
       const w2 = state.weapons[2];
       w2.damage = Math.round(540 + dLv * 85 * Math.sqrt(techMult));
-      w2.cooldownDuration = Math.max(1.1, +(2.2 - cLv * 0.12 * Math.sqrt(techMult)).toFixed(2));
+      w2.reloadDuration = Math.max(1.1, +(2.2 - cLv * 0.12 * Math.sqrt(techMult)).toFixed(2));
+      w2.cooldownDuration = w2.reloadDuration;
+      w2.clipSize = 4;
       w2.maxAmmo = Math.round(24 + aLv * 4);
+      w2.rpm = 32;
+      w2.fireInterval = 60 / 32;
 
       // Weapon 3: Heavy Rocket Launcher
       const w3 = state.weapons[3];
       w3.damage = Math.round(480 + dLv * 75 * Math.sqrt(techMult));
-      w3.cooldownDuration = Math.max(1.4, +(2.8 - cLv * 0.14 * Math.sqrt(techMult)).toFixed(2));
+      w3.reloadDuration = Math.max(1.4, +(2.8 - cLv * 0.14 * Math.sqrt(techMult)).toFixed(2));
+      w3.cooldownDuration = w3.reloadDuration;
+      w3.clipSize = 2;
       w3.maxAmmo = Math.round(10 + aLv * 2);
+      w3.rpm = 25;
+      w3.fireInterval = 60 / 25;
 
       // Keep active state.weapon aligned with selected slot
       if (state.selectedWeapon > 3) state.selectedWeapon = 1;
@@ -12482,7 +12566,7 @@
       // Load authentic models/mg42.glb model with barrel aimed straight towards enemies (+Z)
       if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
         const gltfLoader = new THREE.GLTFLoader();
-        gltfLoader.load('models/mg42.glb?v=' + Date.now(), (gltf) => {
+        gltfLoader.load('models/mg42.glb?v=1.1.0', (gltf) => {
           const model = gltf.scene;
 
           // Align authentic MG42 with barrel & muzzle pointing straight forward toward enemies (+Z)
@@ -14810,17 +14894,27 @@
     function fireCannon(nowSec) {
       const w = state.weapons[2];
       if (state.mode !== 'PLAYING') return;
-      if (w.isCooling) return;
+      if (w.isReloading) return;
+      const minInterval = w.fireInterval || (60 / w.rpm);
+      if (nowSec - w.lastShotTime < minInterval) return;
+
       if (w.curAmmo <= 0) {
-        spawnFloatingCallout(state.aimWorldPoint, '75mm CANNON OUT OF SHELLS! [R] RELOAD', 'text-orange-300 border-orange-500 bg-orange-950/90');
-        sfx.playReadyClank();
+        if (w.reserveAmmo > 0) {
+          startWeaponReload(2, true);
+        } else {
+          spawnFloatingCallout(state.aimWorldPoint, '75mm CANNON OUT OF SHELLS! NO RESERVE!', 'text-orange-300 border-orange-500 bg-orange-950/90');
+          sfx.playReadyClank();
+        }
         return;
       }
 
+      w.lastShotTime = nowSec;
       w.curAmmo--;
-      w.isCooling = true;
-      w.cooldownTimer = w.cooldownDuration;
       state.shotsFired++;
+
+      if (w.curAmmo <= 0 && w.reserveAmmo > 0) {
+        startWeaponReload(2, false);
+      }
 
       sfx.playCannonShot();
       muzzleFlashMesh.visible = true;
@@ -14894,6 +14988,8 @@
             const healAmount = drop.healthBonus || 10;
             state.bunkerHealth = Math.min(100, (state.bunkerHealth !== undefined ? state.bunkerHealth : 100) + healAmount);
             state.damageReceived = Math.max(0, 100 - state.bunkerHealth);
+            if (state.weapons[2]) state.weapons[2].reserveAmmo = Math.min(state.weapons[2].maxAmmo, state.weapons[2].reserveAmmo + 4);
+            if (state.weapons[3]) state.weapons[3].reserveAmmo = Math.min(state.weapons[3].maxAmmo, state.weapons[3].reserveAmmo + 2);
             if (sfx.playHealthRestore) sfx.playHealthRestore();
             else sfx.playTimeBoost();
             flashScreen('rgba(34, 197, 94, 0.28)');
@@ -14902,7 +14998,7 @@
             spawnBurstParticles(hitPoint, 0xffffff, 16, 10);
             spawnFloatingCallout(
               hitPoint,
-              `❤️ REPAIR CRATE! +${healAmount}% HEALTH (${state.bunkerHealth}% HP)`,
+              `❤️ REPAIR & AMMO CRATE! +${healAmount}% HP • +4 SHELLS • +2 ROCKETS`,
               'text-emerald-200 border-emerald-400 bg-emerald-950/95 font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]'
             );
           }
@@ -14938,17 +15034,27 @@
     function fireRocket(nowSec) {
       const w = state.weapons[3];
       if (state.mode !== 'PLAYING') return;
-      if (w.isCooling) return;
+      if (w.isReloading) return;
+      const minInterval = w.fireInterval || (60 / w.rpm);
+      if (nowSec - w.lastShotTime < minInterval) return;
+
       if (w.curAmmo <= 0) {
-        spawnFloatingCallout(state.aimWorldPoint, 'OUT OF ROCKETS! [R] RELOAD', 'text-rose-300 border-rose-500 bg-rose-950/90');
-        sfx.playReadyClank();
+        if (w.reserveAmmo > 0) {
+          startWeaponReload(3, true);
+        } else {
+          spawnFloatingCallout(state.aimWorldPoint, 'OUT OF ROCKETS! NO RESERVE!', 'text-rose-300 border-rose-500 bg-rose-950/90');
+          sfx.playReadyClank();
+        }
         return;
       }
 
+      w.lastShotTime = nowSec;
       w.curAmmo--;
-      w.isCooling = true;
-      w.cooldownTimer = w.cooldownDuration;
       state.shotsFired++;
+
+      if (w.curAmmo <= 0 && w.reserveAmmo > 0) {
+        startWeaponReload(3, false);
+      }
 
       sfx.playRocketLaunch();
       gunBarrelGroup.position.z = 0.12; // Clean recoil kick
@@ -15011,26 +15117,61 @@
       }
     }
 
-    function startGunCooldown() {
-      if (state.weapon.isCooling) return;
-      state.weapon.isCooling = true;
-      state.weapon.cooldownTimer = state.weapon.cooldownDuration;
-      sfx.playOverheatSteam();
+    function startWeaponReload(slot, showCallout = true) {
+      const targetSlot = slot || state.selectedWeapon || 1;
+      const w = state.weapons[targetSlot];
+      if (!w) return false;
+      if (w.isReloading) return false;
+      if (w.curAmmo >= w.clipSize) {
+        if (showCallout && state.selectedWeapon === w.slot) {
+          spawnFloatingCallout(state.aimWorldPoint, 'MAGAZINE ALREADY FULL', 'text-amber-300 border-amber-500 bg-stone-950/90 font-bold');
+        }
+        return false;
+      }
+      if (w.slot !== 1 && w.reserveAmmo <= 0) {
+        if (showCallout && state.selectedWeapon === w.slot) {
+          const typeName = w.slot === 2 ? '75mm SHELLS' : 'AT ROCKETS';
+          spawnFloatingCallout(state.aimWorldPoint, `NO ${typeName} IN RESERVE!`, 'text-red-400 border-red-500 bg-stone-950/90 font-bold');
+        }
+        return false;
+      }
+
+      w.isReloading = true;
+      w.isCooling = true;
+      w.reloadTimer = w.reloadDuration;
+      w.cooldownTimer = w.reloadDuration;
+
+      if (w.slot === 1) {
+        sfx.playOverheatSteam();
+        if (showCallout) spawnFloatingCallout(state.aimWorldPoint, 'RELOADING MG-42 BELT...', 'text-amber-300 border-amber-500 bg-stone-950/90 font-bold');
+      } else if (w.slot === 2) {
+        sfx.playReadyClank();
+        if (showCallout) spawnFloatingCallout(state.aimWorldPoint, 'RELOADING 75mm BREECH...', 'text-orange-300 border-orange-500 bg-stone-950/90 font-bold');
+      } else if (w.slot === 3) {
+        sfx.playReadyClank();
+        if (showCallout) spawnFloatingCallout(state.aimWorldPoint, 'LOADING ROCKET TUBE...', 'text-rose-300 border-rose-500 bg-stone-950/90 font-bold');
+      }
       updateHUD();
+      return true;
+    }
+
+    function startGunCooldown() {
+      return startWeaponReload(1, false);
     }
 
     function fireMachineGun(nowSec) {
-      if (state.mode !== 'PLAYING' || state.weapon.isCooling) return;
-      const minInterval = 60 / state.weapon.rpm;
-      if (nowSec - state.weapon.lastShotTime < minInterval) return;
+      const w = state.weapons[1];
+      if (state.mode !== 'PLAYING' || w.isReloading) return;
+      const minInterval = w.fireInterval || (60 / w.rpm);
+      if (nowSec - w.lastShotTime < minInterval) return;
 
-      if (state.weapon.curAmmo <= 0) {
-        startGunCooldown();
+      if (w.curAmmo <= 0) {
+        startWeaponReload(1, true);
         return;
       }
 
-      state.weapon.lastShotTime = nowSec;
-      state.weapon.curAmmo--;
+      w.lastShotTime = nowSec;
+      w.curAmmo--;
       state.shotsFired++;
 
       // Sound & Muzzle Flash
@@ -15517,10 +15658,15 @@
       }
 
       // 3. Instant Weapon Drum Vent & Full Ammo Reload
-      if (state.weapon) {
-        state.weapon.curAmmo = state.weapon.maxAmmo;
-        state.weapon.isCooling = false;
-        state.weapon.cooldownTimer = 0;
+      for (let s = 1; s <= 3; s++) {
+        const w = state.weapons[s];
+        if (w) {
+          w.curAmmo = w.clipSize;
+          w.isReloading = false;
+          w.isCooling = false;
+          w.reloadTimer = 0;
+          w.cooldownTimer = 0;
+        }
       }
       state.barrelHeat = 0; // Clear barrel overheating instantly
 
@@ -15595,9 +15741,14 @@
 
       recomputeWeaponStats();
       for (let s = 1; s <= 3; s++) {
-        state.weapons[s].curAmmo = state.weapons[s].maxAmmo;
-        state.weapons[s].isCooling = false;
-        state.weapons[s].cooldownTimer = 0;
+        const w = state.weapons[s];
+        w.curAmmo = w.clipSize;
+        w.reserveAmmo = (s === 1) ? Infinity : Math.max(0, w.maxAmmo - w.clipSize);
+        w.isReloading = false;
+        w.isCooling = false;
+        w.reloadTimer = 0;
+        w.cooldownTimer = 0;
+        w.lastShotTime = -999;
       }
       if (state.selectedWeapon > 3) state.selectedWeapon = 1;
       state.weapon = state.weapons[state.selectedWeapon || 1];
@@ -15774,6 +15925,7 @@
         document.getElementById('defeat-modal').classList.add('hidden');
         document.getElementById('defeat-modal').classList.remove('flex');
 
+        saveCampaignProgress();
         sfx.playOneShotBonus();
       } else {
         state.mode = 'DEFEAT_SCREEN';
@@ -15949,6 +16101,7 @@
             state.score -= cost;
             state.upgrades[id]++;
             try { sfx.playReadyClank(); } catch(e) {}
+            saveCampaignProgress();
             renderArmory();
       polishMobileUI();
           }
@@ -16057,9 +16210,9 @@
         }
 
         if (ammoEl) {
-          if (s === 1) ammoEl.textContent = `${w.curAmmo} RDS`;
-          else if (s === 2) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} SH`;
-          else if (s === 3) ammoEl.textContent = w.isCooling ? `${w.cooldownTimer.toFixed(1)}s` : `${w.curAmmo} RK`;
+          if (s === 1) ammoEl.textContent = (w.isReloading || w.isCooling) ? `${w.reloadTimer.toFixed(1)}s` : `${w.curAmmo} RDS`;
+          else if (s === 2) ammoEl.textContent = (w.isReloading || w.isCooling) ? `${w.reloadTimer.toFixed(1)}s` : `${w.curAmmo}/${w.reserveAmmo} SH`;
+          else if (s === 3) ammoEl.textContent = (w.isReloading || w.isCooling) ? `${w.reloadTimer.toFixed(1)}s` : `${w.curAmmo}/${w.reserveAmmo} RK`;
         }
 
         if (barEl) {
@@ -16075,7 +16228,9 @@
       document.getElementById('hud-mg-dmg').textContent = state.weapon.damage;
       document.getElementById('hud-mg-ap').textContent = `${Math.round(state.weapon.armorPen * 100)}%`;
       document.getElementById('hud-ammo-cur').textContent = state.weapon.curAmmo;
-      document.getElementById('hud-ammo-max').textContent = state.weapon.maxAmmo;
+      document.getElementById('hud-ammo-max').textContent = (state.weapon.slot === 1)
+        ? state.weapon.clipSize
+        : `${state.weapon.clipSize} (${state.weapon.reserveAmmo})`;
 
       const ammoBar = document.getElementById('hud-ammo-bar');
       const coolLabel = document.getElementById('hud-cooldown-timer');
@@ -16470,17 +16625,7 @@
           e.stopPropagation();
         }
         sfx.init();
-        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
-          startGunCooldown();
-        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
-          state.weapons[2].isCooling = true;
-          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
-          sfx.playReadyClank();
-        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
-          state.weapons[3].isCooling = true;
-          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
-          sfx.playReadyClank();
-        }
+        startWeaponReload(state.selectedWeapon, true);
       };
       btnMobileReload.addEventListener('pointerdown', handleReloadTap);
       btnMobileReload.addEventListener('click', handleReloadTap);
@@ -16614,19 +16759,7 @@
         e.preventDefault();
         useTimeBooster();
       } else if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
-        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
-          startGunCooldown();
-        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
-          state.weapons[2].isCooling = true;
-          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
-          sfx.playReadyClank();
-          spawnFloatingCallout(state.aimWorldPoint, 'CHAMBERING 75mm SHELL...', 'text-orange-300 border-orange-500 bg-stone-950/90 font-bold');
-        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
-          state.weapons[3].isCooling = true;
-          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
-          sfx.playReadyClank();
-          spawnFloatingCallout(state.aimWorldPoint, 'LOADING ROCKET TUBE...', 'text-rose-300 border-rose-500 bg-stone-950/90 font-bold');
-        }
+        startWeaponReload(state.selectedWeapon, true);
       }
     });
 
@@ -16660,17 +16793,7 @@
     const manualReloadBtn = document.getElementById('btn-manual-reload');
     if (manualReloadBtn) {
       manualReloadBtn.addEventListener('click', () => {
-        if (state.selectedWeapon === 1 && !state.weapon.isCooling && state.weapon.curAmmo < state.weapon.maxAmmo) {
-          startGunCooldown();
-        } else if (state.selectedWeapon === 2 && !state.weapons[2].isCooling && state.weapons[2].curAmmo < state.weapons[2].maxAmmo) {
-          state.weapons[2].isCooling = true;
-          state.weapons[2].cooldownTimer = state.weapons[2].cooldownDuration;
-          sfx.playReadyClank();
-        } else if (state.selectedWeapon === 3 && !state.weapons[3].isCooling && state.weapons[3].curAmmo < state.weapons[3].maxAmmo) {
-          state.weapons[3].isCooling = true;
-          state.weapons[3].cooldownTimer = state.weapons[3].cooldownDuration;
-          sfx.playReadyClank();
-        }
+        startWeaponReload(state.selectedWeapon, true);
       });
     }
 
@@ -16682,6 +16805,7 @@
       document.getElementById('victory-modal').classList.remove('flex');
       if (state.waveIndex < WAVE_CONFIGS.length - 1) {
         state.waveIndex++;
+        saveCampaignProgress();
       }
       state.mode = 'ARMORY';
       document.getElementById('armory-modal').classList.remove('hidden');
@@ -16725,13 +16849,19 @@
     }
 
     addTapListener(document.getElementById('btn-reset-campaign'), () => {
-      state.isWaveInProgress = false;
-      state.waveIndex = 0;
-      state.score = 400;
-      state.totalCampaignScore = 400;
-      state.upgrades = { damage: 0, ammo: 0, cooldown: 0, firerate: 0 };
-      document.getElementById('wave-report-card').classList.add('hidden');
-      renderArmory();
+      sfx.init();
+      sfx.playReadyClank();
+      if (confirm('Are you sure you want to reset your campaign progress? All waves and weapon upgrades will be reset.')) {
+        clearCampaignProgress();
+        state.isWaveInProgress = false;
+        state.waveIndex = 0;
+        state.score = 500;
+        state.totalCampaignScore = 500;
+        state.upgrades = { damage: 0, ammo: 0, cooldown: 0, firerate: 0 };
+        recomputeWeaponStats();
+        document.getElementById('wave-report-card').classList.add('hidden');
+        renderArmory();
+      }
     });
 
     document.getElementById('btn-use-grenade').addEventListener('click', (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } throwGrenade(); });
@@ -16849,11 +16979,34 @@
     }
 
     document.addEventListener('backbutton', handleAndroidBackButton, false);
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-      window.Capacitor.Plugins.App.addListener('backButton', () => {
-        handleAndroidBackButton();
-      });
+
+    // Robust Capacitor App Plugin Integration
+    function setupCapacitorAppPlugin() {
+      const App = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) || (window.Capacitor && window.Capacitor.App);
+      if (App && typeof App.addListener === 'function') {
+        try {
+          App.addListener('backButton', () => {
+            handleAndroidBackButton();
+          });
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (!isActive) {
+              if (state.mode === 'PLAYING') pauseGame();
+              if (sfx && sfx.ctx && sfx.ctx.state === 'running') {
+                try { sfx.ctx.suspend(); } catch (e) {}
+              }
+            } else {
+              if (sfx && sfx.ctx && sfx.ctx.state === 'suspended') {
+                try { sfx.ctx.resume(); } catch (e) {}
+              }
+            }
+          });
+        } catch (e) {
+          console.warn('[Capacitor App setup]', e);
+        }
+      }
     }
+    setupCapacitorAppPlugin();
+    window.addEventListener('load', setupCapacitorAppPlugin);
 
     // Background State & Audio Context lifecycle (preserves Web Audio & pauses during app switch)
     document.addEventListener('visibilitychange', () => {
@@ -16870,21 +17023,6 @@
         }
       }
     });
-
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-      window.Capacitor.Plugins.App.addListener('appStateChange', ({ isActive }) => {
-        if (!isActive) {
-          if (state.mode === 'PLAYING') pauseGame();
-          if (sfx && sfx.ctx && sfx.ctx.state === 'running') {
-            try { sfx.ctx.suspend(); } catch (e) {}
-          }
-        } else {
-          if (sfx && sfx.ctx && sfx.ctx.state === 'suspended') {
-            try { sfx.ctx.resume(); } catch (e) {}
-          }
-        }
-      });
-    }
 
     function polishMobileUI() {
       const isMobile = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -16917,8 +17055,9 @@
       }
       // 2. Capacitor Android Native Exit
       if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-        if (window.Capacitor.Plugins && window.Capacitor.Plugins.App && typeof window.Capacitor.Plugins.App.exitApp === 'function') {
-          window.Capacitor.Plugins.App.exitApp();
+        const App = (window.Capacitor.Plugins && window.Capacitor.Plugins.App) || window.Capacitor.App;
+        if (App && typeof App.exitApp === 'function') {
+          App.exitApp();
           return;
         }
       }
@@ -17238,23 +17377,30 @@
           return;
         }
 
-        // Handle All 3 Weapon Cooldown / Recharge Timers Concurrently
+        // Handle All 3 Weapon Reload / Recharge Timers Concurrently
         for (let s = 1; s <= 3; s++) {
           const w = state.weapons[s];
           if (!w) continue;
-          if (w.isCooling || w.cooldownTimer > 0) {
-            w.cooldownTimer -= dt;
-            if (w.cooldownTimer <= 0) {
+          if (w.isReloading || w.reloadTimer > 0) {
+            w.reloadTimer -= dt;
+            w.cooldownTimer = Math.max(0, w.reloadTimer);
+            if (w.reloadTimer <= 0) {
+              w.reloadTimer = 0;
               w.cooldownTimer = 0;
+              w.isReloading = false;
               w.isCooling = false;
+
               if (s === 1) {
-                w.curAmmo = w.maxAmmo;
+                w.curAmmo = w.clipSize;
                 if (state.selectedWeapon === 1) sfx.playReadyClank();
-              } else if (s === 2) {
-                if (state.selectedWeapon === 2) sfx.playReadyClank();
-              } else if (s === 3) {
-                if (state.selectedWeapon === 3) sfx.playReadyClank();
+              } else {
+                const needed = w.clipSize - w.curAmmo;
+                const available = Math.min(needed, w.reserveAmmo);
+                w.curAmmo += available;
+                w.reserveAmmo -= available;
+                if (state.selectedWeapon === s) sfx.playReadyClank();
               }
+              updateHUD();
             }
           }
         }
@@ -17800,8 +17946,10 @@
         }
       }
 
-      renderer.render(scene, camera);
-      if (typeof window.updateDebugMonitor === "function") window.updateDebugMonitor(renderer);
+      if (!document.hidden) {
+        renderer.render(scene, camera);
+        if (typeof window.updateDebugMonitor === "function") window.updateDebugMonitor(renderer);
+      }
     }
 
     // Global user-gesture audio unlock so ocean wave ambient starts on first interaction
@@ -17811,6 +17959,13 @@
     // Robust initialization: guarantees 3D world, Armory, and animate loop run on load or if already loaded
     // Immediate initial Armory paint (zero-delay render on first load)
     try {
+      const savedProgress = loadCampaignProgress();
+      if (savedProgress) {
+        state.waveIndex = savedProgress.waveIndex;
+        state.score = savedProgress.score;
+        state.upgrades = savedProgress.upgrades;
+        recomputeWeaponStats();
+      }
       renderArmory();
       polishMobileUI();
     } catch(e) { console.warn('[Armory Immediate Paint]', e); }
@@ -17861,8 +18016,10 @@
 
     if ('serviceWorker' in navigator && (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform())) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then((reg) => {
-          console.log('[PWA] Service Worker registered:', reg.scope);
+        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        const swUrl = basePath + 'sw.js';
+        navigator.serviceWorker.register(swUrl, { scope: basePath }).then((reg) => {
+          console.log('[PWA] Scope-aware Service Worker registered:', reg.scope);
         }).catch((err) => {
           console.warn('[PWA] Service Worker registration failed:', err);
         });

@@ -13,7 +13,8 @@
     "dist:portable": "electron-builder --win portable",
     "dist:installer": "electron-builder --win nsis",
     "build:android": "node scripts/prepare-android.js && cap sync android",
-    "open:android": "cap open android"
+    "open:android": "cap open android",
+    "test": "node --test tests/*.test.js"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.3",
@@ -70,5 +71,8 @@
       "models/**/*",
       "icons/**/*"
     ]
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.1.2"
   }
 }

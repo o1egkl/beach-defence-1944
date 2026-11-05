@@ -2,9 +2,9 @@
   "name": "Pacific Defence",
   "short_name": "Pacific Defence",
   "description": "3D First-Person Coastal Bunker Defense Arcade Game",
-  "start_url": "/?source=pwa",
-  "id": "/?source=pwa",
-  "scope": "/",
+  "start_url": "./?source=pwa",
+  "id": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
   "display_override": [
     "window-controls-overlay",
@@ -24,31 +24,31 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-192.png",
+      "src": "icons/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-maskable-512.png",
+      "src": "icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
@@ -59,10 +59,10 @@
       "name": "Defend the Bunker",
       "short_name": "Battle",
       "description": "Jump straight into the bunker firing line",
-      "url": "/?source=pwa_shortcut",
+      "url": "./?source=pwa_shortcut",
       "icons": [
         {
-          "src": "/icons/icon-192.png",
+          "src": "icons/icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -70,7 +70,7 @@
   ],
   "screenshots": [
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
