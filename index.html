@@ -1080,7 +1080,14 @@
               <div class="mt-3 pt-3 border-t border-stone-800 space-y-2">
                 <div class="text-[11px] font-mono-tac text-stone-400 uppercase">Expected Landing Craft & Units:</div>
                 <div id="intel-unit-list" class="space-y-1.5 text-xs">
-                  <!-- Populated dynamically -->
+                  <div class="flex items-center justify-between bg-stone-950/80 border border-stone-800 rounded-lg px-2.5 py-1.5">
+                    <span class="font-semibold text-emerald-400">Type 95 Ha-Go Patrol Boats</span>
+                    <span class="text-[11px] font-mono-tac text-stone-400">10 Crafts • 20 Troops</span>
+                  </div>
+                  <div class="flex items-center justify-between bg-stone-950/80 border border-stone-800 rounded-lg px-2.5 py-1.5">
+                    <span class="font-semibold text-amber-300">Imperial Marine Riflemen</span>
+                    <span class="text-[11px] font-mono-tac text-stone-400">Unarmored Infantry</span>
+                  </div>
                 </div>
               </div>
 
@@ -1122,7 +1129,74 @@
 
               <!-- 4 Upgrade Cards -->
               <div id="upgrade-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Populated dynamically by renderArmory() -->
+                <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-3.5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-sm text-stone-100">💥 Caliber Damage</span>
+                      <span class="text-[11px] font-mono-tac px-2 py-0.5 rounded bg-stone-800 text-amber-300 border border-stone-700">Lv 0 / 2</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 mt-1.5 leading-snug">Heavy armor-piercing core rounds (+12 Dmg, +4% AP).</p>
+                  </div>
+                  <div class="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between">
+                    <div class="w-20 h-2 bg-stone-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-500" style="width: 0%"></div>
+                    </div>
+                    <button type="button" data-upg-id="damage" class="btn-buy-upgrade px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold transition bg-amber-500 hover:bg-amber-400 text-stone-950 shadow">
+                      UPGRADE (220 PTS)
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-3.5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-sm text-stone-100">📦 Ammo Drum</span>
+                      <span class="text-[11px] font-mono-tac px-2 py-0.5 rounded bg-stone-800 text-amber-300 border border-stone-700">Lv 0 / 2</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 mt-1.5 leading-snug">Extended dual-drum feed belt (+12 Max Shots per belt).</p>
+                  </div>
+                  <div class="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between">
+                    <div class="w-20 h-2 bg-stone-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-500" style="width: 0%"></div>
+                    </div>
+                    <button type="button" data-upg-id="ammo" class="btn-buy-upgrade px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold transition bg-amber-500 hover:bg-amber-400 text-stone-950 shadow">
+                      UPGRADE (180 PTS)
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-3.5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-sm text-stone-100">❄️ Barrel Cooling</span>
+                      <span class="text-[11px] font-mono-tac px-2 py-0.5 rounded bg-stone-800 text-amber-300 border border-stone-700">Lv 0 / 2</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 mt-1.5 leading-snug">Fluted jacket cooling vanes (-0.16s Overheat Cooldown).</p>
+                  </div>
+                  <div class="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between">
+                    <div class="w-20 h-2 bg-stone-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-500" style="width: 0%"></div>
+                    </div>
+                    <button type="button" data-upg-id="cooldown" class="btn-buy-upgrade px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold transition bg-amber-500 hover:bg-amber-400 text-stone-950 shadow">
+                      UPGRADE (160 PTS)
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-stone-950/90 border border-stone-800 rounded-xl p-3.5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-sm text-stone-100">⚡ Rapid Trigger</span>
+                      <span class="text-[11px] font-mono-tac px-2 py-0.5 rounded bg-stone-800 text-amber-300 border border-stone-700">Lv 0 / 2</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 mt-1.5 leading-snug">Lightened bolt and tuned gas port (+45 RPM firing speed).</p>
+                  </div>
+                  <div class="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between">
+                    <div class="w-20 h-2 bg-stone-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-500" style="width: 0%"></div>
+                    </div>
+                    <button type="button" data-upg-id="firerate" class="btn-buy-upgrade px-3 py-1.5 rounded-lg text-xs font-mono-tac font-bold transition bg-amber-500 hover:bg-amber-400 text-stone-950 shadow">
+                      UPGRADE (190 PTS)
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1768,8 +1842,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.09)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
 
         // Punchy low-end mechanical thump
@@ -1806,8 +1878,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.45)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.45;
         const noise = this.ctx.createBufferSource();
@@ -1829,8 +1899,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.2)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [520, 780].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1851,8 +1919,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.15)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [880, 1320].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -1873,8 +1939,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.56)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
 
         // Sub-bass concussive artillery punch
@@ -1912,8 +1976,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.66)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.65;
         const noise = this.ctx.createBufferSource();
@@ -1956,8 +2018,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.76)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.75;
         const noise = this.ctx.createBufferSource();
@@ -1980,8 +2040,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.3)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [587.33, 880, 1174.66].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -2002,8 +2060,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.3)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [440, 554.37, 659.25, 880].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -2024,8 +2080,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.6)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         // Deep sub-bass adrenaline whoosh sweep
         try {
@@ -2064,8 +2118,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.4)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
@@ -2086,8 +2138,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(3, 0.5)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2107,8 +2157,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.12)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2128,8 +2176,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.08)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2163,8 +2209,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.22)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         for (let b = 0; b < 3; b++) {
           const t = now + b * 0.07;
@@ -2187,8 +2231,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 0.08)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2208,8 +2250,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(2, 1.1)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 1.1;
         const osc = this.ctx.createOscillator();
@@ -2238,8 +2278,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(1, 0.05)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -2259,8 +2297,6 @@
         this.init();
         if (!this.ctx) return;
         if (!this.requestVoice(1, 0.55)) return;
-        if (!this.ctx) return;
-        if (!this.requestVoice($PRIORITY, $DUR)) return;
         const now = this.ctx.currentTime;
         const dur = 0.55;
         const noise = this.ctx.createBufferSource();
@@ -10176,7 +10212,19 @@
     function addTapListener(el, callback) {
       if (!el) return;
       let startX = 0, startY = 0, isTouch = false, lastTrigger = 0;
-      el.addEventListener('touchstart', (e) => {
+
+      const fire = (e) => {
+        const now = Date.now();
+        if (now - lastTrigger < 250) return;
+        lastTrigger = now;
+        try {
+          callback(e);
+        } catch(err) {
+          console.error("[TapHandler Error]", err);
+        }
+      };
+
+      el.addEventListener("touchstart", (e) => {
         if (e.touches && e.touches.length === 1) {
           isTouch = true;
           startX = e.touches[0].clientX;
@@ -10184,27 +10232,25 @@
         }
       }, { passive: true });
 
-      el.addEventListener('touchend', (e) => {
+      el.addEventListener("touchcancel", () => {
+        isTouch = false;
+      }, { passive: true });
+
+      el.addEventListener("touchend", (e) => {
         if (!isTouch) return;
         isTouch = false;
         if (e.changedTouches && e.changedTouches.length === 1) {
           const dx = Math.abs(e.changedTouches[0].clientX - startX);
           const dy = Math.abs(e.changedTouches[0].clientY - startY);
-          // If moved less than 14px, it's an intentional tap!
-          if (dx < 14 && dy < 14) {
-            const now = Date.now();
-            if (now - lastTrigger < 300) return;
-            lastTrigger = now;
-            try { callback(e); } catch(err) { console.error('[TapHandler Error]', err); }
+          // Android standard touch slop: up to 28px threshold on modern high-DPI screens
+          if (dx < 28 && dy < 28) {
+            fire(e);
           }
         }
       }, { passive: true });
 
-      el.addEventListener('click', (e) => {
-        const now = Date.now();
-        if (now - lastTrigger < 300) return;
-        lastTrigger = now;
-        try { callback(e); } catch(err) { console.error('[ClickHandler Error]', err); }
+      el.addEventListener("click", (e) => {
+        fire(e);
       });
     }
 
@@ -15812,7 +15858,7 @@
           if (curLv < maxLvNow && state.score >= cost) {
             state.score -= cost;
             state.upgrades[id]++;
-            sfx.playReadyClank();
+            try { sfx.playReadyClank(); } catch(e) {}
             renderArmory();
       polishMobileUI();
           }
