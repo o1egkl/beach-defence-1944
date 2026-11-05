@@ -1211,8 +1211,7 @@
   </div>
 
   <script>
-
-    // === [START] PERFORMANCE & MEMORY OPTIMIZATION HELPERS ===
+    // === [START] UNIFIED PERFORMANCE, MOBILE & DEBUG SUITE ===
     const __perfCache = {
       noiseBuffers: new WeakMap(),
       domCache: new Map(),
@@ -1220,7 +1219,6 @@
       sharedMaterials: new WeakSet()
     };
 
-    // Mark shared geometries and materials so disposeObject3D preserves them
     function markAsShared(resource) {
       if (!resource) return resource;
       if (resource.isBufferGeometry) __perfCache.sharedGeometries.add(resource);
@@ -1228,7 +1226,6 @@
       return resource;
     }
 
-    // O(1) swap-and-pop removal instead of O(N) splice(i, 1)
     function removeAtSwap(arr, index) {
       const lastIndex = arr.length - 1;
       if (index < 0 || index > lastIndex) return;
@@ -1238,7 +1235,6 @@
       arr.pop();
     }
 
-    // Recursive GPU memory disposal for Three.js objects
     function disposeObject3D(obj) {
       if (!obj) return;
       obj.traverse((child) => {
@@ -1259,14 +1255,12 @@
       });
     }
 
-    // Scene removal + GPU memory cleanup in a single call
     function removeAndDispose(sceneRef, obj) {
       if (!obj) return;
       if (sceneRef) sceneRef.remove(obj);
       disposeObject3D(obj);
     }
 
-    // Cached white noise buffer for Web Audio API (eliminates main-thread CPU stutters)
     function getCachedNoiseBuffer(audioCtx, durationSec = 2.0) {
       if (!audioCtx) return null;
       let buf = __perfCache.noiseBuffers.get(audioCtx);
@@ -1282,7 +1276,6 @@
       return buf;
     }
 
-    // Update DOM text only when value changes (prevents Layout Thrashing)
     function updateTextIfChanged(idOrEl, newValue) {
       const el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
       if (!el) return;
@@ -1292,7 +1285,285 @@
         el.textContent = strVal;
       }
     }
-    // === [END] PERFORMANCE & MEMORY OPTIMIZATION HELPERS ===
+
+    // --- ANDROID & MOBILE OPTIMIZER (Touch, Lifecycle, Dynamic Resolution) ---
+    const MobileOptimizer = (function () {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                       (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+
+      const style = document.createElement('style');
+      style.textContent = `
+        html, body, canvas {
+          touch-action: none !important;
+          user-select: none !important;
+          -webkit-user-select: none !important;
+          -webkit-touch-callout: none !important;
+          overscroll-behavior: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      const baseMaxDPR = isMobile ? 1.5 : 2.0;
+      const minDPR = isMobile ? 0.75 : 1.0;
+      let currentDPR = Math.min(window.devicePixelRatio || 1, baseMaxDPR);
+      let frameCount = 0;
+      let lastCheckTime = performance.now();
+
+      let isAppHidden = false;
+      let registeredRenderer = null;
+      let registeredAudioCtx = null;
+      let onResumeCallback = null;
+
+      function attachRenderer(renderer) {
+        if (!renderer || registeredRenderer === renderer) return;
+        registeredRenderer = renderer;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MobileOptimizer.isMobile ? 1.5 : 2.0));
+      }
+
+      function attachLifecycle({ audioCtxGetter, onResume } = {}) {
+        if (audioCtxGetter) registeredAudioCtx = audioCtxGetter;
+        if (onResume) onResumeCallback = onResume;
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        const audioCtx = typeof registeredAudioCtx === 'function'
+          ? registeredAudioCtx()
+          : registeredAudioCtx;
+
+        if (document.hidden) {
+          isAppHidden = true;
+          if (audioCtx && audioCtx.state === 'running') {
+            audioCtx.suspend().catch(() => {});
+          }
+        } else {
+          isAppHidden = false;
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+          }
+          lastCheckTime = performance.now();
+          frameCount = 0;
+          if (typeof onResumeCallback === 'function') {
+            onResumeCallback(performance.now());
+          }
+        }
+      });
+
+      function updateDynamicResolution(rendererRef) {
+        if (rendererRef && !registeredRenderer) attachRenderer(rendererRef);
+        if (!registeredRenderer || isAppHidden) return;
+
+        frameCount++;
+        const now = performance.now();
+        const elapsed = now - lastCheckTime;
+
+        if (elapsed >= 1500) {
+          const currentFps = (frameCount * 1000) / elapsed;
+          frameCount = 0;
+          lastCheckTime = now;
+
+          const maxAllowed = Math.min(window.devicePixelRatio || 1, baseMaxDPR);
+
+          if (currentFps < 45 && currentDPR > minDPR) {
+            currentDPR = Math.max(minDPR, +(currentDPR - 0.25).toFixed(2));
+            registeredRenderer.setPixelRatio(currentDPR);
+          } else if (currentFps > 57 && currentDPR < maxAllowed) {
+            currentDPR = Math.min(maxAllowed, +(currentDPR + 0.15).toFixed(2));
+            registeredRenderer.setPixelRatio(currentDPR);
+          }
+        }
+      }
+
+      function bindMultitouchLook(targetElement, onRotateCallback, ignoreSelector = '.ui-btn, button') {
+        let lookTouchId = null;
+        let lastX = 0;
+        let lastY = 0;
+
+        targetElement.addEventListener('touchstart', (e) => {
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (t.target && t.target.closest && t.target.closest(ignoreSelector)) continue;
+            if (lookTouchId === null) {
+              lookTouchId = t.identifier;
+              lastX = t.clientX;
+              lastY = t.clientY;
+            }
+          }
+        }, { passive: false });
+
+        targetElement.addEventListener('touchmove', (e) => {
+          if (lookTouchId === null) return;
+          e.preventDefault();
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (t.identifier === lookTouchId) {
+              const dx = t.clientX - lastX;
+              const dy = t.clientY - lastY;
+              lastX = t.clientX;
+              lastY = t.clientY;
+              if (typeof onRotateCallback === 'function') onRotateCallback(dx, dy);
+              break;
+            }
+          }
+        }, { passive: false });
+
+        function releaseTouch(e) {
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === lookTouchId) {
+              lookTouchId = null;
+              break;
+            }
+          }
+        }
+
+        targetElement.addEventListener('touchend', releaseTouch, { passive: true });
+        targetElement.addEventListener('touchcancel', releaseTouch, { passive: true });
+      }
+
+      return {
+        isMobile,
+        isHidden: () => isAppHidden,
+        getCurrentDPR: () => currentDPR,
+        attachRenderer,
+        attachLifecycle,
+        updateDynamicResolution,
+        bindMultitouchLook
+      };
+    })();
+
+    // --- DEBUG MONITOR WITH DPR & F3 TOGGLE ---
+    (function initDebugMonitor() {
+      const mountPanel = () => {
+        if (document.getElementById('game-debug-panel')) return;
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+          #game-debug-panel {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(15, 23, 42, 0.88);
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            transition: opacity 0.2s ease;
+          }
+          @media (max-width: 768px) {
+            #game-debug-panel {
+              bottom: auto;
+              top: 48px;
+              left: 12px;
+              font-size: 10px;
+              padding: 6px 10px;
+            }
+          }
+          #game-debug-panel.hidden { display: none !important; }
+          #game-debug-panel span { color: #f8fafc; font-weight: bold; }
+          #game-debug-panel .warn { color: #f43f5e; }
+          #game-debug-panel .scaled { color: #facc15; }
+        `;
+        document.head.appendChild(style);
+
+        const panel = document.createElement('div');
+        panel.id = 'game-debug-panel';
+        panel.innerHTML = `
+          <b>DEBUG MONITOR [F3]</b><br>
+          FPS: <span id="dbg-fps">60</span> | Frame: <span id="dbg-frametime">16.6</span>ms<br>
+          Scale (DPR): <span id="dbg-dpr">1.00</span>x (native: <span id="dbg-native-dpr">1.0</span>x)<br>
+          Draw Calls: <span id="dbg-calls">0</span><br>
+          Triangles: <span id="dbg-tris">0</span><br>
+          Geometries (VRAM): <span id="dbg-geo">0</span><br>
+          Textures (VRAM): <span id="dbg-tex">0</span>
+        `;
+        // Start hidden by default on mobile so it doesn't overlap the joystick
+        if (MobileOptimizer.isMobile) {
+          panel.classList.add('hidden');
+        }
+        document.body.appendChild(panel);
+
+        const elFps = document.getElementById('dbg-fps');
+        const elFrameTime = document.getElementById('dbg-frametime');
+        const elDpr = document.getElementById('dbg-dpr');
+        const elNativeDpr = document.getElementById('dbg-native-dpr');
+        const elCalls = document.getElementById('dbg-calls');
+        const elTris = document.getElementById('dbg-tris');
+        const elGeo = document.getElementById('dbg-geo');
+        const elTex = document.getElementById('dbg-tex');
+
+        const nativeDpr = +(window.devicePixelRatio || 1).toFixed(2);
+        elNativeDpr.textContent = nativeDpr;
+
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let isVisible = !MobileOptimizer.isMobile;
+
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'F3') {
+            e.preventDefault();
+            isVisible = !isVisible;
+            panel.classList.toggle('hidden', !isVisible);
+          }
+        });
+
+        // Touch toggle: double tap top HUD wave header to toggle on mobile
+        const waveTitleEl = document.getElementById('hud-wave-title');
+        if (waveTitleEl) {
+          waveTitleEl.addEventListener('click', () => {
+            isVisible = !isVisible;
+            panel.classList.toggle('hidden', !isVisible);
+          });
+        }
+
+        window.updateDebugMonitor = function(renderer) {
+          if (!renderer) return;
+          MobileOptimizer.updateDynamicResolution(renderer);
+          if (!isVisible) return;
+
+          const now = performance.now();
+          frameCount++;
+          const delta = now - lastTime;
+
+          if (delta >= 400) {
+            const fps = Math.round((frameCount * 1000) / delta);
+            const avgFrameMs = (delta / frameCount).toFixed(1);
+            frameCount = 0;
+            lastTime = now;
+
+            const renderInfo = renderer.info.render;
+            const memoryInfo = renderer.info.memory;
+            const activeDpr = MobileOptimizer.getCurrentDPR ? MobileOptimizer.getCurrentDPR() : renderer.getPixelRatio();
+
+            elFps.textContent = fps;
+            elFps.className = fps < 30 ? 'warn' : (fps < 48 ? 'scaled' : '');
+            elFrameTime.textContent = avgFrameMs;
+
+            elDpr.textContent = Number(activeDpr).toFixed(2);
+            elDpr.className = activeDpr < Math.min(nativeDpr, MobileOptimizer.isMobile ? 1.5 : 2.0) ? 'scaled' : '';
+
+            elCalls.textContent = renderInfo.calls;
+            elTris.textContent = renderInfo.triangles.toLocaleString();
+            elGeo.textContent = memoryInfo.geometries;
+            elTex.textContent = memoryInfo.textures;
+          }
+        };
+      };
+
+      if (document.body) {
+        mountPanel();
+      } else {
+        window.addEventListener('DOMContentLoaded', mountPanel);
+      }
+    })();
+    // === [END] UNIFIED PERFORMANCE, MOBILE & DEBUG SUITE ===
+
 
     // ============================================================================
     // PACIFIC DEFENCE — 3D FIRST-PERSON COASTAL DEFENSE GAME
@@ -10012,7 +10283,7 @@
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MobileOptimizer.isMobile ? 1.5 : 2.0));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
@@ -16435,6 +16706,7 @@
 
     function animate(nowMs) {
       requestAnimationFrame(animate);
+      if (MobileOptimizer.isHidden()) return;
       const dt = Math.min(0.1, (nowMs - lastFrameTime) / 1000);
       lastFrameTime = nowMs;
       const nowSec = nowMs / 1000;
@@ -17233,6 +17505,7 @@
       }
 
       renderer.render(scene, camera);
+      if (typeof window.updateDebugMonitor === "function") window.updateDebugMonitor(renderer);
     }
 
     // Global user-gesture audio unlock so ocean wave ambient starts on first interaction
@@ -17245,6 +17518,13 @@
       if (isGameInitialized) return;
       isGameInitialized = true;
       buildEnvironment();
+      MobileOptimizer.attachRenderer(renderer);
+      MobileOptimizer.attachLifecycle({
+        audioCtxGetter: () => sfx.ctx,
+        onResume: (now) => {
+          lastFrameTime = now;
+        }
+      });
       renderArmory();
       polishMobileUI();
       requestAnimationFrame(animate);
