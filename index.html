@@ -1213,6 +1213,89 @@
   </div>
 
   <script>
+
+    // === [START] PERFORMANCE & MEMORY OPTIMIZATION HELPERS ===
+    const __perfCache = {
+      noiseBuffers: new WeakMap(),
+      domCache: new Map(),
+      sharedGeometries: new WeakSet(),
+      sharedMaterials: new WeakSet()
+    };
+
+    // Mark shared geometries and materials so disposeObject3D preserves them
+    function markAsShared(resource) {
+      if (!resource) return resource;
+      if (resource.isBufferGeometry) __perfCache.sharedGeometries.add(resource);
+      if (resource.isMaterial) __perfCache.sharedMaterials.add(resource);
+      return resource;
+    }
+
+    // O(1) swap-and-pop removal instead of O(N) splice(i, 1)
+    function removeAtSwap(arr, index) {
+      const lastIndex = arr.length - 1;
+      if (index < 0 || index > lastIndex) return;
+      if (index !== lastIndex) {
+        arr[index] = arr[lastIndex];
+      }
+      arr.pop();
+    }
+
+    // Recursive GPU memory disposal for Three.js objects
+    function disposeObject3D(obj) {
+      if (!obj) return;
+      obj.traverse((child) => {
+        if (child.isMesh || child.isPoints || child.isLine) {
+          if (child.geometry && !__perfCache.sharedGeometries.has(child.geometry)) {
+            child.geometry.dispose();
+          }
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((m) => {
+                if (m && !__perfCache.sharedMaterials.has(m)) m.dispose();
+              });
+            } else if (!__perfCache.sharedMaterials.has(child.material)) {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    }
+
+    // Scene removal + GPU memory cleanup in a single call
+    function removeAndDispose(sceneRef, obj) {
+      if (!obj) return;
+      if (sceneRef) sceneRef.remove(obj);
+      disposeObject3D(obj);
+    }
+
+    // Cached white noise buffer for Web Audio API (eliminates main-thread CPU stutters)
+    function getCachedNoiseBuffer(audioCtx, durationSec = 2.0) {
+      if (!audioCtx) return null;
+      let buf = __perfCache.noiseBuffers.get(audioCtx);
+      if (!buf) {
+        const bufferSize = Math.floor(audioCtx.sampleRate * durationSec);
+        buf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = buf.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        __perfCache.noiseBuffers.set(audioCtx, buf);
+      }
+      return buf;
+    }
+
+    // Update DOM text only when value changes (prevents Layout Thrashing)
+    function updateTextIfChanged(idOrEl, newValue) {
+      const el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+      if (!el) return;
+      const strVal = String(newValue);
+      if (__perfCache.domCache.get(el) !== strVal) {
+        __perfCache.domCache.set(el, strVal);
+        el.textContent = strVal;
+      }
+    }
+    // === [END] PERFORMANCE & MEMORY OPTIMIZATION HELPERS ===
+
     // ============================================================================
     // PACIFIC DEFENCE — 3D FIRST-PERSON COASTAL DEFENSE GAME
     // ============================================================================
@@ -1380,15 +1463,9 @@
         osc.start(now);
         osc.stop(now + 0.095);
 
-        // High-frequency crack noise
-        const bufferSize = this.ctx.sampleRate * 0.06;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
-        }
+        // High-frequency crack noise (cached noise buffer)
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.value = 1100;
@@ -1407,14 +1484,8 @@
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const dur = 0.45;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'highpass';
         filter.frequency.value = 1800;
@@ -1486,14 +1557,8 @@
 
         // Heavy artillery muzzle blast roar
         const dur = 0.55;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.8);
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(380, now);
@@ -1513,14 +1578,8 @@
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const dur = 0.65;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.setValueAtTime(450, now);
@@ -1560,14 +1619,8 @@
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const dur = 0.75;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.6);
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(420, now);
@@ -1729,14 +1782,8 @@
         osc.stop(now + 0.065);
 
         // Supersonic snap crack noise
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.04);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'highpass';
         filter.frequency.value = 1600;
@@ -1839,14 +1886,8 @@
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const dur = 0.55;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.2);
-        }
         const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        noise.buffer = getCachedNoiseBuffer(this.ctx);
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.setValueAtTime(650, now);
@@ -12019,6 +12060,7 @@
       hpBg: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15, depthWrite: false }),
       hpFill: new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9, depthWrite: false })
     };
+    Object.values(unitMaterials).forEach(m => markAsShared(m));
 
     // Procedural Soldier System (High-Definition Textures & 60 FPS Fluid Running Kinematics)
     let soldierGLBTemplate = null;
@@ -12081,8 +12123,8 @@
       state.smokePlumes.push({ baseX: x, baseY: y, baseZ: z, particles: smokeParticles });
     }
 
-    const sharedCasingGeo = new THREE.CylinderGeometry(0.014, 0.016, 0.11, 8);
-    const sharedCasingMat = new THREE.MeshStandardMaterial({ color: 0xf5ba42, metalness: 0.95, roughness: 0.18 });
+    const sharedCasingGeo = markAsShared(new THREE.CylinderGeometry(0.014, 0.016, 0.11, 8));
+    const sharedCasingMat = markAsShared(new THREE.MeshStandardMaterial({ color: 0xf5ba42, metalness: 0.95, roughness: 0.18 }));
     const _vCasingOffset = new THREE.Vector3(0.22, -0.06, -0.45);
 
     function createSpentCasing(origin) {
@@ -13766,7 +13808,7 @@
       });
     }
 
-    const sparkGeo = new THREE.SphereGeometry(0.045, 6, 5);
+    const sparkGeo = markAsShared(new THREE.SphereGeometry(0.045, 6, 5));
     const sparkPool = [];
 
     function spawnBurstParticles(pos, colorHex, count = 12, speedScale = 8) {
@@ -14079,8 +14121,8 @@
             spawnBurstParticles(zep.group.position, 0x38bdf8, 38, 18);
             spawnBurstParticles(zep.group.position, 0xf97316, 25, 14);
             createSmokeColumn(zep.group.position.x, 1.2, zep.group.position.z);
-            scene.remove(zep.group);
-            state.zeppelins.splice(i, 1);
+            removeAndDispose(scene, zep.group);
+            removeAtSwap(state.zeppelins, i);
           }
           continue;
         }
@@ -14096,8 +14138,8 @@
           zep.group.rotation.z = Math.sin(nowSec * 0.4 + zep.phase) * 0.03;
 
           if (Math.abs(zep.group.position.x) > 260) {
-            scene.remove(zep.group);
-            state.zeppelins.splice(i, 1);
+            removeAndDispose(scene, zep.group);
+            removeAtSwap(state.zeppelins, i);
             continue;
           }
         }
@@ -14957,21 +14999,21 @@
     let waveElapsed = 0;
 
     function clearBattlefieldEntities() {
-      state.boats.forEach(b => scene.remove(b.group));
+      state.boats.forEach(b => { if (b.hpBar) removeAndDispose(scene, b.hpBar); removeAndDispose(scene, b.group); });
       state.enemies.forEach(e => {
-        if (e.group) { e.group.visible = false; scene.remove(e.group); }
-        if (e.hpBar) { e.hpBar.visible = false; scene.remove(e.hpBar); }
+        if (e.group) { e.group.visible = false; removeAndDispose(scene, e.group); }
+        if (e.hpBar) { e.hpBar.visible = false; removeAndDispose(scene, e.hpBar); }
       });
-      state.grenadeObjs.forEach(g => scene.remove(g.mesh));
+      state.grenadeObjs.forEach(g => removeAndDispose(scene, g.mesh));
       state.particles.forEach(p => {
         scene.remove(p.mesh);
         if (p.isPooled && sparkPool.length < 160) sparkPool.push(p.mesh);
       });
-      state.supplyDrops.forEach(d => scene.remove(d.group));
-      state.rockets.forEach(r => scene.remove(r.mesh));
+      state.supplyDrops.forEach(d => removeAndDispose(scene, d.group));
+      state.rockets.forEach(r => removeAndDispose(scene, r.mesh));
       if (state.zeppelins) {
         state.zeppelins.forEach(z => {
-          if (z.isPatrol && z.group) scene.remove(z.group);
+          if (z.isPatrol && z.group) removeAndDispose(scene, z.group);
         });
         state.zeppelins = state.zeppelins.filter(z => !z.isPatrol);
       }
@@ -15378,12 +15420,12 @@
 
     function updateHUD() {
       const cfg = WAVE_CONFIGS[Math.min(state.waveIndex, WAVE_CONFIGS.length - 1)];
-      document.getElementById('hud-wave-num').textContent = state.waveIndex + 1;
-      document.getElementById('hud-wave-title').textContent = cfg.name;
+      updateTextIfChanged('hud-wave-num', state.waveIndex + 1);
+      updateTextIfChanged('hud-wave-title', cfg.name);
 
       const remaining = Math.max(0, state.totalEnemiesInWave - state.enemiesKilledInWave - (state.enemiesPassedInWave || 0));
-      document.getElementById('hud-enemies-left').textContent = remaining;
-      document.getElementById('hud-enemies-total').textContent = state.totalEnemiesInWave;
+      updateTextIfChanged('hud-enemies-left', remaining);
+      updateTextIfChanged('hud-enemies-total', state.totalEnemiesInWave);
       const pctLeft = state.totalEnemiesInWave > 0 ? (remaining / state.totalEnemiesInWave) * 100 : 0;
       document.getElementById('hud-enemies-bar').style.width = `${pctLeft}%`;
 
@@ -15395,8 +15437,8 @@
       const hpBoxEl = document.getElementById('hud-health-box');
       const dmgPctEl = document.getElementById('hud-damage-pct');
 
-      if (hpTextEl) hpTextEl.textContent = `${hp}% HP`;
-      if (dmgPctEl) dmgPctEl.textContent = `${dmg}%`;
+      if (hpTextEl) updateTextIfChanged(hpTextEl, `${hp}% HP`);
+      if (dmgPctEl) updateTextIfChanged(dmgPctEl, `${dmg}%`);
       if (hpBarEl) {
         hpBarEl.style.width = `${hp}%`;
         if (hp > 55) {
@@ -15417,7 +15459,7 @@
       const secs = (t % 60).toFixed(1).padStart(4, '0');
       const minsStr = mins < 10 ? `0${mins}` : `${mins}`;
       const timerEl = document.getElementById('hud-timer-text');
-      timerEl.textContent = `${minsStr}:${secs}`;
+      updateTextIfChanged(timerEl, `${minsStr}:${secs}`);
       if (t <= 15) {
         timerEl.className = 'font-mono-tac text-xs sm:text-sm font-extrabold text-red-500 animate-pulse tracking-tight';
       } else {
@@ -15425,11 +15467,10 @@
       }
 
       const scoreStr = state.score.toLocaleString();
-      document.getElementById('hud-score').textContent = scoreStr;
-      const scoreMob = document.getElementById('hud-score-mobile');
-      if (scoreMob) scoreMob.textContent = scoreStr;
-      document.getElementById('hud-accuracy').textContent = `${getAccuracyPercent()}%`;
-      document.getElementById('hud-oneshots').textContent = `${state.oneShotKills} (+${state.oneShotKills} GREN)`;
+      updateTextIfChanged('hud-score', scoreStr);
+      updateTextIfChanged('hud-score-mobile', scoreStr);
+      updateTextIfChanged('hud-accuracy', `${getAccuracyPercent()}%`);
+      updateTextIfChanged('hud-oneshots', `${state.oneShotKills} (+${state.oneShotKills} GREN)`);
 
       // 3-Weapon Arsenal Selector Dock Updates
       for (let s = 1; s <= 3; s++) {
@@ -16438,8 +16479,8 @@
         const c = state.spentCasings[i];
         c.life -= dt;
         if (c.life <= 0) {
-          scene.remove(c.mesh);
-          state.spentCasings.splice(i, 1);
+          removeAndDispose(scene, c.mesh);
+          removeAtSwap(state.spentCasings, i);
           continue;
         }
         c.vel.y -= 19 * dt;
@@ -16481,8 +16522,8 @@
         plane.group.position.addScaledVector(plane.vel, dt);
         if (plane.propeller) plane.propeller.rotation.z += dt * 45;
         if (plane.group.position.x > 220 || plane.group.position.x < -220) {
-          scene.remove(plane.group);
-          state.aircraft.splice(i, 1);
+          removeAndDispose(scene, plane.group);
+          removeAtSwap(state.aircraft, i);
         }
       }
 
@@ -16576,8 +16617,8 @@
 
           if (r.progress >= 1.0) {
             detonateRocket(r.targetPt, r.damage);
-            scene.remove(r.mesh);
-            state.rockets.splice(i, 1);
+            removeAndDispose(scene, r.mesh);
+            removeAtSwap(state.rockets, i);
           }
         }
 
@@ -16603,8 +16644,8 @@
         for (let sIdx = state.supplyDrops.length - 1; sIdx >= 0; sIdx--) {
           const drop = state.supplyDrops[sIdx];
           if (!drop.active) {
-            scene.remove(drop.group);
-            state.supplyDrops.splice(sIdx, 1);
+            removeAndDispose(scene, drop.group);
+            removeAtSwap(state.supplyDrops, sIdx);
             continue;
           }
           const groundY = getBeachHeightAt(drop.group.position.x, drop.group.position.z) + 0.85;
@@ -16663,8 +16704,9 @@
             }
 
             if (boat.sinkTimer > 4.5 || boat.group.position.y < -12) {
-              scene.remove(boat.group);
-              state.boats.splice(bIdx, 1);
+              if (boat.hpBar) removeAndDispose(scene, boat.hpBar);
+              removeAndDispose(scene, boat.group);
+              removeAtSwap(state.boats, bIdx);
             }
             continue;
           }
@@ -16735,8 +16777,9 @@
             }
             boat.group.position.z -= boat.speed * 0.65 * dt;
             if (boat.group.position.z < -220) {
-              scene.remove(boat.group);
-              state.boats.splice(bIdx, 1);
+              if (boat.hpBar) removeAndDispose(scene, boat.hpBar);
+              removeAndDispose(scene, boat.group);
+              removeAtSwap(state.boats, bIdx);
             }
           }
         }
@@ -16745,9 +16788,9 @@
         for (let eIdx = state.enemies.length - 1; eIdx >= 0; eIdx--) {
           const enemy = state.enemies[eIdx];
           if (enemy.dead) {
-            if (enemy.group) scene.remove(enemy.group);
-            if (enemy.hpBar) scene.remove(enemy.hpBar);
-            state.enemies.splice(eIdx, 1);
+            if (enemy.group) removeAndDispose(scene, enemy.group);
+            if (enemy.hpBar) removeAndDispose(scene, enemy.hpBar);
+            removeAtSwap(state.enemies, eIdx);
             continue;
           }
 
@@ -16823,9 +16866,13 @@
               enemy.isDying = false;
               if (enemy.group) {
                 enemy.group.visible = false;
-                scene.remove(enemy.group);
+                removeAndDispose(scene, enemy.group);
               }
-              state.enemies.splice(eIdx, 1);
+              if (enemy.hpBar) {
+                enemy.hpBar.visible = false;
+                removeAndDispose(scene, enemy.hpBar);
+              }
+              removeAtSwap(state.enemies, eIdx);
             }
             continue;
           }
@@ -17000,11 +17047,11 @@
             enemy.passedThrough = true;
             if (enemy.hpBar) {
               enemy.hpBar.visible = false;
-              scene.remove(enemy.hpBar);
+              removeAndDispose(scene, enemy.hpBar);
             }
             if (enemy.group) {
               enemy.group.visible = false;
-              scene.remove(enemy.group);
+              removeAndDispose(scene, enemy.group);
             }
             state.enemiesPassedInWave = (state.enemiesPassedInWave || 0) + 1;
 
@@ -17044,8 +17091,8 @@
           g.progress += dt / g.duration;
           if (g.progress >= 1) {
             detonateGrenade(g.targetPt);
-            scene.remove(g.mesh);
-            state.grenadeObjs.splice(i, 1);
+            removeAndDispose(scene, g.mesh);
+            removeAtSwap(state.grenadeObjs, i);
           } else {
             g.mesh.position.lerpVectors(g.startPt, g.targetPt, g.progress);
             // Parabolic arc height
@@ -17062,16 +17109,14 @@
         const p = state.particles[i];
         p.life -= dt;
         if (p.life <= 0) {
-          scene.remove(p.mesh);
-          if (p.type === 'tracer') {
-            // Reusable unit geometry and static materials are preserved
-          } else if (p.isPooled) {
+          if (p.isPooled) {
+            scene.remove(p.mesh);
             if (sparkPool.length < 160) sparkPool.push(p.mesh);
+            else removeAndDispose(scene, p.mesh);
           } else {
-            if (p.mesh.geometry && p.mesh.geometry !== sparkGeo) p.mesh.geometry.dispose();
-            if (p.mesh.material) p.mesh.material.dispose();
+            removeAndDispose(scene, p.mesh);
           }
-          state.particles.splice(i, 1);
+          removeAtSwap(state.particles, i);
           continue;
         }
         const ratio = Math.max(0, p.life / p.maxLife);
