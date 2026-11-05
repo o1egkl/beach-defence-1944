@@ -172,107 +172,108 @@
         box-shadow: inset 0 0 16px rgba(10, 12, 14, 0.7) !important;
       }
       #hud-overlay {
-        padding: 2px 6% !important;
+        padding: 2px 12px !important;
       }
+      /* Top HUD Strip: Clamped and Centered (Clear Sky View) */
       #hud-overlay > div:first-child {
-        max-width: 80% !important;
+        max-width: min(640px, 74vw) !important;
         margin-left: auto !important;
         margin-right: auto !important;
       }
+      /* Bottom Tactical Dock: Strictly Clamped to Max 540px so it NEVER touches Virtual Joystick or Fire Button */
       #hud-overlay > div:last-child {
-        max-width: 84% !important;
+        max-width: min(540px, 62vw) !important;
         margin-left: auto !important;
         margin-right: auto !important;
       }
       #hud-overlay .max-w-6xl > div:first-child {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        padding-left: 6px !important;
-        padding-right: 6px !important;
+        padding: 2px 6px !important;
         gap: 4px !important;
       }
       #hud-wave-title {
         display: none !important;
       }
       #btn-mute, #btn-open-armory-mid, #btn-hud-quit {
-        width: 1.6rem !important;
-        height: 1.6rem !important;
+        width: 1.5rem !important;
+        height: 1.5rem !important;
         font-size: 0.65rem !important;
       }
       #hud-timer-box, #hud-health-box {
         padding: 1px 4px !important;
       }
-      /* Bottom tactical dock */
       #hud-overlay .max-w-max > div,
       #hud-overlay .max-w-6xl > div {
         padding: 2px 4px !important;
         border-radius: 0.75rem !important;
       }
       .weapon-tab-btn {
-        min-height: 28px !important;
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-      }
-      #btn-use-grenade, #btn-use-timeboost {
-        min-height: 28px !important;
-        padding: 2px 6px !important;
-      }
-      #hud-ammo-cur {
-        font-size: 1.25rem !important;
-      }
-      /* Mobile Controls Ergonomic Raised Positioning */
-      #mobile-joystick-wrap {
-        bottom: 28px !important;
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px) !important;
-        left: 14px !important;
-        left: calc(env(safe-area-inset-left, 0px) + 14px) !important;
-      }
-      #mobile-joystick-base {
-        width: 84px !important;
-        height: 84px !important;
-      }
-      #mobile-joystick-knob {
-        width: 38px !important;
-        height: 38px !important;
-      }
-      #mobile-fire-wrap {
-        bottom: 28px !important;
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px) !important;
-        right: 14px !important;
-        right: calc(env(safe-area-inset-right, 0px) + 14px) !important;
-      }
-      #btn-mobile-fire {
-        width: 64px !important;
-        height: 64px !important;
-      }
-      #btn-mobile-fire span:first-child {
-        font-size: 1.35rem !important;
-      }
-      #btn-mobile-grenade, #btn-mobile-reload {
-        width: 32px !important;
-        height: 32px !important;
+        min-height: 26px !important;
+        padding: 1px 4px !important;
         font-size: 0.75rem !important;
       }
-      /* Initial Menu / Armory Modal Mobile Landscape Responsive Fit */
+      #btn-use-grenade, #btn-use-timeboost {
+        min-height: 26px !important;
+        padding: 1px 5px !important;
+      }
+      #hud-ammo-cur {
+        font-size: 1.15rem !important;
+      }
+
+      /* Mobile Controls Ergonomic Raised Positioning (Guaranteed Clearance from Dock & Gestures) */
+      #mobile-joystick-wrap {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+        left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+      }
+      #mobile-joystick-base {
+        width: 80px !important;
+        height: 80px !important;
+      }
+      #mobile-joystick-knob {
+        width: 36px !important;
+        height: 36px !important;
+      }
+      #mobile-fire-wrap {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+        right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+      }
+      #btn-mobile-fire {
+        width: 62px !important;
+        height: 62px !important;
+      }
+      #btn-mobile-fire span:first-child {
+        font-size: 1.3rem !important;
+      }
+      #btn-mobile-grenade, #btn-mobile-reload {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.75rem !important;
+      }
+
+      /* ================= INITIAL MENU / ARMORY MODAL (100% SCREEN FIT, ZERO OVERLAP) ================= */
       #armory-modal {
-        padding: 4px 6px !important;
+        padding: 4px 8px !important;
       }
       #armory-modal > div {
+        max-width: 860px !important;
         max-height: 98vh !important;
         max-height: 98dvh !important;
-        height: 96vh !important;
-        border-radius: 0.85rem !important;
+        height: 98vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        border-radius: 0.75rem !important;
       }
       #armory-modal .relative.h-36,
       #armory-modal .relative.sm\:h-44 {
-        height: 2.5rem !important;
-        min-height: 40px !important;
+        height: 2.2rem !important;
+        min-height: 32px !important;
+        flex-shrink: 0 !important;
       }
       #armory-modal .relative.h-36 .absolute.inset-0.p-4,
       #armory-modal .relative.sm\:h-44 .absolute.inset-0.p-4,
       #armory-modal .relative.h-36 .absolute.inset-0.sm\:p-6,
       #armory-modal .relative.sm\:h-44 .absolute.inset-0.sm\:p-6 {
-        padding: 4px 10px !important;
+        padding: 2px 8px !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -282,182 +283,271 @@
         display: none !important;
       }
       #armory-modal h1 {
-        font-size: 1.15rem !important;
-        line-height: 1.2 !important;
+        font-size: 1.1rem !important;
+        line-height: 1 !important;
       }
       #armory-subtitle {
         display: none !important;
       }
       #armory-score-bank {
-        font-size: 1rem !important;
+        font-size: 0.95rem !important;
         line-height: 1 !important;
       }
       #armory-modal .relative.h-36 .bg-stone-950\/90,
       #armory-modal .relative.sm\:h-44 .bg-stone-950\/90 {
-        padding: 2px 8px !important;
+        padding: 1px 6px !important;
         border-width: 1px !important;
       }
       #armory-modal .relative.h-36 .bg-stone-950\/90 .text-\[10px\],
       #armory-modal .relative.sm\:h-44 .bg-stone-950\/90 .text-\[10px\] {
-        font-size: 8px !important;
+        font-size: 7.5px !important;
         line-height: 1 !important;
       }
-      /* Body Content & Side-by-Side 2-Column Grid */
+
+      /* Body Content & Side-by-Side 2-Column Grid (Flex-1, Guaranteed 100% fit with zero scroll) */
       #armory-modal .p-4.sm\:p-6.overflow-y-auto {
-        padding: 4px 8px !important;
+        padding: 4px 6px !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
       }
       #armory-modal .p-4.sm\:p-6.overflow-y-auto.space-y-5 > * + * {
-        margin-top: 4px !important;
+        margin-top: 2px !important;
       }
       #armory-modal .grid.grid-cols-1.lg\:grid-cols-12 {
         display: grid !important;
-        grid-template-columns: 4.8fr 7.2fr !important;
-        gap: 8px !important;
+        grid-template-columns: 4.6fr 7.4fr !important;
+        gap: 6px !important;
         align-items: stretch !important;
       }
       #armory-modal .lg\:col-span-5 {
         grid-column: span 1 / span 1 !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        gap: 2px !important;
       }
       #armory-modal .lg\:col-span-5 > div:first-child {
-        padding: 6px 8px !important;
-        border-radius: 0.5rem !important;
+        padding: 3px 6px !important;
+        border-radius: 0.45rem !important;
+      }
+      #armory-modal .lg\:col-span-5 .flex.items-center.justify-between.mb-2 {
+        margin-bottom: 2px !important;
+      }
+      #armory-modal .lg\:col-span-5 span.text-\[11px\] {
+        font-size: 8.5px !important;
+      }
+      #intel-time-limit {
+        font-size: 8px !important;
+        padding: 0 4px !important;
       }
       #intel-wave-name {
-        font-size: 1.05rem !important;
-        line-height: 1.2 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.1 !important;
       }
       #intel-wave-desc {
-        font-size: 10px !important;
-        line-height: 1.25 !important;
-        margin-top: 2px !important;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        display: none !important; /* Conceal long recon paragraph in landscape so units & supplies fit cleanly */
+      }
+      #armory-modal .lg\:col-span-5 .text-\[11px\].font-mono-tac.text-stone-400.uppercase {
+        display: none !important;
       }
       #intel-unit-list {
         gap: 2px !important;
+        margin-top: 2px !important;
       }
       #intel-unit-list > div {
-        padding: 2px 6px !important;
-        font-size: 10px !important;
+        padding: 1.5px 5px !important;
+        font-size: 8.5px !important;
+      }
+      #intel-unit-list > div span:first-child {
+        font-size: 8.5px !important;
+      }
+      #intel-unit-list > div span:last-child {
+        font-size: 8px !important;
       }
       #armory-modal .lg\:col-span-5 .grid.grid-cols-2 {
-        margin-top: 3px !important;
-        padding-top: 3px !important;
-        gap: 4px !important;
+        margin-top: 2px !important;
+        padding-top: 2px !important;
+        gap: 3px !important;
       }
       #armory-modal .lg\:col-span-5 .grid.grid-cols-2 > div {
-        padding: 2px 6px !important;
-        font-size: 10px !important;
+        padding: 1.5px 5px !important;
+        font-size: 8.5px !important;
       }
       #armory-modal .lg\:col-span-5 .mt-3.pt-3 {
-        margin-top: 3px !important;
-        padding-top: 3px !important;
+        margin-top: 2px !important;
+        padding-top: 2px !important;
       }
       #armory-combat-manual {
         display: none !important;
       }
+
+      /* Right Column: Workshop & 4 Ultra-Compact Upgrade Cards */
       #armory-modal .lg\:col-span-7 {
         grid-column: span 1 / span 1 !important;
-        padding: 6px 8px !important;
-        border-radius: 0.5rem !important;
+        padding: 3px 6px !important;
+        border-radius: 0.45rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+      #armory-modal .lg\:col-span-7 .flex.flex-wrap.items-center.justify-between.gap-2.mb-3.pb-2 {
+        margin-bottom: 2px !important;
+        padding-bottom: 2px !important;
       }
       #armory-modal .lg\:col-span-7 h3 {
-        font-size: 1.05rem !important;
+        font-size: 0.85rem !important;
+        line-height: 1 !important;
       }
       #armory-modal .lg\:col-span-7 p {
         display: none !important;
       }
       #upgrade-scaling-badge {
-        font-size: 9px !important;
-        padding: 1px 4px !important;
+        font-size: 8px !important;
+        padding: 1px 3px !important;
       }
       #upgrade-cards-grid {
-        gap: 6px !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 3px !important;
       }
       #upgrade-cards-grid > div {
-        padding: 5px 8px !important;
+        padding: 2px 5px !important;
+        border-radius: 0.35rem !important;
+        min-height: 0 !important;
+      }
+      #upgrade-cards-grid > div .font-bold {
+        font-size: 0.7rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 130px !important;
+        display: inline-block !important;
       }
       #upgrade-cards-grid > div p {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font-size: 10px !important;
-        margin-top: 2px !important;
-      }
-      #upgrade-cards-grid > div .btn-buy-upgrade {
-        padding: 3px 8px !important;
-        font-size: 10px !important;
+        display: none !important; /* Hide long description in landscape to guarantee 100% fit */
       }
       #upgrade-cards-grid > div .mt-3 {
-        margin-top: 4px !important;
-        padding-top: 4px !important;
+        margin-top: 2px !important;
+        padding-top: 1px !important;
+      }
+      #upgrade-cards-grid > div .w-20 {
+        width: 3.5rem !important;
+        height: 4px !important;
+      }
+      #upgrade-cards-grid > div .btn-buy-upgrade {
+        padding: 1px 6px !important;
+        font-size: 8px !important;
+        height: 18px !important;
+        line-height: 16px !important;
+        border-radius: 0.3rem !important;
       }
       #armory-modal .lg\:col-span-7 > div:last-child {
-        margin-top: 4px !important;
-        padding: 2px 6px !important;
-        font-size: 10px !important;
+        margin-top: 2px !important;
+        padding: 1.5px 4px !important;
+        font-size: 8px !important;
+        gap: 3px !important;
       }
-      /* Footer */
-      #armory-modal > div > div.p-4.bg-stone-950 {
-        padding: 4px 10px !important;
-        gap: 6px !important;
+
+      /* Footer Bar: Fixed at bottom, zero overlap */
+      #armory-modal > div > div:last-child {
+        flex-shrink: 0 !important;
+        padding: 3px 8px !important;
+        gap: 4px !important;
+        border-top: 1px solid rgba(120, 113, 108, 0.3) !important;
+        background: #0d100b !important;
       }
       #btn-reset-campaign, #btn-armory-exit {
-        padding: 4px 8px !important;
-        font-size: 10px !important;
-        border-radius: 0.375rem !important;
+        padding: 3px 6px !important;
+        font-size: 9px !important;
+        border-radius: 0.35rem !important;
       }
       #btn-deploy-wave {
-        padding: 6px 18px !important;
-        font-size: 0.95rem !important;
-        border-radius: 0.5rem !important;
+        padding: 4px 14px !important;
+        font-size: 0.85rem !important;
+        border-radius: 0.45rem !important;
       }
       #btn-deploy-wave span:last-child {
         display: none !important;
       }
-      #wave-report-card {
-        padding: 4px 6px !important;
-        margin-bottom: 4px !important;
+
+      /* ================= PAUSE MODAL (2-COLUMN LANDSCAPE, 100% BUTTON VISIBILITY) ================= */
+      #pause-modal > div {
+        max-width: 760px !important;
+        max-height: 94vh !important;
+        max-height: 94dvh !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1.15fr !important;
+        overflow: hidden !important;
+        border-radius: 0.75rem !important;
       }
-      #wave-report-card h2 {
-        font-size: 1rem !important;
+      #pause-modal > div > div:first-child {
+        grid-column: 1 / 2 !important;
+        border-bottom: 1px solid rgba(120, 113, 108, 0.25) !important;
+        border-right: 1px solid rgba(120, 113, 108, 0.25) !important;
+        padding: 6px 10px !important;
+        text-align: left !important;
       }
-      #report-total-earned {
+      #pause-modal > div > div:first-child h2 {
         font-size: 1.15rem !important;
+        margin-top: 1px !important;
+        line-height: 1.1 !important;
       }
-      #wave-report-card .grid {
-        gap: 4px !important;
+      #pause-modal > div > div:first-child p {
+        font-size: 10px !important;
+        margin-top: 1px !important;
       }
-      #wave-report-card .grid > div {
-        padding: 2px 4px !important;
+      #pause-modal > div > div:nth-child(2) {
+        grid-column: 1 / 2 !important;
+        border-right: 1px solid rgba(120, 113, 108, 0.25) !important;
+        padding: 4px 10px 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-around !important;
+        gap: 3px !important;
       }
-      /* Victory / Defeat / Pause Modals Compact Padding */
-      #victory-modal h2, #defeat-modal h2, #pause-modal h2 {
-        font-size: 1.35rem !important;
+      #pause-modal > div > div:nth-child(2) .grid-cols-3 {
+        gap: 3px !important;
       }
-      #victory-modal .p-5, #defeat-modal .p-5, #pause-modal .p-5,
-      #victory-modal .sm\:p-6, #defeat-modal .sm\:p-6, #pause-modal .sm\:p-6 {
-        padding: 0.5rem 0.75rem !important;
+      #pause-modal > div > div:nth-child(2) .grid-cols-3 > div {
+        padding: 2px 3px !important;
+        border-radius: 0.35rem !important;
       }
-      #victory-modal .space-y-4, #defeat-modal .space-y-4, #pause-modal .space-y-4 {
-        margin-top: 0.25rem !important;
+      #pause-modal > div > div:nth-child(2) .grid-cols-3 .text-lg {
+        font-size: 0.85rem !important;
+        margin-top: 0 !important;
       }
-      #pause-modal .space-y-4 > * + * {
-        margin-top: 0.35rem !important;
+      #pause-modal > div > div:nth-child(2) .grid-cols-2 {
+        padding: 2px 5px !important;
+        font-size: 9.5px !important;
+        border-radius: 0.35rem !important;
+      }
+      #pause-modal > div > div:last-child {
+        grid-column: 2 / 3 !important;
+        grid-row: 1 / 3 !important;
+        border-top: none !important;
+        padding: 8px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 5px !important;
       }
       #btn-resume-game {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
-        font-size: 1rem !important;
+        padding: 6px 12px !important;
+        font-size: 0.95rem !important;
+        border-radius: 0.45rem !important;
       }
-    }
-  </style>
+      #btn-pause-armory, #btn-pause-restart, #btn-pause-exit {
+        padding: 4px 8px !important;
+        font-size: 0.78rem !important;
+        border-radius: 0.35rem !important;
+      }
+      #btn-toggle-mobile-controls, #btn-toggle-aim-sensitivity {
+        padding: 3px 5px !important;
+        font-size: 9px !important;
+        border-radius: 0.35rem !important;
+      }
+    }  </style>
 </head>
 <body class="bg-[#0f130d] text-stone-100 select-none overflow-hidden">
 

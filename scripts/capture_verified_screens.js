@@ -133,6 +133,13 @@ server.listen(4902, async () => {
   ws.onopen = async () => {
     await sendCmd('Runtime.enable');
     await sendCmd('Page.enable');
+    await sendCmd('Emulation.setDeviceMetricsOverride', {
+      width: 915,
+      height: 412,
+      deviceScaleFactor: 2.0,
+      mobile: true,
+      screenOrientation: { angle: 90, type: 'landscapePrimary' }
+    });
 
     console.log('[CDP] Navigating to game...');
     await sendCmd('Page.navigate', { url: 'http://127.0.0.1:4902/index.html' });
