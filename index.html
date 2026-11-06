@@ -15797,6 +15797,13 @@
 
       state.isWaveInProgress = true;
       state.mode = 'PLAYING';
+      // Cleanly re-center player aim to center of horizon at start of wave:
+      state.mouseNDC.set(0, 0);
+      state.aimYaw = 0;
+      state.aimPitch = -0.05;
+      state.cameraRecoilPitch = 0;
+      updateAimFromNDC(0, 0);
+      resetMobileJoystick();
       document.getElementById('pause-modal').classList.add('hidden');
       document.getElementById('pause-modal').classList.remove('flex');
       document.getElementById('victory-modal').classList.add('hidden');
@@ -16310,7 +16317,8 @@
       // Strict bunker embrasure aperture clamp:
       // Prevents the aim reticle and gunfire from drifting onto solid concrete side walls or ceiling where enemies cannot exist
       state.mouseNDC.x = Math.max(-0.75, Math.min(0.75, ndcX));
-      state.mouseNDC.y = Math.max(-0.58, Math.min(0.56, ndcY));
+      // Strict vertical embrasure aperture clamp (-0.35 to 0.48): prevents aim from ever dipping into solid concrete sill/floor
+      state.mouseNDC.y = Math.max(-0.35, Math.min(0.48, ndcY));
 
       const clientX = canvasRect.left + ((state.mouseNDC.x + 1) / 2) * canvasRect.width;
       const clientY = canvasRect.top + ((-state.mouseNDC.y + 1) / 2) * canvasRect.height;
@@ -16510,24 +16518,29 @@
       }
 
       const stickRadius = 46;
-      const margin = 14;
-      const bottomMargin = 28;
-      const maxLeft = (window.innerWidth * 0.44) - stickRadius;
-      const anchorX = Math.max(stickRadius + margin, Math.min(maxLeft, e.clientX));
-      const anchorY = Math.max(stickRadius + 44, Math.min(window.innerHeight - stickRadius - bottomMargin, e.clientY));
-
-      mobileControls.center.x = anchorX;
-      mobileControls.center.y = anchorY;
+      // Absolute logical origin of thumb movement: exactly where the finger touches down
+      mobileControls.center.x = e.clientX;
+      mobileControls.center.y = e.clientY;
+      mobileControls.delta.x = 0;
+      mobileControls.delta.y = 0;
+      mobileControls.smoothDelta.x = 0;
+      mobileControls.smoothDelta.y = 0;
 
       if (mobileJoystickWrap) {
-        mobileJoystickWrap.style.left = `${anchorX - stickRadius}px`;
-        mobileJoystickWrap.style.top = `${anchorY - stickRadius}px`;
+        // Position visual graphic centered on the touch point (clamped slightly to keep circle on screen)
+        const visualX = Math.max(stickRadius + 8, Math.min((window.innerWidth * 0.44) - stickRadius, e.clientX));
+        const visualY = Math.max(stickRadius + 44, Math.min(window.innerHeight - stickRadius - 12, e.clientY));
+        mobileJoystickWrap.style.left = `${visualX - stickRadius}px`;
+        mobileJoystickWrap.style.top = `${visualY - stickRadius}px`;
         mobileJoystickWrap.style.bottom = 'auto';
         mobileJoystickWrap.classList.remove('opacity-60');
         mobileJoystickWrap.classList.add('opacity-100');
       }
 
-      updateJoystickFromPointer(e.clientX, e.clientY);
+      if (mobileJoystickKnob) {
+        mobileJoystickKnob.style.transform = 'translate(0px, 0px)';
+      }
+      // Zero deflection on touch down: movement is only processed on onAimPointerMove!
     }
 
     function onAimPointerMove(e) {
